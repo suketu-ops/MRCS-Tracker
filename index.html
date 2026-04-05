@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V76</title>
-<!-- V76: PWA Meta Tags -->
+<title>MRCS QBank Tracker Pro Max V77</title>
+<!-- V77: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MRCS Tracker">
@@ -232,39 +232,39 @@
     .ai-msg-user { align-self: flex-end; background: rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 12px 12px 0 12px; width: fit-content; max-width: 85%; border: 1px solid rgba(255,255,255,0.2); }
     .ai-msg-model { align-self: flex-start; background: rgba(0, 242, 254, 0.1); padding: 12px 16px; border-radius: 12px 12px 12px 0; border-left: 4px solid #00f2fe; width: fit-content; max-width: 95%; }
 
-    /* V76: Heatmap Calendar */
+    /* V77: Heatmap Calendar */
     .heatmap-grid { display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-start; max-width: 500px; margin: 0 auto 16px; }
     .hm-cell { width: 18px; height: 18px; border-radius: 3px; background: rgba(128,128,128,0.1); transition: all 0.2s; position: relative; cursor: default; }
     .hm-cell:hover { transform: scale(1.4); z-index: 2; }
     .hm-cell[data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); background: #111; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.6rem; white-space: nowrap; z-index: 10; font-family: 'JetBrains Mono', monospace; pointer-events: none; }
     .hm-label { font-size: 0.55rem; opacity: 0.4; text-transform: uppercase; letter-spacing: 1px; width: 100%; text-align: center; margin-bottom: 4px; }
 
-    /* V76: Quick Presets */
+    /* V77: Quick Presets */
     .preset-row { display: flex; gap: 6px; width: 100%; margin-bottom: 8px; }
     .preset-btn { flex: 1; padding: 8px 4px; border: 1.5px solid; border-radius: 10px; background: transparent; cursor: pointer; text-align: center; font-family: 'DM Sans', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; transition: all 0.2s; color: inherit; opacity: 0.7; }
     .preset-btn:hover { opacity: 1; transform: translateY(-2px); }
 
-    /* V76: Readiness Gauge */
+    /* V77: Readiness Gauge */
     .readiness-wrap { text-align: center; margin: 8px 0; }
     .readiness-bar { width: 100%; height: 6px; border-radius: 3px; overflow: hidden; margin: 4px 0; }
     .readiness-fill { height: 100%; border-radius: 3px; transition: width 1s, background 0.4s; }
     .readiness-label { font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; }
     .readiness-pct { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; line-height: 1; }
 
-    /* V76: Keyboard hint */
+    /* V77: Keyboard hint */
     .kb-hint { font-size: 0.55rem; opacity: 0.35; text-align: center; letter-spacing: 1px; margin-top: 4px; }
 
-    /* V76: Progress Card */
+    /* V77: Progress Card */
     #progress-card-canvas { border-radius: 16px; max-width: 100%; height: auto; display: block; margin: 0 auto; cursor: pointer; }
     .progress-card-wrap { text-align: center; margin: 16px 0; }
     .progress-card-actions { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
 
-    /* V76: Paste indicator */
+    /* V77: Paste indicator */
     .paste-zone { border: 2px dashed rgba(128,128,128,0.3); border-radius: 8px; padding: 12px; text-align: center; font-size: 0.7rem; opacity: 0.5; margin-top: 8px; transition: all 0.3s; cursor: pointer; }
     .paste-zone:hover, .paste-zone.active { border-color: var(--accent2); opacity: 0.8; }
     .paste-preview { max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 8px; margin-top: 8px; }
 
-    /* V76: Markdown rendered content */
+    /* V77: Markdown rendered content */
     .md-content { font-size: 0.95rem; line-height: 1.7; }
     .md-content h1, .md-content h2, .md-content h3 { font-family: 'Bebas Neue', sans-serif; color: var(--accent2); margin: 16px 0 8px; }
     .md-content h1 { font-size: 1.8rem; } .md-content h2 { font-size: 1.4rem; } .md-content h3 { font-size: 1.2rem; }
@@ -279,17 +279,17 @@
     .md-content a { color: var(--accent2); text-decoration: underline; }
 
     /* ============================================= */
-    /* V76: COMPREHENSIVE MOBILE OPTIMISATION        */
+    /* V77: COMPREHENSIVE MOBILE OPTIMISATION        */
     /* ============================================= */
 
     /* --- Safe area for notched phones --- */
-    /* V76: Aggressive safe area for iPhone Dynamic Island + home indicator */
+    /* V77: Aggressive safe area for iPhone Dynamic Island + home indicator */
     @supports (padding: env(safe-area-inset-top)) {
         .top-bar { padding-top: calc(env(safe-area-inset-top) + 8px); padding-bottom: 8px; }
         #app { padding-top: calc(env(safe-area-inset-top) + 56px); padding-bottom: calc(env(safe-area-inset-bottom) + 20px); }
     }
 
-    /* V76: Safe bottom padding for all views */
+    /* V77: Safe bottom padding for all views */
     .view { padding-bottom: 24px; }
     @supports (padding: env(safe-area-inset-bottom)) {
         .view { padding-bottom: calc(env(safe-area-inset-bottom) + 16px); }
@@ -439,7 +439,7 @@
     }
 
     
-    /* V76: Pride theme glitter */
+    /* V77: Pride theme glitter */
     @keyframes glitter { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
     @keyframes rainbowShift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
     body.pride-active .clock { animation: rainbowShift 4s linear infinite; }
@@ -451,16 +451,39 @@
     body.pride-active .lm { animation: glitter 2.5s ease-in-out infinite; }
     body.pride-active .th-dot.sel { box-shadow: 0 0 12px rgba(204,51,255,0.8); }
     
-    /* V76: Fandom theme animations */
+    /* V77: Fandom theme animations */
     body.fandom-bridgerton .clock { font-family: 'Times New Roman', serif !important; }
     body.fandom-bridgerton .stat-val { font-family: 'Times New Roman', serif !important; }
     body.fandom-hogwarts .clock { text-shadow: 0 0 12px rgba(241,196,15,0.4); }
     body.fandom-hogwarts .btn:not(.btn-ghost) { text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+    
+    body.fandom-bollywood .clock { text-shadow: 0 0 12px rgba(255,214,0,0.4); }
+    body.fandom-greys .clock { font-style: italic; }
+    body.fandom-lasso .stat-val { text-shadow: 0 0 8px rgba(232,184,68,0.3); }
+    body.fandom-eras .clock { animation: rainbowShift 8s linear infinite; }
+    body.fandom-schitts .clock { font-family: 'Times New Roman', serif !important; letter-spacing: 6px; }
+    body.fandom-ghibli .clock { text-shadow: 0 0 12px rgba(90,143,60,0.3); }
+    body.fandom-wednesday .clock { font-family: 'Times New Roman', serif !important; }
+    body.fandom-wednesday .btn:not(.btn-ghost) { border-radius: 0 !important; }
     body.fandom-westeros .clock { text-shadow: 0 0 8px rgba(201,176,55,0.3); }
     @keyframes fireFlicker { 0%,100% { text-shadow: 0 0 8px rgba(201,176,55,0.3); } 50% { text-shadow: 0 0 16px rgba(201,176,55,0.6); } }
     body.fandom-westeros .stat-val { animation: fireFlicker 3s ease-in-out infinite; }
 
-    /* V76: Theme bar - JS handles show/hide */
+    
+    /* V77: Theme Picker Popup */
+    .theme-picker-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+    .theme-picker-overlay.active { display: flex; opacity: 1; }
+    .theme-picker { background: #111; border-radius: 20px; padding: 24px; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); }
+    .theme-picker-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; text-align: center; color: #fff; margin-bottom: 16px; letter-spacing: 2px; }
+    .theme-option { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s; margin-bottom: 4px; border: 1.5px solid transparent; }
+    .theme-option:hover { background: rgba(255,255,255,0.05); transform: translateX(4px); }
+    .theme-option.active { border-color: var(--accent); background: rgba(255,255,255,0.08); }
+    .theme-option-dot { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.1); }
+    .theme-option-name { font-weight: 700; font-size: 0.9rem; color: #fff; }
+    .theme-option-desc { font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .theme-section { font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.25); padding: 12px 16px 4px; }
+
+    /* V77: Theme bar - JS handles show/hide */
     .th-bar { max-width: 70%; }
 
     @keyframes emojiDrop { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(100vh); opacity: 0; } }
@@ -494,6 +517,12 @@
             <button class="btn btn-sm btn-ghost" id="btn-action-cancel">Cancel</button>
             <button class="btn btn-sm" id="btn-action-confirm" style="background:#ff5252; color:#fff;">Confirm</button>
         </div>
+    </div>
+</div>
+<div class="theme-picker-overlay" id="theme-picker" onclick="closeThemePicker()">
+    <div class="theme-picker" onclick="event.stopPropagation()">
+        <div class="theme-picker-title">CHOOSE YOUR VIBE</div>
+        <div id="theme-picker-list"></div>
     </div>
 </div>
 <div id="app">
@@ -922,7 +951,7 @@
     </div>
   </div>
 
-  <!-- V76: Progress Card Modal -->
+  <!-- V77: Progress Card Modal -->
   <div class="modal-overlay" id="progress-modal" onclick="closeProgressModal()">
     <div class="modal-content" style="max-width: 500px; text-align: center;" onclick="event.stopPropagation()">
         <div class="dash-lbl" style="color:var(--accent2); text-align:center; margin-bottom:8px;">Your Progress Card</div>
@@ -982,7 +1011,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
     return false; 
 };
 function logDebug(msg) { const logsEl = document.getElementById('debug-logs'); if (logsEl) logsEl.innerHTML += `<div class="log-line log-boot">[BOOT] ${msg}</div>`; }
-logDebug("V76 Script execution started.");
+logDebug("V77 Script execution started.");
 
 // V56 Selection Cache - fixes Safari/mobile highlight disappearing on button click
 let activeSelection = "";
@@ -1100,7 +1129,7 @@ async function pushToCloud() {
 }
 
 async function pullFromCloud(isManual = false) {
-    // V76: On manual pull, read keys from inputs first (for fresh device setup)
+    // V77: On manual pull, read keys from inputs first (for fresh device setup)
     if(isManual) {
         const keyVal = $('cloud-key').value.trim();
         const binVal = $('cloud-bin').value.trim();
@@ -1247,7 +1276,7 @@ const prideTimerQuotes = [
 ];
 
 
-// V76: Fandom theme data
+// V77: Fandom theme data
 const fandomQuotes = {
     bridgerton: [
         "I burn for you. And now I burn for this exam. \u2014 Bridgerton energy",
@@ -1320,6 +1349,84 @@ const fandomBreakPrompts = {
     }
 };
 
+
+// V77: Extended fandom data
+Object.assign(fandomQuotes, {
+    bollywood: [
+        "Picture abhi baaki hai, mere dost. The paper isn't over yet.",
+        "Kuch kuch hota hai, MRCS. Tum nahi samjhoge.",
+        "Mogambo khush hua! \u2014 when you hit 70% or above.",
+        "Don ko pakadna mushkil hi nahi, namumkin hai. Just like this exam. But you'll do it.",
+        "All izz well. Repeat after me. ALL IZZZZ WELL.",
+        "Ek baar jo maine commitment kar di, toh phir main apne aap ki bhi nahi sunta \u2014 Studying mode ON.",
+        "Zindagi mein do cheezein karo: ya toh MRCS pass karo, ya toh MRCS pass karo."
+    ],
+    greys: [
+        "It's a beautiful day to save lives. But first, save your score.",
+        "You're my person. And my person studies. \u2014 Cristina Yang energy",
+        "We're adults. When did that happen? And how do we make it stop? \u2014 But still, study.",
+        "Sometimes the future changes quickly and completely. Like right now. Focus.",
+        "Have some fire. Be unstoppable. Be a force of nature. \u2014 Cristina Yang",
+        "Oh screw beautiful. I'm brilliant. If you want to appease me, compliment my brain.",
+        "The carousel never stops turning. Neither does your study schedule."
+    ],
+    lasso: [
+        "Be curious, not judgmental. Even about the questions you got wrong.",
+        "I believe in you. BELIEVE. \u2014 Ted Lasso",
+        "Taking on a challenge is a lot like riding a horse. If you're comfortable, you're probably doing it wrong.",
+        "You know what the happiest animal on Earth is? It's a goldfish. 10-second memory. Be a goldfish after a bad score.",
+        "For me, success is not about the wins and losses. It's about helping this team become the best version of themselves. You're the team.",
+        "I promise you, there is something worse out there than being sad. And that is being alone and being sad. Study with purpose.",
+        "Doing the right thing is never the wrong thing. And studying is the right thing."
+    ],
+    eras: [
+        "Long story short, I survived. And so will your exam prep. \u2014 Evermore era",
+        "Shake it off. Shake off that last bad score. \u2014 1989 era",
+        "Look what you made me do \u2014 study at midnight. \u2014 Reputation era",
+        "We are never ever getting back together with procrastination. \u2014 Red era",
+        "It's me, hi, I'm the problem, it's me \u2014 when I don't study. \u2014 Midnights era",
+        "This is our place, we make the rules. \u2014 Lover era, about the study desk",
+        "Fearless is not the absence of fear. It's having fears but studying anyway."
+    ],
+    schitts: [
+        "I'd kill for a good score right now. \u2014 David Rose",
+        "Ew, David! That score? Study harder.",
+        "I do drink red wine, but I also drink white wine. And I also study. \u2014 Moira Rose",
+        "Love that journey for me. Especially the journey to passing MRCS. \u2014 Alexis Rose",
+        "What you did was impulsive, capricious, and melodramatic. But it was also wrong \u2014 not studying, that is.",
+        "I'm incapable of faking sincerity. And sincerely, you need to study.",
+        "A little bit Alexis \u2014 studying with flair and a hair flip."
+    ],
+    ghibli: [
+        "In this world, there are things you can only do alone, and things you can only do with somebody else. Studying is both.",
+        "Once you've met someone, you never really forget them. Like anatomy landmarks.",
+        "Always believe in yourself. Do this and no matter where you are, you will have nothing to fear. \u2014 Spirited Away",
+        "Life is suffering. It is hard. The world is cursed. But still, you find reasons to keep going. \u2014 Princess Mononoke",
+        "Whenever someone creates something with all of their heart, that creation is given a soul. Your notes have souls.",
+        "It's funny how you wake up each day and never really know if it'll be one that changes your life. Today could be that day. Study.",
+        "The wind is rising. We must try to live. \u2014 And try to pass."
+    ],
+    wednesday: [
+        "I didn't say I wouldn't study. I said I wouldn't enjoy it. There's a difference.",
+        "I act as if I don't care if people dislike me. I actually don't. I also don't care about easy questions. Give me hard ones.",
+        "I find social media to be a soul-sucking void of meaningless interactions. Put the phone down.",
+        "I'm not sure whose corpse we'll be studying today, but I'm sure it'll be educational.",
+        "Emotions are a gateway to weakness. But discipline is a gateway to passing.",
+        "I would rather die than be cheerful about a bad score.",
+        "The only thing standing between me and a perfect score is every other question."
+    ]
+});
+
+Object.assign(fandomBreakPrompts, {
+    bollywood: { 'Coffee':"Cutting chai break! Ek cup mein poori energy. Chal wapas aa.", 'Bio':"Jaldi jao, jaldi aao. Exam wait nahi karega.", 'Fog':"Fog? Yeh brain ka intermission hai. 5 minute mein wapas full on.", 'Sleepy':"Neend aa rahi hai? Uth ja bhai, paani pi, 10 squats maar.", 'Hungry':"Samosa khale ek, phir wapas grind pe. Energy chahiye surgeon ko.", 'Doomscroll':"PHONE NEECHE RAKH. Instagram pe kuch nahi milega MRCS ke liye.", 'Media':"Screen off karo. Dimaag ko rest do, screen se nahi.", 'Walk':"Chal thoda ghoom ke aa. Blood flow badhega, dimag chalega.", 'Sun':"Dhoop mein ja thoda. Vitamin D free hai aur zaroori bhi.", 'Call':"Jaldi baat kar, lamba mat kheench. Scalpel wait kar raha hai.", 'Misc':"Jo bhi hai, jaldi nipta. Surgeon banna hai tujhe." },
+    greys: { 'Coffee':"Coffee because it's a beautiful day to save lives. After caffeine.", 'Bio':"Even Meredith Grey uses the bathroom. Quick. Back to the OR.", 'Fog':"Pick me. Choose me. Love me. But first, clear the fog. Deep breaths.", 'Sleepy':"You're a surgeon, not a sleeping beauty. Stand up. Move. Owen Hunt energy.", 'Hungry':"Eat something. Cristina didn't operate on an empty stomach and neither should you.", 'Doomscroll':"Seriously? You're scrolling? Cristina Yang would literally walk away from you right now.", 'Media':"Dark and twisty is an emotion, not a Netflix binge. Screen off.", 'Walk':"Walk it off. Like Bailey walking the halls. You'll return stronger.", 'Sun':"Fresh air. Even Seattle gets sun sometimes. Take the moment.", 'Call':"Quick call. Your person can wait 2 minutes. The OR can't.", 'Misc':"Handle it. You're a surgeon. Surgeons handle things." },
+    lasso: { 'Coffee':"Tea! Or coffee. Whatever fuels your belief. You've got this.", 'Bio':"Quick pit stop. Even Ted takes breaks. Just not long ones.", 'Fog':"Be a goldfish. 10-second memory for the fog. Then get back in.", 'Sleepy':"Tired? That's okay. Rest is part of the game plan. Quick stretch.", 'Hungry':"Biscuit break! Fuel up. You can't believe on an empty stomach.", 'Doomscroll':"Put the phone down, partner. Barbecue sauce. (That means stop.)", 'Media':"No screens during halftime. Let the brain recover. Coach's orders.", 'Walk':"Take a walk. Clear the pitch. Come back fresh.", 'Sun':"Sunshine! Get some. Even in Richmond, the sun comes out.", 'Call':"Quick chat. Keeping connections strong. Then back to training.", 'Misc':"Whatever it is, handle it with kindness. And speed." },
+    eras: { 'Coffee':"Caffeine era begins. Shake it off and caffeinate.", 'Bio':"Quick break from the Eras Tour of questions. Be swift about it.", 'Fog':"Fog era. It's temporary. Breathe through it like Folklore.", 'Sleepy':"Sleepy? This is not the Midnights era. Wake up. Anti-Hero needs you.", 'Hungry':"Feed yourself. Even the Lover era requires sustenance.", 'Doomscroll':"Bad Blood with your phone right now. Put. It. Down.", 'Media':"No screens! You need to calm down. Let the brain rest.", 'Walk':"Walk era. Cardigan weather. Fresh air.", 'Sun':"Daylight era! Sunshine and vitamin D.", 'Call':"Call It What You Want \u2014 but keep it brief.", 'Misc':"Blank Space in your schedule. Fill it with focus." },
+    schitts: { 'Coffee':"I'd like a coffee. Specifically, I'd like it to be good. And quick.", 'Bio':"This is simply not the time for extended bathroom experiences, David.", 'Fog':"Brain fog? How very un-Schitt of you. Breathe, darling.", 'Sleepy':"Tired? I once slept in a barn. You'll survive. Get up.", 'Hungry':"Eat something from the cafe. Nothing too adventurous. Then back.", 'Doomscroll':"Ew, David! Put the phone away!", 'Media':"I have been binge-watching and it is NOT a personality trait right now.", 'Walk':"A walk! Very on-brand for the new me. Quick stroll.", 'Sun':"Fresh air. Even Schitt's Creek has sunshine. Enjoy briefly.", 'Call':"Love that journey for you but keep the call short.", 'Misc':"I'm trying very hard not to connect with people right now. Study." },
+    ghibli: { 'Coffee':"A warm cup, like tea at the bathhouse. Sip slowly, then return.", 'Bio':"Even No-Face needs a moment. Be gentle with yourself.", 'Fog':"The mist will clear, like morning over the forest. Breathe deeply.", 'Sleepy':"Rest like Totoro under the camphor tree. Just briefly.", 'Hungry':"Eat well, like the feast in Spirited Away. Nourish yourself.", 'Doomscroll':"Put down the device. Sit with the quiet, like Kiki watching the sea.", 'Media':"No screens. Let your mind wander like clouds over the valley.", 'Walk':"Walk through the forest path. Let your feet find the way.", 'Sun':"Sunshine through the leaves. Vitamin D is gentle magic.", 'Call':"A brief message, carried by the wind. Then return to your work.", 'Misc':"Whatever it is, handle it with the patience of a forest spirit." },
+    wednesday: { 'Coffee':"I take my coffee black. Like my soul. And my study schedule.", 'Bio':"Even the dead need bathroom breaks. Be efficient.", 'Fog':"Brain fog is merely the mind's way of saying it's bored. Challenge it.", 'Sleepy':"Sleep is for the weak. But fine. 5 minutes. I won't enjoy it.", 'Hungry':"Sustenance is required for continued existence. Eat. Don't enjoy it.", 'Doomscroll':"Social media is a weapon of mass distraction. I refuse to be a casualty.", 'Media':"I don't do entertainment during study hours. It implies I need amusement.", 'Walk':"A walk among the tombstones. Refreshing.", 'Sun':"I don't tan. But I acknowledge the sun has benefits. Brief exposure.", 'Call':"Communication is overrated. But if you must, be brief.", 'Misc':"Handle it with the cold efficiency of an Addams." }
+});
+
 const quotes = [
     "Steady hands, clear mind. The path to the OR starts here.",
     "Every question is a life you will eventually save.",
@@ -1330,8 +1437,8 @@ const quotes = [
     "Embrace the grind. The scalpel awaits."
 ];
 
-// V76: Shane & Ilya milestone celebration
-// V76: Formatting toolbar helpers
+// V77: Shane & Ilya milestone celebration
+// V77: Formatting toolbar helpers
 function wrapSelection(before, after) {
     const ta = $('modal-note-text');
     const start = ta.selectionStart, end = ta.selectionEnd;
@@ -1372,7 +1479,7 @@ function deleteSession(idx) {
     };
 }
 
-// V76: Cottage celebration quotes + HR images
+// V77: Cottage celebration quotes + HR images
 const cottageQuotes = [
     "\u201CI\u2019m coming to the cottage.\u201D \u2014 Ilya Rozanov",
     "\u201CYou\u2019re it for me. You know that, right?\u201D \u2014 Shane Hollander",
@@ -1646,6 +1753,13 @@ const THEMES={
   bridgerton:{bg:'#faf6f0',fg:'#2c1810',accent:'#c4956a',accent2:'#8b6b4e',btnBg:'linear-gradient(135deg,#c4956a,#d4a574)',btnFg:'#fff',barBg:'rgba(196,149,106,0.15)',barFill:'#c4956a',inputBorder:'#c4956a',lmBg:'rgba(196,149,106,0.06)',badgeBg:'rgba(196,149,106,0.15)',badgeFg:'#8b6b4e',statFg:'#8b6b4e',ghostBorder:'#c4956a',alertOk:'#7c9a5e',alertBad:'#c44e52',chartLine:'#c4956a',chartFill:'rgba(196,149,106,0.12)',histBorder:'rgba(196,149,106,0.15)',cardBorder:'rgba(196,149,106,0.25)',isFandom:'bridgerton'},
   hogwarts:{bg:'#0a0a18',fg:'#e8dcc8',accent:'#c0392b',accent2:'#f1c40f',btnBg:'linear-gradient(135deg,#740001,#ae0001)',btnFg:'#f1c40f',barBg:'rgba(192,57,43,0.15)',barFill:'#c0392b',inputBorder:'#f1c40f',lmBg:'rgba(241,196,15,0.06)',badgeBg:'rgba(192,57,43,0.2)',badgeFg:'#f1c40f',statFg:'#f1c40f',ghostBorder:'#c0392b',alertOk:'#2ecc71',alertBad:'#c0392b',chartLine:'#f1c40f',chartFill:'rgba(241,196,15,0.12)',histBorder:'rgba(241,196,15,0.1)',cardBorder:'rgba(192,57,43,0.3)',lmColors:['#c0392b','#f1c40f','#2ecc71','#3498db','#c0392b','#f1c40f'],isFandom:'hogwarts'},
   westeros:{bg:'#0f0e0c',fg:'#d4c5a0',accent:'#8b0000',accent2:'#c9b037',btnBg:'linear-gradient(135deg,#8b0000,#5c0000)',btnFg:'#c9b037',barBg:'rgba(139,0,0,0.15)',barFill:'#8b0000',inputBorder:'#c9b037',lmBg:'rgba(201,176,55,0.06)',badgeBg:'rgba(139,0,0,0.2)',badgeFg:'#c9b037',statFg:'#c9b037',ghostBorder:'#8b0000',alertOk:'#5a8f3c',alertBad:'#8b0000',chartLine:'#c9b037',chartFill:'rgba(201,176,55,0.12)',histBorder:'rgba(201,176,55,0.1)',cardBorder:'rgba(139,0,0,0.3)',lmColors:['#8b0000','#c9b037','#5a8f3c','#4a6fa5','#8b0000','#c9b037'],isFandom:'westeros'},
+  bollywood:{bg:'#1a0a00',fg:'#ffe8cc',accent:'#ff6f00',accent2:'#ffd600',btnBg:'linear-gradient(135deg,#ff6f00,#ffd600)',btnFg:'#1a0a00',barBg:'rgba(255,111,0,0.15)',barFill:'linear-gradient(90deg,#ff6f00,#ffd600)',inputBorder:'#ffd600',lmBg:'rgba(255,214,0,0.06)',badgeBg:'rgba(255,111,0,0.2)',badgeFg:'#ffd600',statFg:'#ffd600',ghostBorder:'#ff6f00',alertOk:'#ffd600',alertBad:'#ff5252',chartLine:'#ff6f00',chartFill:'rgba(255,111,0,0.15)',histBorder:'rgba(255,111,0,0.15)',cardBorder:'rgba(255,111,0,0.3)',lmColors:['#ff6f00','#ffd600','#ff6f00','#ffd600','#ff6f00','#ffd600'],isFandom:'bollywood'},
+  greys:{bg:'#0d1117',fg:'#e0e8f0',accent:'#4a90d9',accent2:'#a8c8e8',btnBg:'#4a90d9',btnFg:'#fff',barBg:'rgba(74,144,217,0.12)',barFill:'#4a90d9',inputBorder:'#4a90d9',lmBg:'rgba(74,144,217,0.06)',badgeBg:'rgba(74,144,217,0.15)',badgeFg:'#a8c8e8',statFg:'#a8c8e8',ghostBorder:'#4a90d9',alertOk:'#56b886',alertBad:'#e05252',chartLine:'#4a90d9',chartFill:'rgba(74,144,217,0.12)',histBorder:'rgba(74,144,217,0.12)',cardBorder:'rgba(74,144,217,0.25)',isFandom:'greys'},
+  lasso:{bg:'#1a2332',fg:'#f0e6d3',accent:'#e8b844',accent2:'#d4956a',btnBg:'#e8b844',btnFg:'#1a2332',barBg:'rgba(232,184,68,0.12)',barFill:'#e8b844',inputBorder:'#e8b844',lmBg:'rgba(232,184,68,0.06)',badgeBg:'rgba(232,184,68,0.15)',badgeFg:'#e8b844',statFg:'#e8b844',ghostBorder:'#e8b844',alertOk:'#56b886',alertBad:'#e05252',chartLine:'#e8b844',chartFill:'rgba(232,184,68,0.12)',histBorder:'rgba(232,184,68,0.12)',cardBorder:'rgba(232,184,68,0.25)',isFandom:'lasso'},
+  eras:{bg:'#1a0a1e',fg:'#f0e0ff',accent:'#c77dff',accent2:'#ff6b9d',btnBg:'linear-gradient(135deg,#c77dff,#ff6b9d)',btnFg:'#fff',barBg:'rgba(199,125,255,0.12)',barFill:'linear-gradient(90deg,#c77dff,#ff6b9d)',inputBorder:'#c77dff',lmBg:'rgba(199,125,255,0.06)',badgeBg:'rgba(199,125,255,0.15)',badgeFg:'#ff6b9d',statFg:'#ff6b9d',ghostBorder:'#c77dff',alertOk:'#69f0ae',alertBad:'#ff6b9d',chartLine:'#c77dff',chartFill:'rgba(199,125,255,0.12)',histBorder:'rgba(199,125,255,0.12)',cardBorder:'rgba(199,125,255,0.25)',lmColors:['#c77dff','#ff6b9d','#ffd700','#69f0ae','#448aff','#c77dff'],isFandom:'eras'},
+  schitts:{bg:'#0a0a0a',fg:'#f5f5f5',accent:'#d4af37',accent2:'#e8e8e8',btnBg:'#d4af37',btnFg:'#0a0a0a',barBg:'rgba(212,175,55,0.12)',barFill:'#d4af37',inputBorder:'#d4af37',lmBg:'rgba(212,175,55,0.06)',badgeBg:'rgba(212,175,55,0.15)',badgeFg:'#d4af37',statFg:'#d4af37',ghostBorder:'#d4af37',alertOk:'#69f0ae',alertBad:'#ff5252',chartLine:'#d4af37',chartFill:'rgba(212,175,55,0.12)',histBorder:'rgba(212,175,55,0.1)',cardBorder:'rgba(212,175,55,0.2)',isFandom:'schitts'},
+  ghibli:{bg:'#f0f5ea',fg:'#2d3b2d',accent:'#5a8f3c',accent2:'#8fbc6a',btnBg:'#5a8f3c',btnFg:'#fff',barBg:'rgba(90,143,60,0.12)',barFill:'#5a8f3c',inputBorder:'#5a8f3c',lmBg:'rgba(90,143,60,0.06)',badgeBg:'rgba(90,143,60,0.12)',badgeFg:'#5a8f3c',statFg:'#5a8f3c',ghostBorder:'#5a8f3c',alertOk:'#5a8f3c',alertBad:'#c0392b',chartLine:'#5a8f3c',chartFill:'rgba(90,143,60,0.12)',histBorder:'rgba(90,143,60,0.12)',cardBorder:'rgba(90,143,60,0.2)',isFandom:'ghibli'},
+  wednesday:{bg:'#0a0a0a',fg:'#c8c8c8',accent:'#808080',accent2:'#b0b0b0',btnBg:'#333',btnFg:'#e0e0e0',barBg:'rgba(128,128,128,0.1)',barFill:'#808080',inputBorder:'#555',lmBg:'rgba(128,128,128,0.05)',badgeBg:'rgba(128,128,128,0.15)',badgeFg:'#b0b0b0',statFg:'#b0b0b0',ghostBorder:'#555',alertOk:'#808080',alertBad:'#8b0000',chartLine:'#808080',chartFill:'rgba(128,128,128,0.1)',histBorder:'rgba(128,128,128,0.1)',cardBorder:'rgba(128,128,128,0.15)',isFandom:'wednesday'},
   rainbow:{bg:'#0d0d0d',fg:'#fff',accent:'#ff5252',accent2:'#ffab00',btnBg:'#ff5252',btnFg:'#fff',barBg:'rgba(255,255,255,0.08)',barFill:'linear-gradient(90deg,#ff5252,#ffab00,#69f0ae,#448aff,#e040fb)',inputBorder:'#ff5252',lmBg:'rgba(255,82,82,0.06)',badgeBg:'rgba(255,171,0,0.2)',badgeFg:'#ffab00',statFg:'#69f0ae',ghostBorder:'#e040fb',alertOk:'#69f0ae',alertBad:'#ff5252',chartLine:'#ffab00',chartFill:'rgba(255,171,0,0.15)',histBorder:'rgba(255,255,255,0.08)',cardBorder:'rgba(255,82,82,0.3)',lmColors:['#ff5252','#ffab00','#69f0ae','#448aff','#e040fb','#ff5252','#ffab00','#69f0ae','#448aff','#e040fb']},
   daylight:{bg:'#f4f6f9',fg:'#1e293b',accent:'#3b82f6',accent2:'#0f172a',btnBg:'#3b82f6',btnFg:'#fff',barBg:'rgba(59,130,246,0.15)',barFill:'#3b82f6',inputBorder:'#94a3b8',lmBg:'#ffffff',badgeBg:'#e2e8f0',badgeFg:'#0f172a',statFg:'#0f172a',ghostBorder:'#3b82f6',alertOk:'#10b981',alertBad:'#ef4444',chartLine:'#3b82f6',chartFill:'rgba(59,130,246,0.1)',histBorder:'#cbd5e1',cardBorder:'#cbd5e1'},
   jhintaak:{bg:'#1c0028',fg:'#fbeaff',accent:'#ff007f',accent2:'#00f2fe',btnBg:'linear-gradient(45deg, #ff007f, #7928ca)',btnFg:'#fff',barBg:'rgba(255,0,127,0.2)',barFill:'linear-gradient(90deg, #ff007f, #00f2fe)',inputBorder:'#00f2fe',lmBg:'rgba(0,242,254,0.1)',badgeBg:'rgba(255,0,127,0.3)',badgeFg:'#fff',statFg:'#00f2fe',ghostBorder:'#00f2fe',alertOk:'#00f2fe',alertBad:'#ff007f',chartLine:'#ff007f',chartFill:'rgba(255,0,127,0.15)',histBorder:'rgba(255,255,255,0.1)',cardBorder:'rgba(0,242,254,0.3)'}
@@ -1731,8 +1845,8 @@ function applyTheme() {
   // V60: Theme break chips
   document.querySelectorAll('.break-chip:not(.active)').forEach(el => { el.style.color = t.fg; });
   
-  // V76: Toggle theme body classes
-  document.body.classList.remove('pride-active','fandom-bridgerton','fandom-hogwarts','fandom-westeros');
+  // V77: Toggle theme body classes
+  document.body.classList.remove('pride-active','fandom-bridgerton','fandom-hogwarts','fandom-westeros','fandom-bollywood','fandom-greys','fandom-lasso','fandom-eras','fandom-schitts','fandom-ghibli','fandom-wednesday');
   if(t.isPride) document.body.classList.add('pride-active');
   if(t.isFandom) document.body.classList.add('fandom-' + t.isFandom);
   
@@ -1740,43 +1854,41 @@ function applyTheme() {
   if($('v-bank').classList.contains('active')) buildGlobalReviewBank();
 }
 
+const themeDisplayNames = {
+    'inferno': ['Inferno', 'Dark fire energy'],
+    'arctic': ['Arctic', 'Cool blue ice'],
+    'neon': ['Neon', 'Electric green matrix'],
+    'royal': ['Royal', 'Purple velvet'],
+    'sunset': ['Sunset', 'Warm amber glow'],
+    'mono': ['Mono', 'Clean monochrome'],
+    'pride': ['Pride 🏳️‍🌈', 'Dark rainbow • Shane & Ilya'],
+    'pride_light': ['Pride Light 🏳️‍🌈', 'Pastel rainbow • cottage vibes'],
+    'bridgerton': ['Bridgerton', 'Regency gold • Lady Whistledown'],
+    'hogwarts': ['Hogwarts', 'Gryffindor red & gold • magic'],
+    'westeros': ['Westeros', 'Blood & gold • fire & ice'],
+    'bollywood': ['Bollywood', 'Desi drama • filmy dialogues'],
+    'greys': ['Grey\'s Anatomy', 'Seattle Grace • dark & twisty'],
+    'lasso': ['Ted Lasso', 'BELIEVE • biscuits & kindness'],
+    'eras': ['Taylor Swift Eras', 'Lavender haze • all eras'],
+    'schitts': ['Schitt\'s Creek', 'Ew David • Rosé gold'],
+    'ghibli': ['Studio Ghibli', 'Forest green • gentle magic'],
+    'wednesday': ['Wednesday', 'Monochrome • cold efficiency'],
+    'rainbow': ['Rainbow', 'Multicolor chaos'],
+    'daylight': ['Daylight', 'Light mode • clean blue'],
+    'jhintaak': ['Jhintaak', 'Neon pink & cyan • signature'],
+};
+
 let themesExpanded = false;
 
 function buildThemes() {
-  const c = $('themes'); c.innerHTML = '';
-  const keys = Object.keys(THEMES);
-  
-  if(!themesExpanded) {
-    // Collapsed: show only selected dot + expand button
-    const selDot = document.createElement('div');
-    selDot.className = 'th-dot sel';
-    applyDotStyle(selDot, theme);
-    selDot.onclick = () => { themesExpanded = true; buildThemes(); };
-    c.appendChild(selDot);
-    
-    const expandBtn = document.createElement('div');
-    expandBtn.className = 'th-dot';
-    expandBtn.style.cssText = 'background:transparent;border:2px dashed rgba(128,128,128,0.4);display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:inherit;opacity:0.5;';
-    expandBtn.textContent = '+';
-    expandBtn.onclick = () => { themesExpanded = true; buildThemes(); };
-    c.appendChild(expandBtn);
-  } else {
-    // Expanded: show all dots
-    keys.forEach(k => {
-      const d = document.createElement('div');
-      d.className = 'th-dot' + (k === theme ? ' sel' : '');
-      applyDotStyle(d, k);
-      d.onclick = () => { theme = k; localStorage.setItem('mrcs-theme', k); themesExpanded = false; buildThemes(); applyTheme(); };
-      c.appendChild(d);
-    });
-    
-    const collapseBtn = document.createElement('div');
-    collapseBtn.className = 'th-dot';
-    collapseBtn.style.cssText = 'background:transparent;border:2px dashed rgba(128,128,128,0.4);display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:inherit;opacity:0.5;';
-    collapseBtn.textContent = '\u2212';
-    collapseBtn.onclick = () => { themesExpanded = false; buildThemes(); };
-    c.appendChild(collapseBtn);
-  }
+    const c = $('themes'); c.innerHTML = '';
+    // Single dot showing current theme
+    const dot = document.createElement('div');
+    dot.className = 'th-dot sel';
+    applyDotStyle(dot, theme);
+    dot.title = (themeDisplayNames[theme] || [theme])[0];
+    dot.onclick = () => openThemePicker();
+    c.appendChild(dot);
 }
 
 function applyDotStyle(d, k) {
@@ -1786,8 +1898,61 @@ function applyDotStyle(d, k) {
     else if(k === 'bridgerton') d.style.background = 'linear-gradient(135deg,#c4956a,#faf6f0)';
     else if(k === 'hogwarts') d.style.background = 'linear-gradient(135deg,#740001,#f1c40f)';
     else if(k === 'westeros') d.style.background = 'linear-gradient(135deg,#8b0000,#c9b037)';
+    else if(k === 'bollywood') d.style.background = 'linear-gradient(135deg,#ff6f00,#ffd600)';
+    else if(k === 'greys') d.style.background = '#4a90d9';
+    else if(k === 'lasso') d.style.background = '#e8b844';
+    else if(k === 'eras') d.style.background = 'linear-gradient(135deg,#c77dff,#ff6b9d)';
+    else if(k === 'schitts') d.style.background = '#d4af37';
+    else if(k === 'ghibli') d.style.background = '#5a8f3c';
+    else if(k === 'wednesday') d.style.background = '#333';
     else { d.style.background = THEMES[k].accent; }
 }
+
+function openThemePicker() {
+    const list = $('theme-picker-list');
+    list.innerHTML = '';
+    
+    const sections = {
+        'CLASSICS': ['inferno','arctic','neon','royal','sunset','mono','rainbow','daylight','jhintaak'],
+        'PRIDE \uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08': ['pride','pride_light'],
+        'FANDOMS': ['bridgerton','hogwarts','westeros','bollywood','greys','lasso','eras','schitts','ghibli','wednesday']
+    };
+    
+    Object.entries(sections).forEach(([sectionName, keys]) => {
+        const sec = document.createElement('div');
+        sec.className = 'theme-section';
+        sec.textContent = sectionName;
+        list.appendChild(sec);
+        
+        keys.forEach(k => {
+            if(!THEMES[k]) return;
+            const opt = document.createElement('div');
+            opt.className = 'theme-option' + (k === theme ? ' active' : '');
+            
+            const dot = document.createElement('div');
+            dot.className = 'theme-option-dot';
+            applyDotStyle(dot, k);
+            
+            const info = document.createElement('div');
+            const names = themeDisplayNames[k] || [k, ''];
+            info.innerHTML = '<div class="theme-option-name">' + names[0] + '</div><div class="theme-option-desc">' + names[1] + '</div>';
+            
+            opt.appendChild(dot);
+            opt.appendChild(info);
+            opt.onclick = () => {
+                theme = k; localStorage.setItem('mrcs-theme', k);
+                closeThemePicker(); buildThemes(); applyTheme();
+                haptic(10);
+            };
+            list.appendChild(opt);
+        });
+    });
+    
+    $('theme-picker').classList.add('active');
+}
+
+function closeThemePicker() { $('theme-picker').classList.remove('active'); }
+
 
 function buildHomeLayout() {
   const logDay = getLogToday();
@@ -1873,10 +2038,10 @@ function buildHomeLayout() {
       </div>
   `;
 
-  // V76: Home heatmap
+  // V77: Home heatmap
   renderHomeHeatmap();
   
-  // V76: Quote of the day
+  // V77: Quote of the day
   const quoteEl = $('home-quote');
   if(t.isPride) {
       quoteEl.textContent = prideQuotes[Math.floor(Math.random() * prideQuotes.length)];
@@ -1910,7 +2075,7 @@ function lmClick(i) {
     if(cpDone[i]) return;
     cpDone[i] = true;
     haptic(20); playBeep(880, 0.15);
-    // V76: Pride celebration on milestone
+    // V77: Pride celebration on milestone
     if(T().isPride) celebrateMilestone();
     const mn = Math.round(elapsed/60);
     const diff = mn - cpTimes[i];
@@ -2350,7 +2515,7 @@ function showHistoryView() {
     }
     
     const validSessions = sessions;
-    // V76: Only MCQ sessions count for score stats
+    // V77: Only MCQ sessions count for score stats
     const mcqSessions = validSessions.filter(s => (s.qbank||'').toUpperCase() !== 'FC');
     const sc = mcqSessions.map(s => Number(s.score) || 0);
     const avg = sc.length ? Math.round(sc.reduce((a,b) => a+b, 0) / sc.length) : 0;
@@ -2360,7 +2525,7 @@ function showHistoryView() {
     $('h-avg').textContent = avg + '%';
     $('h-best').textContent = best + '%';
     
-    // V76: Render new analytics
+    // V77: Render new analytics
     renderHeatmap(); renderQbankBreakdown(); calcReadiness();
     
     $('hist-list').innerHTML = validSessions.slice().reverse().map((s, reversedIdx) => {
@@ -2524,7 +2689,7 @@ function openFlashcardEditorEvent(word) {
     $('modal-word').textContent = item.word;
     $('modal-note-text').value = item.notes || '';
     $('modal-img-url').value = item.img || '';
-    // V76: Reset paste zone
+    // V77: Reset paste zone
     $('paste-preview').style.display = 'none'; $('paste-preview').src = '';
     $('paste-zone').classList.remove('active');
     $('paste-zone').childNodes[0].textContent = '\u{1F4CB} Paste or tap to add image from clipboard/camera';
@@ -2700,7 +2865,7 @@ function applyFlashcardSearch() {
     }
 }
 
-// V76: Flashcard focus time tracking (separate from MCQ sessions)
+// V77: Flashcard focus time tracking (separate from MCQ sessions)
 let fcSessionStart = 0;
 
 function openFlashcards() {
@@ -2713,7 +2878,7 @@ function closeFCSession() {
     if(fcSessionStart > 0) {
         const mins = Math.round((Date.now() - fcSessionStart) / 60000);
         if(mins >= 1) {
-            // V76: Store FC focus time separately - don't pollute MCQ sessions
+            // V77: Store FC focus time separately - don't pollute MCQ sessions
             const fcTime = parseInt(localStorage.getItem('mrcs-fc-focus') || '0');
             localStorage.setItem('mrcs-fc-focus', fcTime + mins);
         }
@@ -2914,7 +3079,7 @@ function openFlashcardEditor(e, fromHelper = false) {
     $('modal-word').textContent = globalObj.word;
     $('modal-note-text').value = globalObj.notes || '';
     $('modal-img-url').value = globalObj.img || '';
-    // V76: Reset paste zone
+    // V77: Reset paste zone
     $('paste-preview').style.display = 'none'; $('paste-preview').src = '';
     $('paste-zone').classList.remove('active');
     $('paste-zone').childNodes[0].textContent = '\u{1F4CB} Paste or tap to add image from clipboard/camera';
@@ -2962,7 +3127,7 @@ function exportFlashcardsPDF() {
     const printContainer = $('print-container');
     printContainer.innerHTML = '';
 
-    // V76: Compact multi-card PDF layout
+    // V77: Compact multi-card PDF layout
     const style = document.createElement('style');
     style.textContent = `
         @media print {
@@ -3124,7 +3289,7 @@ async function sendFollowUp() {
     }
 }
 
-// V76: Multi-selection buffer - accumulates multiple highlights
+// V77: Multi-selection buffer - accumulates multiple highlights
 let aiSelectionBuffer = [];
 
 function appendAIToNote() {
@@ -3269,7 +3434,7 @@ function openSessionSummary(idx) {
         const fq = fandomQuotes[T().isFandom];
         affirmation = fq[Math.floor(Math.random() * fq.length)];
     } else if(T().isPride) {
-        // V76: Pride affirmations
+        // V77: Pride affirmations
         if (badBreaks > 0 || bRatio > 0.25) affirmation = prideAffirmations[1];
         else if (score >= 75) affirmation = prideAffirmations[2];
         else if (score >= 60) affirmation = prideAffirmations[3];
@@ -3308,7 +3473,7 @@ function toggleFS() { if(document.fullscreenElement) document.exitFullscreen(); 
 document.addEventListener('keydown', e => { if(e.key === 'F11'){ e.preventDefault(); toggleFS(); } });
 
 
-// =================== V76: HOME HEATMAP ===================
+// =================== V77: HOME HEATMAP ===================
 function renderHomeHeatmap() {
     const grid = $('home-heatmap'); if(!grid) return; grid.innerHTML = '';
     const t = T();
@@ -3366,14 +3531,14 @@ function renderFCHeatmap() {
     }
 }
 
-// =================== V76: QUICK PRESETS ===================
+// =================== V77: QUICK PRESETS ===================
 function applyPreset(mins, qs, cps) {
     $('set-time').value = mins; $('set-qs').value = qs; $('set-cp').value = cps;
     document.querySelectorAll('.preset-btn').forEach(b => { b.style.opacity = '0.5'; b.style.transform = ''; });
     event.currentTarget.style.opacity = '1'; event.currentTarget.style.transform = 'translateY(-2px)';
 }
 
-// =================== V76: HEATMAP CALENDAR ===================
+// =================== V77: HEATMAP CALENDAR ===================
 function renderHeatmap() {
     const grid = $('heatmap-grid'); grid.innerHTML = '';
     const t = T();
@@ -3398,7 +3563,7 @@ function renderHeatmap() {
     }
 }
 
-// =================== V76: QBANK BREAKDOWN ===================
+// =================== V77: QBANK BREAKDOWN ===================
 function renderQbankBreakdown() {
     const ptSess = sessions.filter(s => (s.qbank||'').toUpperCase() === 'PT' && s.score > 0);
     const emSess = sessions.filter(s => (s.qbank||'').toUpperCase() === 'EM' && s.score > 0);
@@ -3411,7 +3576,7 @@ function renderQbankBreakdown() {
     $('h-em-avg').style.color = emAvg >= 70 ? T().alertOk : emAvg >= 50 ? T().accent2 : T().accent;
 }
 
-// =================== V76: READINESS GAUGE ===================
+// =================== V77: READINESS GAUGE ===================
 function calcReadiness() {
     const ptPct = PT_TOTAL > 0 ? (DASH_STATS.ptGlobal || 0) / PT_TOTAL : 0;
     const emPct = EM_TOTAL > 0 ? (DASH_STATS.emGlobal || 0) / EM_TOTAL : 0;
@@ -3426,7 +3591,7 @@ function calcReadiness() {
     return readiness;
 }
 
-// =================== V76: SOUND & HAPTICS ===================
+// =================== V77: SOUND & HAPTICS ===================
 let audioCtx = null;
 function playBeep(freq = 880, dur = 0.12) {
     try {
@@ -3441,7 +3606,7 @@ function playBeep(freq = 880, dur = 0.12) {
 }
 function haptic(ms = 10) { try { navigator.vibrate(ms); } catch(e) {} }
 
-// =================== V76: KEYBOARD SHORTCUTS ===================
+// =================== V77: KEYBOARD SHORTCUTS ===================
 document.addEventListener('keydown', function(e) {
     // Only active in flashcard view
     if(!$('v-flashcards').classList.contains('active')) return;
@@ -3460,7 +3625,7 @@ document.addEventListener('keydown', function(e) {
     else if(isFlipped && e.key === '4') { e.preventDefault(); logSRS(4); }
 });
 
-// =================== V76: SWIPE GESTURES ===================
+// =================== V77: SWIPE GESTURES ===================
 let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
 
 document.addEventListener('touchstart', function(e) {
@@ -3489,7 +3654,7 @@ document.addEventListener('touchend', function(e) {
     }
 }, { passive: true });
 
-// =================== V76: MARKDOWN RENDERER ===================
+// =================== V77: MARKDOWN RENDERER ===================
 function renderMarkdown(text) {
     if(!text) return '<span style="opacity:0.5;font-style:italic;">No notes added yet.</span>';
     let html = text
@@ -3528,7 +3693,7 @@ function renderMarkdown(text) {
     return out.join('\n').replace(/<br>\n<br>/g, '<br>').replace(/(<br>\s*)+$/g, '');
 }
 
-// =================== V76: CLIPBOARD IMAGE PASTE ===================
+// =================== V77: CLIPBOARD IMAGE PASTE ===================
 document.addEventListener('paste', function(e) {
     // Only handle in flashcard editor
     if(!$('fc-modal').classList.contains('active')) return;
@@ -3562,7 +3727,7 @@ function convertImageToDataURI(blob) {
     reader.readAsDataURL(blob);
 }
 
-// =================== V76: PROGRESS CARD GENERATOR ===================
+// =================== V77: PROGRESS CARD GENERATOR ===================
 function generateProgressCard() {
     const canvas = $('progress-card-canvas');
     const ctx = canvas.getContext('2d');
@@ -3623,7 +3788,7 @@ function generateProgressCard() {
     ctx.font='700 9px "DM Sans"'; ctx.fillStyle=rc+'88'; ctx.fillText(rd>=70?'ON TRACK':rd>=40?'BUILDING':'EARLY STAGES',w/2,292);
 
     if(t.isPride) { const q=prideQuotes[Math.floor(Math.random()*prideQuotes.length)]; ctx.font='italic 600 9px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff44':'#00000044'; let tx=q; while(ctx.measureText(tx).width>w-48)tx=tx.slice(0,-4)+'...'; ctx.fillText(tx,w/2,316); }
-    ctx.font='600 8px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff15':'#00000015'; ctx.fillText('MRCS TRACKER V76',w/2,h-12);
+    ctx.font='600 8px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff15':'#00000015'; ctx.fillText('MRCS TRACKER V77',w/2,h-12);
     $('progress-modal').classList.add('active');
 }
 
@@ -3709,13 +3874,13 @@ async function shareProgressCard() {
     } catch(e) { downloadProgressCard(); }
 }
 
-// V76: PWA manifest only (blob service workers don't work cross-origin on Netlify)
+// V77: PWA manifest only (blob service workers don't work cross-origin on Netlify)
 const manifest = { name: "MRCS QBank Tracker", short_name: "MRCS", start_url: ".", display: "standalone", background_color: "#1c0028", theme_color: "#ff007f", icons: [{ src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231c0028' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='%23ff007f'>M</text></svg>", sizes: "any", type: "image/svg+xml" }] };
-// V76: Manifest disabled on GitHub Pages (blob URLs cause CORS Script Error)
+// V77: Manifest disabled on GitHub Pages (blob URLs cause CORS Script Error)
 // PWA works via meta tags alone for Add to Home Screen
 
 
-// V76: View history stack for swipe-back navigation
+// V77: View history stack for swipe-back navigation
 let viewHistory = ['v-setup'];
 
 function show(id) {
@@ -3762,7 +3927,7 @@ function initApp() {
     $('cloud-bin').value = CLOUD_BIN;
     $('gemini-key').value = GEMINI_KEY;
 
-    // V76: Load saved theme
+    // V77: Load saved theme
     const savedTheme = localStorage.getItem('mrcs-theme');
     if(savedTheme && THEMES[savedTheme]) theme = savedTheme;
 
@@ -3821,7 +3986,7 @@ function initApp() {
     $('btn-action-cancel').onclick = () => $('action-modal').classList.remove('active');
     $('action-modal').onclick = () => $('action-modal').classList.remove('active');
     
-    logDebug("V76 App initialized successfully. All systems operational.");
+    logDebug("V77 App initialized successfully. All systems operational.");
 }
 
 initApp();
