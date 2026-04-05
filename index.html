@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V73</title>
-<!-- V73: PWA Meta Tags -->
+<title>MRCS QBank Tracker Pro Max V76</title>
+<!-- V76: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MRCS Tracker">
@@ -22,7 +22,7 @@
     
     #debug-console{position:fixed;top:0;left:0;width:100%;max-height:30vh;background:rgba(20,0,0,.95);color:#ff5252;z-index:9999999;padding:20px;font-family:'JetBrains Mono',monospace;font-size:13px;overflow-y:auto;display:none;border-bottom:2px solid #ff5252}#debug-console h3{color:#ff5252;margin-bottom:10px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;font-size:20px}.log-line{margin-bottom:4px;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:4px}.log-error{color:#ff5252;font-weight:700}.log-boot{color:#aaa}
     
-    #app { width: 100%; height: 100dvh; height: 100vh; transition: background 0.5s, color 0.4s; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 90px 16px 40px; position: relative; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+    #app { width: 100%; height: 100dvh; height: 100vh; transition: background 0.5s, color 0.4s; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 90px 16px 40px; position: relative; overflow-y: auto; overflow-x: visible; -webkit-overflow-scrolling: touch; }
     
     .view { display: none; width: 100%; max-width: 1100px; animation: fadeIn 0.3s ease; }
     .view.active { display: flex; flex-direction: column; align-items: center; }
@@ -232,39 +232,39 @@
     .ai-msg-user { align-self: flex-end; background: rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 12px 12px 0 12px; width: fit-content; max-width: 85%; border: 1px solid rgba(255,255,255,0.2); }
     .ai-msg-model { align-self: flex-start; background: rgba(0, 242, 254, 0.1); padding: 12px 16px; border-radius: 12px 12px 12px 0; border-left: 4px solid #00f2fe; width: fit-content; max-width: 95%; }
 
-    /* V73: Heatmap Calendar */
+    /* V76: Heatmap Calendar */
     .heatmap-grid { display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-start; max-width: 500px; margin: 0 auto 16px; }
     .hm-cell { width: 18px; height: 18px; border-radius: 3px; background: rgba(128,128,128,0.1); transition: all 0.2s; position: relative; cursor: default; }
     .hm-cell:hover { transform: scale(1.4); z-index: 2; }
     .hm-cell[data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); background: #111; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.6rem; white-space: nowrap; z-index: 10; font-family: 'JetBrains Mono', monospace; pointer-events: none; }
     .hm-label { font-size: 0.55rem; opacity: 0.4; text-transform: uppercase; letter-spacing: 1px; width: 100%; text-align: center; margin-bottom: 4px; }
 
-    /* V73: Quick Presets */
+    /* V76: Quick Presets */
     .preset-row { display: flex; gap: 6px; width: 100%; margin-bottom: 8px; }
     .preset-btn { flex: 1; padding: 8px 4px; border: 1.5px solid; border-radius: 10px; background: transparent; cursor: pointer; text-align: center; font-family: 'DM Sans', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; transition: all 0.2s; color: inherit; opacity: 0.7; }
     .preset-btn:hover { opacity: 1; transform: translateY(-2px); }
 
-    /* V73: Readiness Gauge */
+    /* V76: Readiness Gauge */
     .readiness-wrap { text-align: center; margin: 8px 0; }
     .readiness-bar { width: 100%; height: 6px; border-radius: 3px; overflow: hidden; margin: 4px 0; }
     .readiness-fill { height: 100%; border-radius: 3px; transition: width 1s, background 0.4s; }
     .readiness-label { font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; }
     .readiness-pct { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; line-height: 1; }
 
-    /* V73: Keyboard hint */
+    /* V76: Keyboard hint */
     .kb-hint { font-size: 0.55rem; opacity: 0.35; text-align: center; letter-spacing: 1px; margin-top: 4px; }
 
-    /* V73: Progress Card */
+    /* V76: Progress Card */
     #progress-card-canvas { border-radius: 16px; max-width: 100%; height: auto; display: block; margin: 0 auto; cursor: pointer; }
     .progress-card-wrap { text-align: center; margin: 16px 0; }
     .progress-card-actions { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
 
-    /* V73: Paste indicator */
+    /* V76: Paste indicator */
     .paste-zone { border: 2px dashed rgba(128,128,128,0.3); border-radius: 8px; padding: 12px; text-align: center; font-size: 0.7rem; opacity: 0.5; margin-top: 8px; transition: all 0.3s; cursor: pointer; }
     .paste-zone:hover, .paste-zone.active { border-color: var(--accent2); opacity: 0.8; }
     .paste-preview { max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 8px; margin-top: 8px; }
 
-    /* V73: Markdown rendered content */
+    /* V76: Markdown rendered content */
     .md-content { font-size: 0.95rem; line-height: 1.7; }
     .md-content h1, .md-content h2, .md-content h3 { font-family: 'Bebas Neue', sans-serif; color: var(--accent2); margin: 16px 0 8px; }
     .md-content h1 { font-size: 1.8rem; } .md-content h2 { font-size: 1.4rem; } .md-content h3 { font-size: 1.2rem; }
@@ -279,17 +279,17 @@
     .md-content a { color: var(--accent2); text-decoration: underline; }
 
     /* ============================================= */
-    /* V73: COMPREHENSIVE MOBILE OPTIMISATION        */
+    /* V76: COMPREHENSIVE MOBILE OPTIMISATION        */
     /* ============================================= */
 
     /* --- Safe area for notched phones --- */
-    /* V73: Aggressive safe area for iPhone Dynamic Island + home indicator */
+    /* V76: Aggressive safe area for iPhone Dynamic Island + home indicator */
     @supports (padding: env(safe-area-inset-top)) {
         .top-bar { padding-top: calc(env(safe-area-inset-top) + 8px); padding-bottom: 8px; }
         #app { padding-top: calc(env(safe-area-inset-top) + 56px); padding-bottom: calc(env(safe-area-inset-bottom) + 20px); }
     }
 
-    /* V73: Safe bottom padding for all views */
+    /* V76: Safe bottom padding for all views */
     .view { padding-bottom: 24px; }
     @supports (padding: env(safe-area-inset-bottom)) {
         .view { padding-bottom: calc(env(safe-area-inset-bottom) + 16px); }
@@ -439,7 +439,7 @@
     }
 
     
-    /* V73: Pride theme glitter */
+    /* V76: Pride theme glitter */
     @keyframes glitter { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
     @keyframes rainbowShift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
     body.pride-active .clock { animation: rainbowShift 4s linear infinite; }
@@ -450,6 +450,19 @@
     body.pride-active .fc-word { animation: rainbowShift 5s linear infinite; }
     body.pride-active .lm { animation: glitter 2.5s ease-in-out infinite; }
     body.pride-active .th-dot.sel { box-shadow: 0 0 12px rgba(204,51,255,0.8); }
+    
+    /* V76: Fandom theme animations */
+    body.fandom-bridgerton .clock { font-family: 'Times New Roman', serif !important; }
+    body.fandom-bridgerton .stat-val { font-family: 'Times New Roman', serif !important; }
+    body.fandom-hogwarts .clock { text-shadow: 0 0 12px rgba(241,196,15,0.4); }
+    body.fandom-hogwarts .btn:not(.btn-ghost) { text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+    body.fandom-westeros .clock { text-shadow: 0 0 8px rgba(201,176,55,0.3); }
+    @keyframes fireFlicker { 0%,100% { text-shadow: 0 0 8px rgba(201,176,55,0.3); } 50% { text-shadow: 0 0 16px rgba(201,176,55,0.6); } }
+    body.fandom-westeros .stat-val { animation: fireFlicker 3s ease-in-out infinite; }
+
+    /* V76: Theme bar - JS handles show/hide */
+    .th-bar { max-width: 70%; }
+
     @keyframes emojiDrop { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(100vh); opacity: 0; } }
 
     /* Print CSS */
@@ -909,7 +922,7 @@
     </div>
   </div>
 
-  <!-- V73: Progress Card Modal -->
+  <!-- V76: Progress Card Modal -->
   <div class="modal-overlay" id="progress-modal" onclick="closeProgressModal()">
     <div class="modal-content" style="max-width: 500px; text-align: center;" onclick="event.stopPropagation()">
         <div class="dash-lbl" style="color:var(--accent2); text-align:center; margin-bottom:8px;">Your Progress Card</div>
@@ -969,7 +982,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
     return false; 
 };
 function logDebug(msg) { const logsEl = document.getElementById('debug-logs'); if (logsEl) logsEl.innerHTML += `<div class="log-line log-boot">[BOOT] ${msg}</div>`; }
-logDebug("V73 Script execution started.");
+logDebug("V76 Script execution started.");
 
 // V56 Selection Cache - fixes Safari/mobile highlight disappearing on button click
 let activeSelection = "";
@@ -1087,7 +1100,7 @@ async function pushToCloud() {
 }
 
 async function pullFromCloud(isManual = false) {
-    // V73: On manual pull, read keys from inputs first (for fresh device setup)
+    // V76: On manual pull, read keys from inputs first (for fresh device setup)
     if(isManual) {
         const keyVal = $('cloud-key').value.trim();
         const binVal = $('cloud-bin').value.trim();
@@ -1233,6 +1246,80 @@ const prideTimerQuotes = [
     "Last stretch. Main characters don\u2019t quit in the final act."
 ];
 
+
+// V76: Fandom theme data
+const fandomQuotes = {
+    bridgerton: [
+        "I burn for you. And now I burn for this exam. \u2014 Bridgerton energy",
+        "You are the bane of my existence, MRCS. And the object of all my desires.",
+        "I shall conquer this paper as one conquers a London season \u2014 with grace and ruthless preparation.",
+        "A diamond of the first water prepares with elegance. Study, darling.",
+        "What is a duke without discipline? What is a surgeon without study?",
+        "The ton may gossip, but your scores shall speak for themselves.",
+        "Even Lady Whistledown would approve of this work ethic."
+    ],
+    hogwarts: [
+        "It does not do to dwell on dreams and forget to study. \u2014 Dumbledore, probably",
+        "After all this time? Always. Always studying. \u2014 Snape energy",
+        "It is our choices that show what we truly are. Choose to study.",
+        "Mischief managed \u2014 after this question block.",
+        "10 points to your house for finishing that session.",
+        "The wand chooses the wizard. The scalpel chooses the surgeon who studied.",
+        "Expecto Patronum \u2014 your patronus is a well-prepared candidate."
+    ],
+    westeros: [
+        "When you play the game of MRCS, you win or you resit. There is no middle ground.",
+        "A Lannister always pays their dues \u2014 and a surgeon always does their Qs.",
+        "Winter is coming. So is April 22nd. Study.",
+        "The North remembers \u2014 and so will you, if you review your flashcards.",
+        "Chaos is a ladder. Each question climbs you closer to the top.",
+        "What do we say to the god of failure? Not today.",
+        "Valar Morghulis. Valar Studyis."
+    ]
+};
+
+const fandomBreakPrompts = {
+    bridgerton: {
+        'Coffee': "A cup of tea \u2014 or something stronger. Refreshments before the next dance, darling.",
+        'Bio': "Even a Viscount requires a moment of privacy. Be swift.",
+        'Fog': "Clear your mind as one clears a ballroom. Deep breaths, diamond.",
+        'Sleepy': "A brief repose before the next set. Stand, stretch, return with vigour.",
+        'Hungry': "The supper room awaits. Fuel yourself for the remainder of the evening.",
+        'Doomscroll': "Put down that scandal sheet this instant. Lady Whistledown can wait.",
+        'Media': "No distractions during the season! Your debut depends on focus.",
+        'Walk': "A turn about the room. Excellent for clearing the mind.",
+        'Sun': "Fresh air in the garden. Even Penelope needed a moment outdoors.",
+        'Call': "Brief correspondence only. The next dance awaits.",
+        'Misc': "Handle your affairs with the discretion of a duke."
+    },
+    hogwarts: {
+        'Coffee': "Butterbeer break! Though espresso might be more appropriate for OWL-level prep.",
+        'Bio': "Even wizards need the loo. The Room of Requirement awaits.",
+        'Fog': "Confundus charm wearing off? Clear your mind. Occlumency breathing.",
+        'Sleepy': "Even Hermione napped in the library sometimes. Quick rest, then back to the books.",
+        'Hungry': "The Great Hall is serving. Grab fuel, not a feast.",
+        'Doomscroll': "PUT THE MIRROR OF ERISED DOWN. It shows desires, not study notes.",
+        'Media': "No moving pictures during revision! Professor McGonagall would not approve.",
+        'Walk': "A walk to Hagrid's hut. Fresh air and hippogriff energy.",
+        'Sun': "Sunshine on the Quidditch pitch. Vitamin D is magic too.",
+        'Call': "Brief owl only. The OWLs approach.",
+        'Misc': "Mischief managed. Now back to work."
+    },
+    westeros: {
+        'Coffee': "Wine would be traditional, but caffeine serves the realm better.",
+        'Bio': "Even the Hand of the King must visit the privy. Be quick about it.",
+        'Fog': "The fog of war lifts for those who breathe. Centre yourself, commander.",
+        'Sleepy': "A lion does not concern himself with sleep \u2014 but you should. Quick rest.",
+        'Hungry': "You cannot hold the Wall on an empty stomach. Eat. Return. Fight.",
+        'Doomscroll': "Put that raven scroll DOWN. The realm will survive without your attention.",
+        'Media': "No tourneys during campaign season! Your battle is with the questions.",
+        'Walk': "Walk the battlements. Survey your domain. Return with strategy.",
+        'Sun': "Sunlight in King's Landing. Brief respite before the next council meeting.",
+        'Call': "Send a raven, but keep it brief. The war council reconvenes.",
+        'Misc': "The things I do for MRCS."
+    }
+};
+
 const quotes = [
     "Steady hands, clear mind. The path to the OR starts here.",
     "Every question is a life you will eventually save.",
@@ -1243,8 +1330,8 @@ const quotes = [
     "Embrace the grind. The scalpel awaits."
 ];
 
-// V73: Shane & Ilya milestone celebration
-// V73: Formatting toolbar helpers
+// V76: Shane & Ilya milestone celebration
+// V76: Formatting toolbar helpers
 function wrapSelection(before, after) {
     const ta = $('modal-note-text');
     const start = ta.selectionStart, end = ta.selectionEnd;
@@ -1285,7 +1372,7 @@ function deleteSession(idx) {
     };
 }
 
-// V73: Cottage celebration quotes + HR images
+// V76: Cottage celebration quotes + HR images
 const cottageQuotes = [
     "\u201CI\u2019m coming to the cottage.\u201D \u2014 Ilya Rozanov",
     "\u201CYou\u2019re it for me. You know that, right?\u201D \u2014 Shane Hollander",
@@ -1543,7 +1630,7 @@ function persistData() {
 
 function getLogToday() { return TRACKER_DATA.find(r=>r.d===logTodayStr()); }
 function daysToExam() { const now=new Date(); now.setHours(0,0,0,0); return Math.max(0,Math.ceil((EXAM_DATE-now)/(1000*60*60*24))); }
-function show(id) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); $(id).classList.add('active'); }
+function _showView(id) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); $(id).classList.add('active'); }
 function T() { return THEMES[theme]; }
 function fmt(s) { const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sc=s%60; return `${h > 0 ? h+':' : ''}${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`; }
 
@@ -1556,6 +1643,9 @@ const THEMES={
   mono:{bg:'#111',fg:'#f5f5f5',accent:'#fff',accent2:'#ccc',btnBg:'#fff',btnFg:'#111',barBg:'rgba(255,255,255,0.1)',barFill:'#ccc',inputBorder:'#fff',lmBg:'rgba(255,255,255,0.05)',badgeBg:'rgba(255,255,255,0.15)',badgeFg:'#ccc',statFg:'#fff',ghostBorder:'#fff',alertOk:'#ccc',alertBad:'#ff5252',chartLine:'#ccc',chartFill:'rgba(255,255,255,0.08)',histBorder:'rgba(255,255,255,0.08)',cardBorder:'rgba(255,255,255,0.15)'},
   pride:{bg:'#1a0a1a',fg:'#fff',accent:'#ff3366',accent2:'#33ccff',btnBg:'linear-gradient(90deg,#ff3366,#ff9933,#ffff33,#33cc33,#3366ff,#cc33ff)',btnFg:'#fff',barBg:'rgba(255,51,102,0.15)',barFill:'linear-gradient(90deg,#ff3366,#ff9933,#ffff33,#33cc33,#3366ff,#cc33ff)',inputBorder:'#cc33ff',lmBg:'rgba(204,51,255,0.08)',badgeBg:'rgba(255,51,102,0.25)',badgeFg:'#fff',statFg:'#33ccff',ghostBorder:'#cc33ff',alertOk:'#33cc33',alertBad:'#ff3366',chartLine:'#ff3366',chartFill:'rgba(255,51,102,0.15)',histBorder:'rgba(204,51,255,0.15)',cardBorder:'rgba(204,51,255,0.35)',lmColors:['#ff3366','#ff9933','#ffff33','#33cc33','#3366ff','#cc33ff','#ff3366','#ff9933','#ffff33','#33cc33'],isPride:true},
   pride_light:{bg:'#fff5f9',fg:'#2d1b33',accent:'#e91e8c',accent2:'#7c3aed',btnBg:'linear-gradient(90deg,#e91e8c,#f59e0b,#10b981,#3b82f6,#8b5cf6)',btnFg:'#fff',barBg:'rgba(233,30,140,0.12)',barFill:'linear-gradient(90deg,#e91e8c,#f59e0b,#10b981,#3b82f6,#8b5cf6)',inputBorder:'#8b5cf6',lmBg:'rgba(233,30,140,0.06)',badgeBg:'rgba(233,30,140,0.15)',badgeFg:'#e91e8c',statFg:'#7c3aed',ghostBorder:'#e91e8c',alertOk:'#10b981',alertBad:'#ef4444',chartLine:'#e91e8c',chartFill:'rgba(233,30,140,0.1)',histBorder:'rgba(233,30,140,0.15)',cardBorder:'rgba(233,30,140,0.25)',lmColors:['#e91e8c','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#e91e8c','#f59e0b','#10b981','#3b82f6'],isPride:true},
+  bridgerton:{bg:'#faf6f0',fg:'#2c1810',accent:'#c4956a',accent2:'#8b6b4e',btnBg:'linear-gradient(135deg,#c4956a,#d4a574)',btnFg:'#fff',barBg:'rgba(196,149,106,0.15)',barFill:'#c4956a',inputBorder:'#c4956a',lmBg:'rgba(196,149,106,0.06)',badgeBg:'rgba(196,149,106,0.15)',badgeFg:'#8b6b4e',statFg:'#8b6b4e',ghostBorder:'#c4956a',alertOk:'#7c9a5e',alertBad:'#c44e52',chartLine:'#c4956a',chartFill:'rgba(196,149,106,0.12)',histBorder:'rgba(196,149,106,0.15)',cardBorder:'rgba(196,149,106,0.25)',isFandom:'bridgerton'},
+  hogwarts:{bg:'#0a0a18',fg:'#e8dcc8',accent:'#c0392b',accent2:'#f1c40f',btnBg:'linear-gradient(135deg,#740001,#ae0001)',btnFg:'#f1c40f',barBg:'rgba(192,57,43,0.15)',barFill:'#c0392b',inputBorder:'#f1c40f',lmBg:'rgba(241,196,15,0.06)',badgeBg:'rgba(192,57,43,0.2)',badgeFg:'#f1c40f',statFg:'#f1c40f',ghostBorder:'#c0392b',alertOk:'#2ecc71',alertBad:'#c0392b',chartLine:'#f1c40f',chartFill:'rgba(241,196,15,0.12)',histBorder:'rgba(241,196,15,0.1)',cardBorder:'rgba(192,57,43,0.3)',lmColors:['#c0392b','#f1c40f','#2ecc71','#3498db','#c0392b','#f1c40f'],isFandom:'hogwarts'},
+  westeros:{bg:'#0f0e0c',fg:'#d4c5a0',accent:'#8b0000',accent2:'#c9b037',btnBg:'linear-gradient(135deg,#8b0000,#5c0000)',btnFg:'#c9b037',barBg:'rgba(139,0,0,0.15)',barFill:'#8b0000',inputBorder:'#c9b037',lmBg:'rgba(201,176,55,0.06)',badgeBg:'rgba(139,0,0,0.2)',badgeFg:'#c9b037',statFg:'#c9b037',ghostBorder:'#8b0000',alertOk:'#5a8f3c',alertBad:'#8b0000',chartLine:'#c9b037',chartFill:'rgba(201,176,55,0.12)',histBorder:'rgba(201,176,55,0.1)',cardBorder:'rgba(139,0,0,0.3)',lmColors:['#8b0000','#c9b037','#5a8f3c','#4a6fa5','#8b0000','#c9b037'],isFandom:'westeros'},
   rainbow:{bg:'#0d0d0d',fg:'#fff',accent:'#ff5252',accent2:'#ffab00',btnBg:'#ff5252',btnFg:'#fff',barBg:'rgba(255,255,255,0.08)',barFill:'linear-gradient(90deg,#ff5252,#ffab00,#69f0ae,#448aff,#e040fb)',inputBorder:'#ff5252',lmBg:'rgba(255,82,82,0.06)',badgeBg:'rgba(255,171,0,0.2)',badgeFg:'#ffab00',statFg:'#69f0ae',ghostBorder:'#e040fb',alertOk:'#69f0ae',alertBad:'#ff5252',chartLine:'#ffab00',chartFill:'rgba(255,171,0,0.15)',histBorder:'rgba(255,255,255,0.08)',cardBorder:'rgba(255,82,82,0.3)',lmColors:['#ff5252','#ffab00','#69f0ae','#448aff','#e040fb','#ff5252','#ffab00','#69f0ae','#448aff','#e040fb']},
   daylight:{bg:'#f4f6f9',fg:'#1e293b',accent:'#3b82f6',accent2:'#0f172a',btnBg:'#3b82f6',btnFg:'#fff',barBg:'rgba(59,130,246,0.15)',barFill:'#3b82f6',inputBorder:'#94a3b8',lmBg:'#ffffff',badgeBg:'#e2e8f0',badgeFg:'#0f172a',statFg:'#0f172a',ghostBorder:'#3b82f6',alertOk:'#10b981',alertBad:'#ef4444',chartLine:'#3b82f6',chartFill:'rgba(59,130,246,0.1)',histBorder:'#cbd5e1',cardBorder:'#cbd5e1'},
   jhintaak:{bg:'#1c0028',fg:'#fbeaff',accent:'#ff007f',accent2:'#00f2fe',btnBg:'linear-gradient(45deg, #ff007f, #7928ca)',btnFg:'#fff',barBg:'rgba(255,0,127,0.2)',barFill:'linear-gradient(90deg, #ff007f, #00f2fe)',inputBorder:'#00f2fe',lmBg:'rgba(0,242,254,0.1)',badgeBg:'rgba(255,0,127,0.3)',badgeFg:'#fff',statFg:'#00f2fe',ghostBorder:'#00f2fe',alertOk:'#00f2fe',alertBad:'#ff007f',chartLine:'#ff007f',chartFill:'rgba(255,0,127,0.15)',histBorder:'rgba(255,255,255,0.1)',cardBorder:'rgba(0,242,254,0.3)'}
@@ -1641,25 +1731,62 @@ function applyTheme() {
   // V60: Theme break chips
   document.querySelectorAll('.break-chip:not(.active)').forEach(el => { el.style.color = t.fg; });
   
-  // V73: Toggle pride animations
+  // V76: Toggle theme body classes
+  document.body.classList.remove('pride-active','fandom-bridgerton','fandom-hogwarts','fandom-westeros');
   if(t.isPride) document.body.classList.add('pride-active');
-  else document.body.classList.remove('pride-active');
+  if(t.isFandom) document.body.classList.add('fandom-' + t.isFandom);
   
   if($('v-setup').classList.contains('active')) buildHomeLayout();
   if($('v-bank').classList.contains('active')) buildGlobalReviewBank();
 }
 
+let themesExpanded = false;
+
 function buildThemes() {
   const c = $('themes'); c.innerHTML = '';
-  Object.keys(THEMES).forEach(k => {
-    const d = document.createElement('div'); d.className = 'th-dot' + (k === theme ? ' sel' : '');
+  const keys = Object.keys(THEMES);
+  
+  if(!themesExpanded) {
+    // Collapsed: show only selected dot + expand button
+    const selDot = document.createElement('div');
+    selDot.className = 'th-dot sel';
+    applyDotStyle(selDot, theme);
+    selDot.onclick = () => { themesExpanded = true; buildThemes(); };
+    c.appendChild(selDot);
+    
+    const expandBtn = document.createElement('div');
+    expandBtn.className = 'th-dot';
+    expandBtn.style.cssText = 'background:transparent;border:2px dashed rgba(128,128,128,0.4);display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:inherit;opacity:0.5;';
+    expandBtn.textContent = '+';
+    expandBtn.onclick = () => { themesExpanded = true; buildThemes(); };
+    c.appendChild(expandBtn);
+  } else {
+    // Expanded: show all dots
+    keys.forEach(k => {
+      const d = document.createElement('div');
+      d.className = 'th-dot' + (k === theme ? ' sel' : '');
+      applyDotStyle(d, k);
+      d.onclick = () => { theme = k; localStorage.setItem('mrcs-theme', k); themesExpanded = false; buildThemes(); applyTheme(); };
+      c.appendChild(d);
+    });
+    
+    const collapseBtn = document.createElement('div');
+    collapseBtn.className = 'th-dot';
+    collapseBtn.style.cssText = 'background:transparent;border:2px dashed rgba(128,128,128,0.4);display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:inherit;opacity:0.5;';
+    collapseBtn.textContent = '\u2212';
+    collapseBtn.onclick = () => { themesExpanded = false; buildThemes(); };
+    c.appendChild(collapseBtn);
+  }
+}
+
+function applyDotStyle(d, k) {
     if(k === 'pride') d.style.background = 'linear-gradient(180deg,#ff3366,#ff9933,#ffff33,#33cc33,#3366ff,#cc33ff)';
     else if(k === 'pride_light') { d.style.background = 'linear-gradient(180deg,#e91e8c,#f59e0b,#10b981,#3b82f6,#8b5cf6)'; d.style.border = '2px solid #ddd'; }
     else if(k === 'rainbow') d.style.background = 'conic-gradient(#ff5252,#ffab00,#69f0ae,#448aff,#e040fb,#ff5252)';
-    else d.style.background = THEMES[k].accent;
-    d.onclick = () => { theme = k; document.querySelectorAll('.th-dot').forEach(x => x.classList.remove('sel')); d.classList.add('sel'); applyTheme(); };
-    c.appendChild(d);
-  });
+    else if(k === 'bridgerton') d.style.background = 'linear-gradient(135deg,#c4956a,#faf6f0)';
+    else if(k === 'hogwarts') d.style.background = 'linear-gradient(135deg,#740001,#f1c40f)';
+    else if(k === 'westeros') d.style.background = 'linear-gradient(135deg,#8b0000,#c9b037)';
+    else { d.style.background = THEMES[k].accent; }
 }
 
 function buildHomeLayout() {
@@ -1746,13 +1873,17 @@ function buildHomeLayout() {
       </div>
   `;
 
-  // V73: Home heatmap
+  // V76: Home heatmap
   renderHomeHeatmap();
   
-  // V73: Quote of the day
+  // V76: Quote of the day
   const quoteEl = $('home-quote');
   if(t.isPride) {
       quoteEl.textContent = prideQuotes[Math.floor(Math.random() * prideQuotes.length)];
+  } else if(t.isFandom && fandomQuotes[t.isFandom]) {
+      quoteEl.textContent = fandomQuotes[t.isFandom][Math.floor(Math.random() * fandomQuotes[t.isFandom].length)];
+      quoteEl.style.color = t.accent2;
+      quoteEl.style.opacity = '0.7';
       quoteEl.style.color = t.accent2;
       quoteEl.style.opacity = '0.8';
   } else {
@@ -1779,7 +1910,7 @@ function lmClick(i) {
     if(cpDone[i]) return;
     cpDone[i] = true;
     haptic(20); playBeep(880, 0.15);
-    // V73: Pride celebration on milestone
+    // V76: Pride celebration on milestone
     if(T().isPride) celebrateMilestone();
     const mn = Math.round(elapsed/60);
     const diff = mn - cpTimes[i];
@@ -1821,7 +1952,7 @@ function tick() {
     $('bar').style.width = pct + '%';
     $('tgt').textContent = curTarget(); 
     
-    const activeQuotes = T().isPride ? prideTimerQuotes : quotes;
+    const activeQuotes = T().isPride ? prideTimerQuotes : (T().isFandom && fandomQuotes[T().isFandom]) ? fandomQuotes[T().isFandom] : quotes;
     let qIdx = Math.floor((pct / 100) * activeQuotes.length);
     if(qIdx >= activeQuotes.length) qIdx = activeQuotes.length - 1;
     $('encouragement').textContent = activeQuotes[qIdx];
@@ -1862,7 +1993,7 @@ function logBreak(type) {
     bdg.classList.add('show');
     
     const msg = $('break-msg');
-    msg.textContent = T().isPride ? (pridePrompts[type] || PROMPTS[type]) : PROMPTS[type];
+    msg.textContent = T().isPride ? (pridePrompts[type] || PROMPTS[type]) : (T().isFandom && fandomBreakPrompts[T().isFandom]) ? (fandomBreakPrompts[T().isFandom][type] || PROMPTS[type]) : PROMPTS[type];
     msg.style.color = (type === 'Doomscroll' || type === 'Media') ? '#ff5252' : T().accent2;
 }
 
@@ -2219,7 +2350,7 @@ function showHistoryView() {
     }
     
     const validSessions = sessions;
-    // V73: Only MCQ sessions count for score stats
+    // V76: Only MCQ sessions count for score stats
     const mcqSessions = validSessions.filter(s => (s.qbank||'').toUpperCase() !== 'FC');
     const sc = mcqSessions.map(s => Number(s.score) || 0);
     const avg = sc.length ? Math.round(sc.reduce((a,b) => a+b, 0) / sc.length) : 0;
@@ -2229,7 +2360,7 @@ function showHistoryView() {
     $('h-avg').textContent = avg + '%';
     $('h-best').textContent = best + '%';
     
-    // V73: Render new analytics
+    // V76: Render new analytics
     renderHeatmap(); renderQbankBreakdown(); calcReadiness();
     
     $('hist-list').innerHTML = validSessions.slice().reverse().map((s, reversedIdx) => {
@@ -2393,7 +2524,7 @@ function openFlashcardEditorEvent(word) {
     $('modal-word').textContent = item.word;
     $('modal-note-text').value = item.notes || '';
     $('modal-img-url').value = item.img || '';
-    // V73: Reset paste zone
+    // V76: Reset paste zone
     $('paste-preview').style.display = 'none'; $('paste-preview').src = '';
     $('paste-zone').classList.remove('active');
     $('paste-zone').childNodes[0].textContent = '\u{1F4CB} Paste or tap to add image from clipboard/camera';
@@ -2569,7 +2700,7 @@ function applyFlashcardSearch() {
     }
 }
 
-// V73: Flashcard focus time tracking (separate from MCQ sessions)
+// V76: Flashcard focus time tracking (separate from MCQ sessions)
 let fcSessionStart = 0;
 
 function openFlashcards() {
@@ -2582,7 +2713,7 @@ function closeFCSession() {
     if(fcSessionStart > 0) {
         const mins = Math.round((Date.now() - fcSessionStart) / 60000);
         if(mins >= 1) {
-            // V73: Store FC focus time separately - don't pollute MCQ sessions
+            // V76: Store FC focus time separately - don't pollute MCQ sessions
             const fcTime = parseInt(localStorage.getItem('mrcs-fc-focus') || '0');
             localStorage.setItem('mrcs-fc-focus', fcTime + mins);
         }
@@ -2783,7 +2914,7 @@ function openFlashcardEditor(e, fromHelper = false) {
     $('modal-word').textContent = globalObj.word;
     $('modal-note-text').value = globalObj.notes || '';
     $('modal-img-url').value = globalObj.img || '';
-    // V73: Reset paste zone
+    // V76: Reset paste zone
     $('paste-preview').style.display = 'none'; $('paste-preview').src = '';
     $('paste-zone').classList.remove('active');
     $('paste-zone').childNodes[0].textContent = '\u{1F4CB} Paste or tap to add image from clipboard/camera';
@@ -2831,7 +2962,7 @@ function exportFlashcardsPDF() {
     const printContainer = $('print-container');
     printContainer.innerHTML = '';
 
-    // V73: Compact multi-card PDF layout
+    // V76: Compact multi-card PDF layout
     const style = document.createElement('style');
     style.textContent = `
         @media print {
@@ -2993,7 +3124,7 @@ async function sendFollowUp() {
     }
 }
 
-// V73: Multi-selection buffer - accumulates multiple highlights
+// V76: Multi-selection buffer - accumulates multiple highlights
 let aiSelectionBuffer = [];
 
 function appendAIToNote() {
@@ -3134,8 +3265,11 @@ function openSessionSummary(idx) {
     let affirmation = "";
     const bRatio = tSecs > 0 ? (bSecs / tSecs) : 0;
     
-    if(T().isPride) {
-        // V73: Pride affirmations
+    if(T().isFandom && fandomQuotes[T().isFandom]) {
+        const fq = fandomQuotes[T().isFandom];
+        affirmation = fq[Math.floor(Math.random() * fq.length)];
+    } else if(T().isPride) {
+        // V76: Pride affirmations
         if (badBreaks > 0 || bRatio > 0.25) affirmation = prideAffirmations[1];
         else if (score >= 75) affirmation = prideAffirmations[2];
         else if (score >= 60) affirmation = prideAffirmations[3];
@@ -3174,7 +3308,7 @@ function toggleFS() { if(document.fullscreenElement) document.exitFullscreen(); 
 document.addEventListener('keydown', e => { if(e.key === 'F11'){ e.preventDefault(); toggleFS(); } });
 
 
-// =================== V73: HOME HEATMAP ===================
+// =================== V76: HOME HEATMAP ===================
 function renderHomeHeatmap() {
     const grid = $('home-heatmap'); if(!grid) return; grid.innerHTML = '';
     const t = T();
@@ -3232,14 +3366,14 @@ function renderFCHeatmap() {
     }
 }
 
-// =================== V73: QUICK PRESETS ===================
+// =================== V76: QUICK PRESETS ===================
 function applyPreset(mins, qs, cps) {
     $('set-time').value = mins; $('set-qs').value = qs; $('set-cp').value = cps;
     document.querySelectorAll('.preset-btn').forEach(b => { b.style.opacity = '0.5'; b.style.transform = ''; });
     event.currentTarget.style.opacity = '1'; event.currentTarget.style.transform = 'translateY(-2px)';
 }
 
-// =================== V73: HEATMAP CALENDAR ===================
+// =================== V76: HEATMAP CALENDAR ===================
 function renderHeatmap() {
     const grid = $('heatmap-grid'); grid.innerHTML = '';
     const t = T();
@@ -3264,7 +3398,7 @@ function renderHeatmap() {
     }
 }
 
-// =================== V73: QBANK BREAKDOWN ===================
+// =================== V76: QBANK BREAKDOWN ===================
 function renderQbankBreakdown() {
     const ptSess = sessions.filter(s => (s.qbank||'').toUpperCase() === 'PT' && s.score > 0);
     const emSess = sessions.filter(s => (s.qbank||'').toUpperCase() === 'EM' && s.score > 0);
@@ -3277,7 +3411,7 @@ function renderQbankBreakdown() {
     $('h-em-avg').style.color = emAvg >= 70 ? T().alertOk : emAvg >= 50 ? T().accent2 : T().accent;
 }
 
-// =================== V73: READINESS GAUGE ===================
+// =================== V76: READINESS GAUGE ===================
 function calcReadiness() {
     const ptPct = PT_TOTAL > 0 ? (DASH_STATS.ptGlobal || 0) / PT_TOTAL : 0;
     const emPct = EM_TOTAL > 0 ? (DASH_STATS.emGlobal || 0) / EM_TOTAL : 0;
@@ -3292,7 +3426,7 @@ function calcReadiness() {
     return readiness;
 }
 
-// =================== V73: SOUND & HAPTICS ===================
+// =================== V76: SOUND & HAPTICS ===================
 let audioCtx = null;
 function playBeep(freq = 880, dur = 0.12) {
     try {
@@ -3307,7 +3441,7 @@ function playBeep(freq = 880, dur = 0.12) {
 }
 function haptic(ms = 10) { try { navigator.vibrate(ms); } catch(e) {} }
 
-// =================== V73: KEYBOARD SHORTCUTS ===================
+// =================== V76: KEYBOARD SHORTCUTS ===================
 document.addEventListener('keydown', function(e) {
     // Only active in flashcard view
     if(!$('v-flashcards').classList.contains('active')) return;
@@ -3326,7 +3460,7 @@ document.addEventListener('keydown', function(e) {
     else if(isFlipped && e.key === '4') { e.preventDefault(); logSRS(4); }
 });
 
-// =================== V73: SWIPE GESTURES ===================
+// =================== V76: SWIPE GESTURES ===================
 let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
 
 document.addEventListener('touchstart', function(e) {
@@ -3355,7 +3489,7 @@ document.addEventListener('touchend', function(e) {
     }
 }, { passive: true });
 
-// =================== V73: MARKDOWN RENDERER ===================
+// =================== V76: MARKDOWN RENDERER ===================
 function renderMarkdown(text) {
     if(!text) return '<span style="opacity:0.5;font-style:italic;">No notes added yet.</span>';
     let html = text
@@ -3394,7 +3528,7 @@ function renderMarkdown(text) {
     return out.join('\n').replace(/<br>\n<br>/g, '<br>').replace(/(<br>\s*)+$/g, '');
 }
 
-// =================== V73: CLIPBOARD IMAGE PASTE ===================
+// =================== V76: CLIPBOARD IMAGE PASTE ===================
 document.addEventListener('paste', function(e) {
     // Only handle in flashcard editor
     if(!$('fc-modal').classList.contains('active')) return;
@@ -3428,7 +3562,7 @@ function convertImageToDataURI(blob) {
     reader.readAsDataURL(blob);
 }
 
-// =================== V73: PROGRESS CARD GENERATOR ===================
+// =================== V76: PROGRESS CARD GENERATOR ===================
 function generateProgressCard() {
     const canvas = $('progress-card-canvas');
     const ctx = canvas.getContext('2d');
@@ -3489,7 +3623,7 @@ function generateProgressCard() {
     ctx.font='700 9px "DM Sans"'; ctx.fillStyle=rc+'88'; ctx.fillText(rd>=70?'ON TRACK':rd>=40?'BUILDING':'EARLY STAGES',w/2,292);
 
     if(t.isPride) { const q=prideQuotes[Math.floor(Math.random()*prideQuotes.length)]; ctx.font='italic 600 9px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff44':'#00000044'; let tx=q; while(ctx.measureText(tx).width>w-48)tx=tx.slice(0,-4)+'...'; ctx.fillText(tx,w/2,316); }
-    ctx.font='600 8px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff15':'#00000015'; ctx.fillText('MRCS TRACKER V73',w/2,h-12);
+    ctx.font='600 8px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff15':'#00000015'; ctx.fillText('MRCS TRACKER V76',w/2,h-12);
     $('progress-modal').classList.add('active');
 }
 
@@ -3575,14 +3709,62 @@ async function shareProgressCard() {
     } catch(e) { downloadProgressCard(); }
 }
 
-// V73: PWA manifest only (blob service workers don't work cross-origin on Netlify)
+// V76: PWA manifest only (blob service workers don't work cross-origin on Netlify)
 const manifest = { name: "MRCS QBank Tracker", short_name: "MRCS", start_url: ".", display: "standalone", background_color: "#1c0028", theme_color: "#ff007f", icons: [{ src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231c0028' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='%23ff007f'>M</text></svg>", sizes: "any", type: "image/svg+xml" }] };
-try { const mb = new Blob([JSON.stringify(manifest)], {type:'application/json'}); const mu = URL.createObjectURL(mb); const ml = document.createElement('link'); ml.rel='manifest'; ml.href=mu; document.head.appendChild(ml); } catch(e) {}
+// V76: Manifest disabled on GitHub Pages (blob URLs cause CORS Script Error)
+// PWA works via meta tags alone for Add to Home Screen
+
+
+// V76: View history stack for swipe-back navigation
+let viewHistory = ['v-setup'];
+
+function show(id) {
+    const current = document.querySelector('.view.active');
+    if(current && current.id !== id) {
+        viewHistory.push(current.id);
+        if(viewHistory.length > 20) viewHistory.shift();
+    }
+    _showView(id);
+}
+
+function goBack() {
+    if(viewHistory.length > 1) {
+        viewHistory.pop();
+        const prev = viewHistory[viewHistory.length - 1] || 'v-setup';
+        _showView(prev); applyTheme();
+        if(prev !== 'v-flashcards' && fcSessionStart > 0) closeFCSession();
+    }
+}
+
+// Edge swipe detection for back navigation (left edge only)
+let edgeSwipeStartX = 0, edgeSwipeStartY = 0;
+document.addEventListener('touchstart', function(e) {
+    const t = e.touches[0];
+    if(t.clientX < 25) { // Left edge only
+        edgeSwipeStartX = t.clientX; edgeSwipeStartY = t.clientY;
+    } else { edgeSwipeStartX = -1; }
+}, { passive: true });
+
+document.addEventListener('touchend', function(e) {
+    if(edgeSwipeStartX < 0) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - edgeSwipeStartX;
+    const dy = Math.abs(t.clientY - edgeSwipeStartY);
+    if(dx > 80 && dy < 100) { // Strong rightward swipe from left edge
+        goBack();
+        haptic(10);
+    }
+    edgeSwipeStartX = -1;
+}, { passive: true });
 
 function initApp() {
     $('cloud-key').value = CLOUD_KEY;
     $('cloud-bin').value = CLOUD_BIN;
     $('gemini-key').value = GEMINI_KEY;
+
+    // V76: Load saved theme
+    const savedTheme = localStorage.getItem('mrcs-theme');
+    if(savedTheme && THEMES[savedTheme]) theme = savedTheme;
 
     initLocalData(); buildThemes(); applyTheme();
     
@@ -3639,7 +3821,7 @@ function initApp() {
     $('btn-action-cancel').onclick = () => $('action-modal').classList.remove('active');
     $('action-modal').onclick = () => $('action-modal').classList.remove('active');
     
-    logDebug("V73 App initialized successfully. All systems operational.");
+    logDebug("V76 App initialized successfully. All systems operational.");
 }
 
 initApp();
