@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V77</title>
-<!-- V77: PWA Meta Tags -->
+<title>MRCS QBank Tracker Pro Max V78</title>
+<!-- V78: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MRCS Tracker">
@@ -232,39 +232,39 @@
     .ai-msg-user { align-self: flex-end; background: rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 12px 12px 0 12px; width: fit-content; max-width: 85%; border: 1px solid rgba(255,255,255,0.2); }
     .ai-msg-model { align-self: flex-start; background: rgba(0, 242, 254, 0.1); padding: 12px 16px; border-radius: 12px 12px 12px 0; border-left: 4px solid #00f2fe; width: fit-content; max-width: 95%; }
 
-    /* V77: Heatmap Calendar */
+    /* V78: Heatmap Calendar */
     .heatmap-grid { display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-start; max-width: 500px; margin: 0 auto 16px; }
     .hm-cell { width: 18px; height: 18px; border-radius: 3px; background: rgba(128,128,128,0.1); transition: all 0.2s; position: relative; cursor: default; }
     .hm-cell:hover { transform: scale(1.4); z-index: 2; }
     .hm-cell[data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); background: #111; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.6rem; white-space: nowrap; z-index: 10; font-family: 'JetBrains Mono', monospace; pointer-events: none; }
     .hm-label { font-size: 0.55rem; opacity: 0.4; text-transform: uppercase; letter-spacing: 1px; width: 100%; text-align: center; margin-bottom: 4px; }
 
-    /* V77: Quick Presets */
+    /* V78: Quick Presets */
     .preset-row { display: flex; gap: 6px; width: 100%; margin-bottom: 8px; }
     .preset-btn { flex: 1; padding: 8px 4px; border: 1.5px solid; border-radius: 10px; background: transparent; cursor: pointer; text-align: center; font-family: 'DM Sans', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; transition: all 0.2s; color: inherit; opacity: 0.7; }
     .preset-btn:hover { opacity: 1; transform: translateY(-2px); }
 
-    /* V77: Readiness Gauge */
+    /* V78: Readiness Gauge */
     .readiness-wrap { text-align: center; margin: 8px 0; }
     .readiness-bar { width: 100%; height: 6px; border-radius: 3px; overflow: hidden; margin: 4px 0; }
     .readiness-fill { height: 100%; border-radius: 3px; transition: width 1s, background 0.4s; }
     .readiness-label { font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; }
     .readiness-pct { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; line-height: 1; }
 
-    /* V77: Keyboard hint */
+    /* V78: Keyboard hint */
     .kb-hint { font-size: 0.55rem; opacity: 0.35; text-align: center; letter-spacing: 1px; margin-top: 4px; }
 
-    /* V77: Progress Card */
+    /* V78: Progress Card */
     #progress-card-canvas { border-radius: 16px; max-width: 100%; height: auto; display: block; margin: 0 auto; cursor: pointer; }
     .progress-card-wrap { text-align: center; margin: 16px 0; }
     .progress-card-actions { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
 
-    /* V77: Paste indicator */
+    /* V78: Paste indicator */
     .paste-zone { border: 2px dashed rgba(128,128,128,0.3); border-radius: 8px; padding: 12px; text-align: center; font-size: 0.7rem; opacity: 0.5; margin-top: 8px; transition: all 0.3s; cursor: pointer; }
     .paste-zone:hover, .paste-zone.active { border-color: var(--accent2); opacity: 0.8; }
     .paste-preview { max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 8px; margin-top: 8px; }
 
-    /* V77: Markdown rendered content */
+    /* V78: Markdown rendered content */
     .md-content { font-size: 0.95rem; line-height: 1.7; }
     .md-content h1, .md-content h2, .md-content h3 { font-family: 'Bebas Neue', sans-serif; color: var(--accent2); margin: 16px 0 8px; }
     .md-content h1 { font-size: 1.8rem; } .md-content h2 { font-size: 1.4rem; } .md-content h3 { font-size: 1.2rem; }
@@ -279,17 +279,17 @@
     .md-content a { color: var(--accent2); text-decoration: underline; }
 
     /* ============================================= */
-    /* V77: COMPREHENSIVE MOBILE OPTIMISATION        */
+    /* V78: COMPREHENSIVE MOBILE OPTIMISATION        */
     /* ============================================= */
 
     /* --- Safe area for notched phones --- */
-    /* V77: Aggressive safe area for iPhone Dynamic Island + home indicator */
+    /* V78: Aggressive safe area for iPhone Dynamic Island + home indicator */
     @supports (padding: env(safe-area-inset-top)) {
         .top-bar { padding-top: calc(env(safe-area-inset-top) + 8px); padding-bottom: 8px; }
         #app { padding-top: calc(env(safe-area-inset-top) + 56px); padding-bottom: calc(env(safe-area-inset-bottom) + 20px); }
     }
 
-    /* V77: Safe bottom padding for all views */
+    /* V78: Safe bottom padding for all views */
     .view { padding-bottom: 24px; }
     @supports (padding: env(safe-area-inset-bottom)) {
         .view { padding-bottom: calc(env(safe-area-inset-bottom) + 16px); }
@@ -439,7 +439,7 @@
     }
 
     
-    /* V77: Pride theme glitter */
+    /* V78: Pride theme glitter */
     @keyframes glitter { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
     @keyframes rainbowShift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
     body.pride-active .clock { animation: rainbowShift 4s linear infinite; }
@@ -451,7 +451,7 @@
     body.pride-active .lm { animation: glitter 2.5s ease-in-out infinite; }
     body.pride-active .th-dot.sel { box-shadow: 0 0 12px rgba(204,51,255,0.8); }
     
-    /* V77: Fandom theme animations */
+    /* V78: Fandom theme animations */
     body.fandom-bridgerton .clock { font-family: 'Times New Roman', serif !important; }
     body.fandom-bridgerton .stat-val { font-family: 'Times New Roman', serif !important; }
     body.fandom-hogwarts .clock { text-shadow: 0 0 12px rgba(241,196,15,0.4); }
@@ -470,7 +470,7 @@
     body.fandom-westeros .stat-val { animation: fireFlicker 3s ease-in-out infinite; }
 
     
-    /* V77: Theme Picker Popup */
+    /* V78: Theme Picker Popup */
     .theme-picker-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
     .theme-picker-overlay.active { display: flex; opacity: 1; }
     .theme-picker { background: #111; border-radius: 20px; padding: 24px; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); }
@@ -483,7 +483,7 @@
     .theme-option-desc { font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
     .theme-section { font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.25); padding: 12px 16px 4px; }
 
-    /* V77: Theme bar - JS handles show/hide */
+    /* V78: Theme bar - JS handles show/hide */
     .th-bar { max-width: 70%; }
 
     @keyframes emojiDrop { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(100vh); opacity: 0; } }
@@ -525,6 +525,13 @@
         <div id="theme-picker-list"></div>
     </div>
 </div>
+<div id="tip-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:99998;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.9);padding:24px;">
+    <div style="text-align:center;max-width:400px;">
+        <div style="font-size:0.7rem;letter-spacing:3px;color:rgba(255,255,255,0.4);margin-bottom:16px;">MRCS TIP</div>
+        <div id="tip-text" style="font-size:1.2rem;color:#fff;line-height:1.6;font-weight:600;"></div>
+        <div style="font-size:0.6rem;color:rgba(255,255,255,0.3);margin-top:20px;">Starting in 3s...</div>
+    </div>
+</div>
 <div id="app">
   <div class="top-bar" id="top-bar">
     <div style="display:flex;gap:6px;">
@@ -539,6 +546,23 @@
   <div id="v-setup" class="view active">
     <div class="split-layout">
         <div class="col">
+            <div id="morning-zone" style="display:none;text-align:center;margin-bottom:8px;">
+                <div id="morning-checkin" style="padding:10px 16px;border-radius:12px;border:1.5px solid var(--accent2);background:rgba(128,128,128,0.05);cursor:pointer;" onclick="doMorningCheckin()">
+                    <div style="font-size:1.2rem;">☀️</div>
+                    <div style="font-size:0.75rem;font-weight:700;color:var(--accent2);" id="morning-label">Good Morning! Tap to check in</div>
+                    <div style="font-size:0.6rem;opacity:0.5;" id="morning-streak">Morning streak: 0 days</div>
+                </div>
+            </div>
+            <div id="micro-quiz-gate" style="display:none;text-align:center;padding:12px;border-radius:12px;border:1.5px solid var(--accent);background:rgba(128,128,128,0.05);margin-bottom:8px;">
+                <div style="font-size:0.7rem;font-weight:700;color:var(--accent);margin-bottom:8px;">🧠 MORNING BRAIN ACTIVATION</div>
+                <div id="mq-card" style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--accent2);margin-bottom:4px;"></div>
+                <div id="mq-answer" style="font-size:0.75rem;opacity:0;transition:opacity 0.3s;margin-bottom:8px;max-height:100px;overflow-y:auto;text-align:left;padding:0 8px;"></div>
+                <div class="row" style="justify-content:center;gap:8px;">
+                    <button class="btn btn-sm btn-ghost" onclick="mqReveal()">Reveal</button>
+                    <button class="btn btn-sm" onclick="mqNext()" style="background:var(--accent2);color:#111;">Next (→)</button>
+                </div>
+                <div style="font-size:0.6rem;opacity:0.4;margin-top:6px;" id="mq-progress">1 / 5</div>
+            </div>
             <div id="home-header" style="text-align:center;padding-top:10px;">
               <div class="clock" id="top-date">--/--/--</div>
               <div class="clock-label" style="font-size:0.875rem;color:var(--accent2);opacity:1;font-weight:700;"><span id="top-dte">--</span> DAYS TO EXAM</div>
@@ -563,12 +587,19 @@
                 <button class="preset-btn" onclick="applyPreset(180,120,6)" style="border-color:var(--accent)">🏥 Exam<br><span style="opacity:0.6">3h · 120Q</span></button>
             </div>
 
+            <div class="row" style="justify-content:center;margin-top:4px;">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.75rem;opacity:0.8;">
+                    <input type="checkbox" id="silent-mode" style="width:18px;height:18px;accent-color:var(--accent);">
+                    <span>🔇 Silent Session (exam conditions)</span>
+                </label>
+            </div>
             <div class="row">
               <div style="flex:1"><div class="input-label">Minutes</div><input type="number" class="input-field" id="set-time" min="10" max="600" value="180"></div>
               <div style="flex:1"><div class="input-label">Questions</div><input type="number" class="input-field" id="set-qs" min="5" max="500" value="120"></div>
               <div style="flex:1"><div class="input-label">Checkpoints</div><input type="number" class="input-field" id="set-cp" min="2" max="10" value="6"></div>
             </div>
             
+            <div id="pt-countdown" style="text-align:center;margin-top:8px;padding:8px 12px;border-radius:12px;border:1px dashed var(--accent);opacity:0.85;font-size:0.7rem;display:none;"></div>
             <button class="btn btn-big" id="btn-go" style="margin-top:8px;">Start Session</button>
         </div>
         
@@ -659,6 +690,23 @@
             <input type="number" class="score-input" id="score-in" min="0" max="100" placeholder="72">
             <span style="font-family:'Bebas Neue',sans-serif;font-size:2.25rem;opacity:0.5;">%</span>
           </div>
+        </div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div class="clock-label" style="margin-bottom:8px;">ERROR BREAKDOWN (tap to count)</div>
+        <div class="row" style="justify-content:center;gap:8px;flex-wrap:wrap;">
+            <button class="preset-btn" id="err-know" onclick="incError('know')" style="flex:1;min-width:90px;padding:8px 4px;border-color:var(--accent);">
+                <span style="font-size:1.2rem;display:block;" id="err-know-n">0</span>
+                <span style="font-size:0.55rem;opacity:0.7;">Knowledge Gap</span>
+            </button>
+            <button class="preset-btn" id="err-retrieval" onclick="incError('retrieval')" style="flex:1;min-width:90px;padding:8px 4px;border-color:var(--accent2);">
+                <span style="font-size:1.2rem;display:block;" id="err-retrieval-n">0</span>
+                <span style="font-size:0.55rem;opacity:0.7;">Retrieval Fail</span>
+            </button>
+            <button class="preset-btn" id="err-reasoning" onclick="incError('reasoning')" style="flex:1;min-width:90px;padding:8px 4px;border-color:var(--accent);">
+                <span style="font-size:1.2rem;display:block;" id="err-reasoning-n">0</span>
+                <span style="font-size:0.55rem;opacity:0.7;">Reasoning Error</span>
+            </button>
         </div>
       </div>
       <button class="btn btn-big" id="btn-save">Save & Sync</button>
@@ -951,7 +999,7 @@
     </div>
   </div>
 
-  <!-- V77: Progress Card Modal -->
+  <!-- V78: Progress Card Modal -->
   <div class="modal-overlay" id="progress-modal" onclick="closeProgressModal()">
     <div class="modal-content" style="max-width: 500px; text-align: center;" onclick="event.stopPropagation()">
         <div class="dash-lbl" style="color:var(--accent2); text-align:center; margin-bottom:8px;">Your Progress Card</div>
@@ -1011,7 +1059,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
     return false; 
 };
 function logDebug(msg) { const logsEl = document.getElementById('debug-logs'); if (logsEl) logsEl.innerHTML += `<div class="log-line log-boot">[BOOT] ${msg}</div>`; }
-logDebug("V77 Script execution started.");
+logDebug("V78 Script execution started.");
 
 // V56 Selection Cache - fixes Safari/mobile highlight disappearing on button click
 let activeSelection = "";
@@ -1129,7 +1177,7 @@ async function pushToCloud() {
 }
 
 async function pullFromCloud(isManual = false) {
-    // V77: On manual pull, read keys from inputs first (for fresh device setup)
+    // V78: On manual pull, read keys from inputs first (for fresh device setup)
     if(isManual) {
         const keyVal = $('cloud-key').value.trim();
         const binVal = $('cloud-bin').value.trim();
@@ -1276,7 +1324,7 @@ const prideTimerQuotes = [
 ];
 
 
-// V77: Fandom theme data
+// V78: Fandom theme data
 const fandomQuotes = {
     bridgerton: [
         "I burn for you. And now I burn for this exam. \u2014 Bridgerton energy",
@@ -1350,7 +1398,7 @@ const fandomBreakPrompts = {
 };
 
 
-// V77: Extended fandom data
+// V78: Extended fandom data
 Object.assign(fandomQuotes, {
     bollywood: [
         "Picture abhi baaki hai, mere dost. The paper isn't over yet.",
@@ -1437,8 +1485,8 @@ const quotes = [
     "Embrace the grind. The scalpel awaits."
 ];
 
-// V77: Shane & Ilya milestone celebration
-// V77: Formatting toolbar helpers
+// V78: Shane & Ilya milestone celebration
+// V78: Formatting toolbar helpers
 function wrapSelection(before, after) {
     const ta = $('modal-note-text');
     const start = ta.selectionStart, end = ta.selectionEnd;
@@ -1479,7 +1527,7 @@ function deleteSession(idx) {
     };
 }
 
-// V77: Cottage celebration quotes + HR images
+// V78: Cottage celebration quotes + HR images
 const cottageQuotes = [
     "\u201CI\u2019m coming to the cottage.\u201D \u2014 Ilya Rozanov",
     "\u201CYou\u2019re it for me. You know that, right?\u201D \u2014 Shane Hollander",
@@ -1737,6 +1785,155 @@ function persistData() {
 
 function getLogToday() { return TRACKER_DATA.find(r=>r.d===logTodayStr()); }
 function daysToExam() { const now=new Date(); now.setHours(0,0,0,0); return Math.max(0,Math.ceil((EXAM_DATE-now)/(1000*60*60*24))); }
+
+// V78: MRCS tips for pre-session flash
+const mrcsTips = [
+    "Read the LAST LINE of the question first. Know what’s being asked before reading the stem.",
+    "“Most likely” = most COMMON. Not most interesting, not most dramatic.",
+    "“First-line investigation” = cheapest, least invasive, most available.",
+    "“Immediate management” = ABCs first. Unstable patient = resuscitate before investigate.",
+    "When stuck between two options, pick the one that would cause more harm if missed. MRCS rewards safe surgeons.",
+    "“Single best answer” = two might be “correct” but one is MORE correct. Pick the most specific.",
+    "Anatomy “at risk” questions: think about what you’d DAMAGE during surgery, not what you’d see.",
+    "If a question describes a young patient with vague symptoms — always consider the zebra diagnoses.",
+    "Cover the options first. What do YOU think? If you can’t generate an answer, this topic needs a flashcard.",
+    "Score every wrong answer: Knowledge Gap / Retrieval Fail / Reasoning Error. Track the pattern."
+];
+
+function showPreSessionTip() {
+    const tip = mrcsTips[Math.floor(Math.random() * mrcsTips.length)];
+    $('tip-text').textContent = tip;
+    $('tip-overlay').style.display = 'flex';
+    return new Promise(resolve => {
+        setTimeout(() => { $('tip-overlay').style.display = 'none'; resolve(); }, 3000);
+    });
+}
+
+// V78: Silent session tracking
+let silentSession = false;
+function saveSilentTime(mins) {
+    const today = displayTodayStr();
+    const key = 'mrcs-silent-' + today;
+    const existing = parseInt(localStorage.getItem(key) || '0');
+    localStorage.setItem(key, existing + mins);
+}
+function getSilentToday() {
+    return parseInt(localStorage.getItem('mrcs-silent-' + displayTodayStr()) || '0');
+}
+function getSilentTarget() {
+    const dte = daysToExam();
+    if(dte > 14) return 30;
+    if(dte > 10) return 60;
+    if(dte > 6) return 90;
+    return 180;
+}
+
+// V78: Morning check-in
+function getMorningStreak() { return parseInt(localStorage.getItem('mrcs-morning-streak') || '0'); }
+function getLastMorningDate() { return localStorage.getItem('mrcs-morning-last') || ''; }
+function doMorningCheckin() {
+    const today = displayTodayStr();
+    if(getLastMorningDate() === today) return; // Already checked in
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    const ys = String(yesterday.getDate()).padStart(2,'0')+'/'+String(yesterday.getMonth()+1).padStart(2,'0')+'/'+String(yesterday.getFullYear()).slice(2);
+    let streak = getMorningStreak();
+    if(getLastMorningDate() === ys) streak++; else streak = 1;
+    localStorage.setItem('mrcs-morning-streak', streak);
+    localStorage.setItem('mrcs-morning-last', today);
+    $('morning-label').textContent = '✅ Checked in at ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    $('morning-streak').textContent = '☀️ Morning streak: ' + streak + ' day' + (streak>1?'s':'');
+    $('morning-checkin').style.borderColor = 'var(--accent2)';
+    $('morning-checkin').style.background = 'rgba(0,200,100,0.08)';
+    haptic(20);
+}
+
+function updateMorningZone() {
+    const hour = new Date().getHours();
+    const zone = $('morning-zone');
+    if(hour < 9) {
+        zone.style.display = 'block';
+        const today = displayTodayStr();
+        if(getLastMorningDate() === today) {
+            $('morning-label').textContent = '✅ Checked in today!';
+            $('morning-checkin').style.background = 'rgba(0,200,100,0.08)';
+        }
+        $('morning-streak').textContent = '☀️ Morning streak: ' + getMorningStreak() + ' days';
+    } else {
+        zone.style.display = 'none';
+    }
+}
+
+// V78: Morning micro-quiz
+let mqCards = [], mqIdx = 0, mqDone = false;
+function initMicroQuiz() {
+    const hour = new Date().getHours();
+    const quizDoneToday = localStorage.getItem('mrcs-mq-' + displayTodayStr()) === 'done';
+    if(hour >= 9 || quizDoneToday) { mqDone = true; $('micro-quiz-gate').style.display = 'none'; return; }
+    
+    // Pick 5 random cards that have notes
+    const withNotes = REVIEW_BANK.filter(b => b.notes && b.notes.trim().length > 10);
+    if(withNotes.length < 3) { mqDone = true; $('micro-quiz-gate').style.display = 'none'; return; }
+    
+    mqCards = []; const pool = [...withNotes];
+    for(let i = 0; i < Math.min(5, pool.length); i++) {
+        const idx = Math.floor(Math.random() * pool.length);
+        mqCards.push(pool.splice(idx, 1)[0]);
+    }
+    mqIdx = 0; mqDone = false;
+    $('micro-quiz-gate').style.display = 'block';
+    mqRender();
+}
+function mqRender() {
+    if(mqIdx >= mqCards.length) { mqComplete(); return; }
+    $('mq-card').textContent = mqCards[mqIdx].word;
+    $('mq-answer').style.opacity = '0';
+    $('mq-answer').innerHTML = renderMarkdown(mqCards[mqIdx].notes || 'No notes yet');
+    $('mq-progress').textContent = (mqIdx+1) + ' / ' + mqCards.length;
+}
+function mqReveal() { $('mq-answer').style.opacity = '1'; }
+function mqNext() { mqIdx++; mqRender(); }
+function mqComplete() {
+    mqDone = true;
+    localStorage.setItem('mrcs-mq-' + displayTodayStr(), 'done');
+    $('micro-quiz-gate').style.display = 'none';
+    haptic(20);
+}
+
+// V78: PT First Pass countdown
+function renderPTCountdown() {
+    const el = $('pt-countdown'); if(!el) return;
+    const targetDate = new Date('2026-04-13');
+    const now = new Date(); now.setHours(0,0,0,0);
+    const daysLeft = Math.max(0, Math.ceil((targetDate - now) / 86400000));
+    const ptDone = DASH_STATS.ptGlobal || 0;
+    const remaining = Math.max(0, PT_TOTAL - ptDone);
+    
+    if(daysLeft <= 0 || remaining <= 0) { el.style.display = 'none'; return; }
+    
+    const perDay = Math.ceil(remaining / daysLeft);
+    el.style.display = 'block';
+    el.innerHTML = '<span style="font-weight:700;color:var(--accent);">PT 1ST PASS TARGET: 13 APR</span><br>' +
+        '<span style="font-size:0.85rem;font-weight:700;color:var(--accent2);">' + remaining + '</span> remaining \u00B7 ' +
+        '<span style="font-weight:700;">' + perDay + '/day</span> \u00B7 ' +
+        daysLeft + ' days left';
+}
+
+// V78: Error breakdown in performance dashboard
+function renderErrorBreakdown() {
+    const errTotals = { know:0, retrieval:0, reasoning:0 };
+    sessions.forEach(s => {
+        if(s.errors) { errTotals.know += s.errors.know||0; errTotals.retrieval += s.errors.retrieval||0; errTotals.reasoning += s.errors.reasoning||0; }
+    });
+    const total = errTotals.know + errTotals.retrieval + errTotals.reasoning;
+    if(total === 0) return '';
+    return '<div class="dash-card" style="margin-top:12px;"><div class="dash-lbl" style="text-align:center;margin-bottom:8px;">ERROR TAXONOMY (' + total + ' total)</div>' +
+        '<div class="row" style="justify-content:center;gap:16px;">' +
+        '<div style="text-align:center;"><div class="stat-val" style="font-size:1.5rem;color:var(--accent);">' + errTotals.know + '</div><div class="stat-lbl">Knowledge</div></div>' +
+        '<div style="text-align:center;"><div class="stat-val" style="font-size:1.5rem;color:var(--accent2);">' + errTotals.retrieval + '</div><div class="stat-lbl">Retrieval</div></div>' +
+        '<div style="text-align:center;"><div class="stat-val" style="font-size:1.5rem;color:var(--accent);">' + errTotals.reasoning + '</div><div class="stat-lbl">Reasoning</div></div>' +
+        '</div></div>';
+}
+
 function _showView(id) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); $(id).classList.add('active'); }
 function T() { return THEMES[theme]; }
 function fmt(s) { const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sc=s%60; return `${h > 0 ? h+':' : ''}${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`; }
@@ -1845,7 +2042,7 @@ function applyTheme() {
   // V60: Theme break chips
   document.querySelectorAll('.break-chip:not(.active)').forEach(el => { el.style.color = t.fg; });
   
-  // V77: Toggle theme body classes
+  // V78: Toggle theme body classes
   document.body.classList.remove('pride-active','fandom-bridgerton','fandom-hogwarts','fandom-westeros','fandom-bollywood','fandom-greys','fandom-lasso','fandom-eras','fandom-schitts','fandom-ghibli','fandom-wednesday');
   if(t.isPride) document.body.classList.add('pride-active');
   if(t.isFandom) document.body.classList.add('fandom-' + t.isFandom);
@@ -2011,6 +2208,8 @@ function buildHomeLayout() {
   const mcqTimeToday = getFocusedTimeToday();
   const fcTimeTotal = getFCFocusTotal();
   const totalTime = mcqTimeToday + fcTimeTotal;
+  const silentToday = getSilentToday();
+  const silentTarget = getSilentTarget();
   const timeHrs = Math.floor(totalTime / 60);
   const timeMins = totalTime % 60;
   const timeStr = timeHrs > 0 ? `${timeHrs}h ${timeMins}m` : `${timeMins}m`;
@@ -2030,6 +2229,7 @@ function buildHomeLayout() {
               <div class="dash-lbl">FOCUS TIME</div>
               <div class="streak-badge" style="color:var(--accent);"><svg viewBox="0 0 24 24" style="fill:var(--accent);"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg> ${timeStr}</div>
               <div style="font-size:0.5rem;opacity:0.4;margin-top:2px;">MCQ ${mcqTimeToday}m \u00B7 FC ${fcTimeTotal}m</div>
+              <div style="font-size:0.5rem;opacity:0.4;margin-top:1px;">🔇 ${silentToday}/${silentTarget}m silent</div>
           </div>
           <div style="text-align:center;">
               <div class="dash-lbl">READINESS</div>
@@ -2038,10 +2238,17 @@ function buildHomeLayout() {
       </div>
   `;
 
-  // V77: Home heatmap
+  // V78: Home heatmap
   renderHomeHeatmap();
   
-  // V77: Quote of the day
+  // V78: PT countdown
+  renderPTCountdown();
+  
+  // V78: Morning features
+  updateMorningZone();
+  initMicroQuiz();
+  
+  // V78: Quote of the day
   const quoteEl = $('home-quote');
   if(t.isPride) {
       quoteEl.textContent = prideQuotes[Math.floor(Math.random() * prideQuotes.length)];
@@ -2075,7 +2282,7 @@ function lmClick(i) {
     if(cpDone[i]) return;
     cpDone[i] = true;
     haptic(20); playBeep(880, 0.15);
-    // V77: Pride celebration on milestone
+    // V78: Pride celebration on milestone
     if(T().isPride) celebrateMilestone();
     const mn = Math.round(elapsed/60);
     const diff = mn - cpTimes[i];
@@ -2186,7 +2393,21 @@ function redrawScratchpad() {
 }
 
 // Session Flow Controls
+
+// V78: Error taxonomy
+let errorCounts = { know: 0, retrieval: 0, reasoning: 0 };
+function incError(type) {
+    errorCounts[type]++;
+    $('err-' + type + '-n').textContent = errorCounts[type];
+    haptic(10);
+}
+function resetErrors() { errorCounts = { know:0, retrieval:0, reasoning:0 }; ['know','retrieval','reasoning'].forEach(t => { if($('err-'+t+'-n')) $('err-'+t+'-n').textContent = '0'; }); }
+
 function startSession() {
+    silentSession = $('silent-mode') && $('silent-mode').checked;
+    showPreSessionTip().then(() => { _startSessionCore(); });
+}
+function _startSessionCore() {
     totalMin = Math.max(10, parseInt($('set-time').value) || 180);
     totalQs = Math.max(5, parseInt($('set-qs').value) || 120);
     cpCount = Math.max(2, Math.min(10, parseInt($('set-cp').value) || 6));
@@ -2195,6 +2416,7 @@ function startSession() {
     sessionBreaks = 0; totalBreakTime = 0;
     breakTally = { 'Coffee':0, 'Bio':0, 'Fog':0, 'Sleepy':0, 'Hungry':0, 'Doomscroll':0, 'Media':0, 'Walk':0, 'Sun':0, 'Call':0, 'Misc':0 };
     sessionScratchpad = [];
+    resetErrors();
     
     sessionStartDate = logTodayStr(); globalSessionStart = Date.now();
     $('pace').textContent = '--'; $('perq').textContent = '--';
@@ -2345,8 +2567,10 @@ function saveSessionResult() {
         date: new Date().toISOString(), phase: phase.toUpperCase(), qbank: qb.toUpperCase(),
         totalMin, totalQs, usedMin: mn, done: actualDone, score,
         breaks: sessionBreaks, breakSecs: totalBreakTime, breakLog: breakTally,
-        startIso: globalSessionStart, endIso: globalSessionEnd, scratchpad: sessionScratchpad
+        startIso: globalSessionStart, endIso: globalSessionEnd, scratchpad: sessionScratchpad, errors: {...errorCounts}
     });
+    // V78: Log silent session time
+    if(silentSession && mn > 0) saveSilentTime(mn);
     persistData(); pushToCloud(); showTrackerView(); 
 }
 
@@ -2515,17 +2739,22 @@ function showHistoryView() {
     }
     
     const validSessions = sessions;
-    // V77: Only MCQ sessions count for score stats
+    // V78: Only MCQ sessions count for score stats
     const mcqSessions = validSessions.filter(s => (s.qbank||'').toUpperCase() !== 'FC');
     const sc = mcqSessions.map(s => Number(s.score) || 0);
     const avg = sc.length ? Math.round(sc.reduce((a,b) => a+b, 0) / sc.length) : 0;
     const best = sc.length ? Math.max(...sc) : 0;
     
     $('h-count').textContent = mcqSessions.length;
+    
+    // V78: Error taxonomy display
+    const errHtml = renderErrorBreakdown();
+    const errTarget = $('hist-list');
+    if(errHtml && errTarget) errTarget.insertAdjacentHTML('beforebegin', errHtml);
     $('h-avg').textContent = avg + '%';
     $('h-best').textContent = best + '%';
     
-    // V77: Render new analytics
+    // V78: Render new analytics
     renderHeatmap(); renderQbankBreakdown(); calcReadiness();
     
     $('hist-list').innerHTML = validSessions.slice().reverse().map((s, reversedIdx) => {
@@ -2689,7 +2918,7 @@ function openFlashcardEditorEvent(word) {
     $('modal-word').textContent = item.word;
     $('modal-note-text').value = item.notes || '';
     $('modal-img-url').value = item.img || '';
-    // V77: Reset paste zone
+    // V78: Reset paste zone
     $('paste-preview').style.display = 'none'; $('paste-preview').src = '';
     $('paste-zone').classList.remove('active');
     $('paste-zone').childNodes[0].textContent = '\u{1F4CB} Paste or tap to add image from clipboard/camera';
@@ -2865,7 +3094,7 @@ function applyFlashcardSearch() {
     }
 }
 
-// V77: Flashcard focus time tracking (separate from MCQ sessions)
+// V78: Flashcard focus time tracking (separate from MCQ sessions)
 let fcSessionStart = 0;
 
 function openFlashcards() {
@@ -2878,7 +3107,7 @@ function closeFCSession() {
     if(fcSessionStart > 0) {
         const mins = Math.round((Date.now() - fcSessionStart) / 60000);
         if(mins >= 1) {
-            // V77: Store FC focus time separately - don't pollute MCQ sessions
+            // V78: Store FC focus time separately - don't pollute MCQ sessions
             const fcTime = parseInt(localStorage.getItem('mrcs-fc-focus') || '0');
             localStorage.setItem('mrcs-fc-focus', fcTime + mins);
         }
@@ -3079,7 +3308,7 @@ function openFlashcardEditor(e, fromHelper = false) {
     $('modal-word').textContent = globalObj.word;
     $('modal-note-text').value = globalObj.notes || '';
     $('modal-img-url').value = globalObj.img || '';
-    // V77: Reset paste zone
+    // V78: Reset paste zone
     $('paste-preview').style.display = 'none'; $('paste-preview').src = '';
     $('paste-zone').classList.remove('active');
     $('paste-zone').childNodes[0].textContent = '\u{1F4CB} Paste or tap to add image from clipboard/camera';
@@ -3127,7 +3356,7 @@ function exportFlashcardsPDF() {
     const printContainer = $('print-container');
     printContainer.innerHTML = '';
 
-    // V77: Compact multi-card PDF layout
+    // V78: Compact multi-card PDF layout
     const style = document.createElement('style');
     style.textContent = `
         @media print {
@@ -3289,7 +3518,7 @@ async function sendFollowUp() {
     }
 }
 
-// V77: Multi-selection buffer - accumulates multiple highlights
+// V78: Multi-selection buffer - accumulates multiple highlights
 let aiSelectionBuffer = [];
 
 function appendAIToNote() {
@@ -3434,7 +3663,7 @@ function openSessionSummary(idx) {
         const fq = fandomQuotes[T().isFandom];
         affirmation = fq[Math.floor(Math.random() * fq.length)];
     } else if(T().isPride) {
-        // V77: Pride affirmations
+        // V78: Pride affirmations
         if (badBreaks > 0 || bRatio > 0.25) affirmation = prideAffirmations[1];
         else if (score >= 75) affirmation = prideAffirmations[2];
         else if (score >= 60) affirmation = prideAffirmations[3];
@@ -3473,7 +3702,7 @@ function toggleFS() { if(document.fullscreenElement) document.exitFullscreen(); 
 document.addEventListener('keydown', e => { if(e.key === 'F11'){ e.preventDefault(); toggleFS(); } });
 
 
-// =================== V77: HOME HEATMAP ===================
+// =================== V78: HOME HEATMAP ===================
 function renderHomeHeatmap() {
     const grid = $('home-heatmap'); if(!grid) return; grid.innerHTML = '';
     const t = T();
@@ -3531,14 +3760,14 @@ function renderFCHeatmap() {
     }
 }
 
-// =================== V77: QUICK PRESETS ===================
+// =================== V78: QUICK PRESETS ===================
 function applyPreset(mins, qs, cps) {
     $('set-time').value = mins; $('set-qs').value = qs; $('set-cp').value = cps;
     document.querySelectorAll('.preset-btn').forEach(b => { b.style.opacity = '0.5'; b.style.transform = ''; });
     event.currentTarget.style.opacity = '1'; event.currentTarget.style.transform = 'translateY(-2px)';
 }
 
-// =================== V77: HEATMAP CALENDAR ===================
+// =================== V78: HEATMAP CALENDAR ===================
 function renderHeatmap() {
     const grid = $('heatmap-grid'); grid.innerHTML = '';
     const t = T();
@@ -3563,7 +3792,7 @@ function renderHeatmap() {
     }
 }
 
-// =================== V77: QBANK BREAKDOWN ===================
+// =================== V78: QBANK BREAKDOWN ===================
 function renderQbankBreakdown() {
     const ptSess = sessions.filter(s => (s.qbank||'').toUpperCase() === 'PT' && s.score > 0);
     const emSess = sessions.filter(s => (s.qbank||'').toUpperCase() === 'EM' && s.score > 0);
@@ -3576,7 +3805,7 @@ function renderQbankBreakdown() {
     $('h-em-avg').style.color = emAvg >= 70 ? T().alertOk : emAvg >= 50 ? T().accent2 : T().accent;
 }
 
-// =================== V77: READINESS GAUGE ===================
+// =================== V78: READINESS GAUGE ===================
 function calcReadiness() {
     const ptPct = PT_TOTAL > 0 ? (DASH_STATS.ptGlobal || 0) / PT_TOTAL : 0;
     const emPct = EM_TOTAL > 0 ? (DASH_STATS.emGlobal || 0) / EM_TOTAL : 0;
@@ -3591,7 +3820,7 @@ function calcReadiness() {
     return readiness;
 }
 
-// =================== V77: SOUND & HAPTICS ===================
+// =================== V78: SOUND & HAPTICS ===================
 let audioCtx = null;
 function playBeep(freq = 880, dur = 0.12) {
     try {
@@ -3606,7 +3835,7 @@ function playBeep(freq = 880, dur = 0.12) {
 }
 function haptic(ms = 10) { try { navigator.vibrate(ms); } catch(e) {} }
 
-// =================== V77: KEYBOARD SHORTCUTS ===================
+// =================== V78: KEYBOARD SHORTCUTS ===================
 document.addEventListener('keydown', function(e) {
     // Only active in flashcard view
     if(!$('v-flashcards').classList.contains('active')) return;
@@ -3625,7 +3854,7 @@ document.addEventListener('keydown', function(e) {
     else if(isFlipped && e.key === '4') { e.preventDefault(); logSRS(4); }
 });
 
-// =================== V77: SWIPE GESTURES ===================
+// =================== V78: SWIPE GESTURES ===================
 let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
 
 document.addEventListener('touchstart', function(e) {
@@ -3654,7 +3883,7 @@ document.addEventListener('touchend', function(e) {
     }
 }, { passive: true });
 
-// =================== V77: MARKDOWN RENDERER ===================
+// =================== V78: MARKDOWN RENDERER ===================
 function renderMarkdown(text) {
     if(!text) return '<span style="opacity:0.5;font-style:italic;">No notes added yet.</span>';
     let html = text
@@ -3693,7 +3922,7 @@ function renderMarkdown(text) {
     return out.join('\n').replace(/<br>\n<br>/g, '<br>').replace(/(<br>\s*)+$/g, '');
 }
 
-// =================== V77: CLIPBOARD IMAGE PASTE ===================
+// =================== V78: CLIPBOARD IMAGE PASTE ===================
 document.addEventListener('paste', function(e) {
     // Only handle in flashcard editor
     if(!$('fc-modal').classList.contains('active')) return;
@@ -3727,7 +3956,7 @@ function convertImageToDataURI(blob) {
     reader.readAsDataURL(blob);
 }
 
-// =================== V77: PROGRESS CARD GENERATOR ===================
+// =================== V78: PROGRESS CARD GENERATOR ===================
 function generateProgressCard() {
     const canvas = $('progress-card-canvas');
     const ctx = canvas.getContext('2d');
@@ -3788,7 +4017,7 @@ function generateProgressCard() {
     ctx.font='700 9px "DM Sans"'; ctx.fillStyle=rc+'88'; ctx.fillText(rd>=70?'ON TRACK':rd>=40?'BUILDING':'EARLY STAGES',w/2,292);
 
     if(t.isPride) { const q=prideQuotes[Math.floor(Math.random()*prideQuotes.length)]; ctx.font='italic 600 9px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff44':'#00000044'; let tx=q; while(ctx.measureText(tx).width>w-48)tx=tx.slice(0,-4)+'...'; ctx.fillText(tx,w/2,316); }
-    ctx.font='600 8px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff15':'#00000015'; ctx.fillText('MRCS TRACKER V77',w/2,h-12);
+    ctx.font='600 8px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff15':'#00000015'; ctx.fillText('MRCS TRACKER V78',w/2,h-12);
     $('progress-modal').classList.add('active');
 }
 
@@ -3874,13 +4103,13 @@ async function shareProgressCard() {
     } catch(e) { downloadProgressCard(); }
 }
 
-// V77: PWA manifest only (blob service workers don't work cross-origin on Netlify)
+// V78: PWA manifest only (blob service workers don't work cross-origin on Netlify)
 const manifest = { name: "MRCS QBank Tracker", short_name: "MRCS", start_url: ".", display: "standalone", background_color: "#1c0028", theme_color: "#ff007f", icons: [{ src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231c0028' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='%23ff007f'>M</text></svg>", sizes: "any", type: "image/svg+xml" }] };
-// V77: Manifest disabled on GitHub Pages (blob URLs cause CORS Script Error)
+// V78: Manifest disabled on GitHub Pages (blob URLs cause CORS Script Error)
 // PWA works via meta tags alone for Add to Home Screen
 
 
-// V77: View history stack for swipe-back navigation
+// V78: View history stack for swipe-back navigation
 let viewHistory = ['v-setup'];
 
 function show(id) {
@@ -3927,7 +4156,7 @@ function initApp() {
     $('cloud-bin').value = CLOUD_BIN;
     $('gemini-key').value = GEMINI_KEY;
 
-    // V77: Load saved theme
+    // V78: Load saved theme
     const savedTheme = localStorage.getItem('mrcs-theme');
     if(savedTheme && THEMES[savedTheme]) theme = savedTheme;
 
@@ -3986,7 +4215,7 @@ function initApp() {
     $('btn-action-cancel').onclick = () => $('action-modal').classList.remove('active');
     $('action-modal').onclick = () => $('action-modal').classList.remove('active');
     
-    logDebug("V77 App initialized successfully. All systems operational.");
+    logDebug("V78 App initialized successfully. All systems operational.");
 }
 
 initApp();
