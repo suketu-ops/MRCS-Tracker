@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V78</title>
-<!-- V78: PWA Meta Tags -->
+<title>MRCS QBank Tracker Pro Max V79</title>
+<!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MRCS Tracker">
@@ -232,39 +232,39 @@
     .ai-msg-user { align-self: flex-end; background: rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 12px 12px 0 12px; width: fit-content; max-width: 85%; border: 1px solid rgba(255,255,255,0.2); }
     .ai-msg-model { align-self: flex-start; background: rgba(0, 242, 254, 0.1); padding: 12px 16px; border-radius: 12px 12px 12px 0; border-left: 4px solid #00f2fe; width: fit-content; max-width: 95%; }
 
-    /* V78: Heatmap Calendar */
+    /* V79: Heatmap Calendar */
     .heatmap-grid { display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-start; max-width: 500px; margin: 0 auto 16px; }
     .hm-cell { width: 18px; height: 18px; border-radius: 3px; background: rgba(128,128,128,0.1); transition: all 0.2s; position: relative; cursor: default; }
     .hm-cell:hover { transform: scale(1.4); z-index: 2; }
     .hm-cell[data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); background: #111; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.6rem; white-space: nowrap; z-index: 10; font-family: 'JetBrains Mono', monospace; pointer-events: none; }
     .hm-label { font-size: 0.55rem; opacity: 0.4; text-transform: uppercase; letter-spacing: 1px; width: 100%; text-align: center; margin-bottom: 4px; }
 
-    /* V78: Quick Presets */
+    /* V79: Quick Presets */
     .preset-row { display: flex; gap: 6px; width: 100%; margin-bottom: 8px; }
     .preset-btn { flex: 1; padding: 8px 4px; border: 1.5px solid; border-radius: 10px; background: transparent; cursor: pointer; text-align: center; font-family: 'DM Sans', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; transition: all 0.2s; color: inherit; opacity: 0.7; }
     .preset-btn:hover { opacity: 1; transform: translateY(-2px); }
 
-    /* V78: Readiness Gauge */
+    /* V79: Readiness Gauge */
     .readiness-wrap { text-align: center; margin: 8px 0; }
     .readiness-bar { width: 100%; height: 6px; border-radius: 3px; overflow: hidden; margin: 4px 0; }
     .readiness-fill { height: 100%; border-radius: 3px; transition: width 1s, background 0.4s; }
     .readiness-label { font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; }
     .readiness-pct { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; line-height: 1; }
 
-    /* V78: Keyboard hint */
+    /* V79: Keyboard hint */
     .kb-hint { font-size: 0.55rem; opacity: 0.35; text-align: center; letter-spacing: 1px; margin-top: 4px; }
 
-    /* V78: Progress Card */
+    /* V79: Progress Card */
     #progress-card-canvas { border-radius: 16px; max-width: 100%; height: auto; display: block; margin: 0 auto; cursor: pointer; }
     .progress-card-wrap { text-align: center; margin: 16px 0; }
     .progress-card-actions { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
 
-    /* V78: Paste indicator */
+    /* V79: Paste indicator */
     .paste-zone { border: 2px dashed rgba(128,128,128,0.3); border-radius: 8px; padding: 12px; text-align: center; font-size: 0.7rem; opacity: 0.5; margin-top: 8px; transition: all 0.3s; cursor: pointer; }
     .paste-zone:hover, .paste-zone.active { border-color: var(--accent2); opacity: 0.8; }
     .paste-preview { max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 8px; margin-top: 8px; }
 
-    /* V78: Markdown rendered content */
+    /* V79: Markdown rendered content */
     .md-content { font-size: 0.95rem; line-height: 1.7; }
     .md-content h1, .md-content h2, .md-content h3 { font-family: 'Bebas Neue', sans-serif; color: var(--accent2); margin: 16px 0 8px; }
     .md-content h1 { font-size: 1.8rem; } .md-content h2 { font-size: 1.4rem; } .md-content h3 { font-size: 1.2rem; }
@@ -279,17 +279,17 @@
     .md-content a { color: var(--accent2); text-decoration: underline; }
 
     /* ============================================= */
-    /* V78: COMPREHENSIVE MOBILE OPTIMISATION        */
+    /* V79: COMPREHENSIVE MOBILE OPTIMISATION        */
     /* ============================================= */
 
     /* --- Safe area for notched phones --- */
-    /* V78: Aggressive safe area for iPhone Dynamic Island + home indicator */
+    /* V79: Aggressive safe area for iPhone Dynamic Island + home indicator */
     @supports (padding: env(safe-area-inset-top)) {
         .top-bar { padding-top: calc(env(safe-area-inset-top) + 8px); padding-bottom: 8px; }
         #app { padding-top: calc(env(safe-area-inset-top) + 56px); padding-bottom: calc(env(safe-area-inset-bottom) + 20px); }
     }
 
-    /* V78: Safe bottom padding for all views */
+    /* V79: Safe bottom padding for all views */
     .view { padding-bottom: 24px; }
     @supports (padding: env(safe-area-inset-bottom)) {
         .view { padding-bottom: calc(env(safe-area-inset-bottom) + 16px); }
@@ -439,7 +439,7 @@
     }
 
     
-    /* V78: Pride theme glitter */
+    /* V79: Pride theme glitter */
     @keyframes glitter { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
     @keyframes rainbowShift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
     body.pride-active .clock { animation: rainbowShift 4s linear infinite; }
@@ -451,7 +451,7 @@
     body.pride-active .lm { animation: glitter 2.5s ease-in-out infinite; }
     body.pride-active .th-dot.sel { box-shadow: 0 0 12px rgba(204,51,255,0.8); }
     
-    /* V78: Fandom theme animations */
+    /* V79: Fandom theme animations */
     body.fandom-bridgerton .clock { font-family: 'Times New Roman', serif !important; }
     body.fandom-bridgerton .stat-val { font-family: 'Times New Roman', serif !important; }
     body.fandom-hogwarts .clock { text-shadow: 0 0 12px rgba(241,196,15,0.4); }
@@ -470,7 +470,23 @@
     body.fandom-westeros .stat-val { animation: fireFlicker 3s ease-in-out infinite; }
 
     
-    /* V78: Theme Picker Popup */
+    
+    /* V79: Exam notes side panel */
+    .fc-back-layout { display: flex; width: 100%; gap: 12px; flex: 1; min-height: 0; }
+    .fc-main-col { flex: 2; overflow-y: auto; min-width: 0; }
+    .fc-exam-col { flex: 1; min-width: 120px; max-width: 35%; padding: 10px 12px; overflow-y: auto; font-size: 0.7rem; line-height: 1.6; font-family: 'JetBrains Mono', monospace; background: rgba(128,128,128,0.04); border-radius: 10px; border: 1px solid rgba(128,128,128,0.12); margin-left: 8px; }
+    .fc-exam-col .exam-note-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.4; margin-bottom: 6px; font-weight: 700; font-family: 'DM Sans', sans-serif; }
+    .fc-exam-col .exam-note-content { white-space: pre-wrap; word-wrap: break-word; opacity: 0.8; }
+    .risk-badge { display: inline-block; font-size: 0.55rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .risk-red { background: rgba(255,50,50,0.15); color: #ff5252; }
+    .risk-yellow { background: rgba(255,180,0,0.15); color: #ffab00; }
+    .risk-green { background: rgba(50,200,100,0.15); color: #4ade80; }
+    @media (max-width: 480px) {
+        .fc-back-layout { flex-direction: column; }
+        .fc-exam-col { max-width: 100%; margin-left: 0; margin-top: 10px; }
+    }
+
+    /* V79: Theme Picker Popup */
     .theme-picker-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
     .theme-picker-overlay.active { display: flex; opacity: 1; }
     .theme-picker { background: #111; border-radius: 20px; padding: 24px; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); }
@@ -483,7 +499,7 @@
     .theme-option-desc { font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
     .theme-section { font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.25); padding: 12px 16px 4px; }
 
-    /* V78: Theme bar - JS handles show/hide */
+    /* V79: Theme bar - JS handles show/hide */
     .th-bar { max-width: 70%; }
 
     @keyframes emojiDrop { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(100vh); opacity: 0; } }
@@ -868,8 +884,17 @@
             
             <div class="fc-face fc-back" id="fc-back">
                 <div class="fc-actions-wrapper" id="fc-actions-back" style="position: absolute; top: 12px; right: 12px; z-index: 20;"></div>
-                <div class="fc-notes" id="fc-notes">No notes added yet. Click edit to add text or an image URL.</div>
-                <img id="fc-img" class="fc-img-preview" src="" style="display:none;" onerror="this.style.display='none'">
+                <div class="fc-back-layout">
+                    <div class="fc-main-col">
+                        <div class="fc-notes" id="fc-notes">No notes added yet.</div>
+                        <img id="fc-img" class="fc-img-preview" src="" style="display:none;" onerror="this.style.display='none'">
+                    </div>
+                    <div class="fc-exam-col" id="fc-exam-col">
+                        <div class="exam-note-label">EXAM NOTES</div>
+                        <div id="fc-exam-risk"></div>
+                        <div class="exam-note-content" id="fc-exam-note">No exam notes yet.</div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -999,7 +1024,7 @@
     </div>
   </div>
 
-  <!-- V78: Progress Card Modal -->
+  <!-- V79: Progress Card Modal -->
   <div class="modal-overlay" id="progress-modal" onclick="closeProgressModal()">
     <div class="modal-content" style="max-width: 500px; text-align: center;" onclick="event.stopPropagation()">
         <div class="dash-lbl" style="color:var(--accent2); text-align:center; margin-bottom:8px;">Your Progress Card</div>
@@ -1043,7 +1068,8 @@
         <div style="font-size:0.65rem; opacity:0.6; text-align:center; margin-top:8px;">Select specific text to add, or click below to add everything.</div>
         
         <div class="row" style="justify-content:center; margin-top:8px; gap:8px;">
-            <button class="btn btn-sm btn-ghost" id="btn-append-ai" onmousedown="event.preventDefault();" style="display:none; border-color:var(--accent2); color:var(--accent2);">📝 Add Selected Text to Note</button>
+            <button class="btn btn-sm btn-ghost" id="btn-append-ai" onmousedown="event.preventDefault();" style="display:none; border-color:var(--accent2); color:var(--accent2);">📝 Add to Notes</button>
+            <button class="btn btn-sm btn-ghost" id="btn-exam-note-ai" onmousedown="event.preventDefault();" style="display:none; border-color:var(--accent); color:var(--accent);" onclick="saveAsExamNote()">📌 Save as Exam Note</button>
             <button class="btn btn-sm btn-ghost" id="btn-ai-close" style="border-color:rgba(0, 242, 254, 0.4); color:#00f2fe;">Close Console</button>
         </div>
     </div>
@@ -1059,7 +1085,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
     return false; 
 };
 function logDebug(msg) { const logsEl = document.getElementById('debug-logs'); if (logsEl) logsEl.innerHTML += `<div class="log-line log-boot">[BOOT] ${msg}</div>`; }
-logDebug("V78 Script execution started.");
+logDebug("V79 Script execution started.");
 
 // V56 Selection Cache - fixes Safari/mobile highlight disappearing on button click
 let activeSelection = "";
@@ -1177,7 +1203,7 @@ async function pushToCloud() {
 }
 
 async function pullFromCloud(isManual = false) {
-    // V78: On manual pull, read keys from inputs first (for fresh device setup)
+    // V79: On manual pull, read keys from inputs first (for fresh device setup)
     if(isManual) {
         const keyVal = $('cloud-key').value.trim();
         const binVal = $('cloud-bin').value.trim();
@@ -1324,7 +1350,7 @@ const prideTimerQuotes = [
 ];
 
 
-// V78: Fandom theme data
+// V79: Fandom theme data
 const fandomQuotes = {
     bridgerton: [
         "I burn for you. And now I burn for this exam. \u2014 Bridgerton energy",
@@ -1398,7 +1424,7 @@ const fandomBreakPrompts = {
 };
 
 
-// V78: Extended fandom data
+// V79: Extended fandom data
 Object.assign(fandomQuotes, {
     bollywood: [
         "Picture abhi baaki hai, mere dost. The paper isn't over yet.",
@@ -1485,8 +1511,8 @@ const quotes = [
     "Embrace the grind. The scalpel awaits."
 ];
 
-// V78: Shane & Ilya milestone celebration
-// V78: Formatting toolbar helpers
+// V79: Shane & Ilya milestone celebration
+// V79: Formatting toolbar helpers
 function wrapSelection(before, after) {
     const ta = $('modal-note-text');
     const start = ta.selectionStart, end = ta.selectionEnd;
@@ -1527,7 +1553,7 @@ function deleteSession(idx) {
     };
 }
 
-// V78: Cottage celebration quotes + HR images
+// V79: Cottage celebration quotes + HR images
 const cottageQuotes = [
     "\u201CI\u2019m coming to the cottage.\u201D \u2014 Ilya Rozanov",
     "\u201CYou\u2019re it for me. You know that, right?\u201D \u2014 Shane Hollander",
@@ -1786,7 +1812,7 @@ function persistData() {
 function getLogToday() { return TRACKER_DATA.find(r=>r.d===logTodayStr()); }
 function daysToExam() { const now=new Date(); now.setHours(0,0,0,0); return Math.max(0,Math.ceil((EXAM_DATE-now)/(1000*60*60*24))); }
 
-// V78: MRCS tips for pre-session flash
+// V79: MRCS tips for pre-session flash
 const mrcsTips = [
     "Read the LAST LINE of the question first. Know what’s being asked before reading the stem.",
     "“Most likely” = most COMMON. Not most interesting, not most dramatic.",
@@ -1809,7 +1835,7 @@ function showPreSessionTip() {
     });
 }
 
-// V78: Silent session tracking
+// V79: Silent session tracking
 let silentSession = false;
 function saveSilentTime(mins) {
     const today = displayTodayStr();
@@ -1828,7 +1854,7 @@ function getSilentTarget() {
     return 180;
 }
 
-// V78: Morning check-in
+// V79: Morning check-in
 function getMorningStreak() { return parseInt(localStorage.getItem('mrcs-morning-streak') || '0'); }
 function getLastMorningDate() { return localStorage.getItem('mrcs-morning-last') || ''; }
 function doMorningCheckin() {
@@ -1863,7 +1889,7 @@ function updateMorningZone() {
     }
 }
 
-// V78: Morning micro-quiz
+// V79: Morning micro-quiz
 let mqCards = [], mqIdx = 0, mqDone = false;
 function initMicroQuiz() {
     const hour = new Date().getHours();
@@ -1899,7 +1925,7 @@ function mqComplete() {
     haptic(20);
 }
 
-// V78: PT First Pass countdown
+// V79: PT First Pass countdown
 function renderPTCountdown() {
     const el = $('pt-countdown'); if(!el) return;
     const targetDate = new Date('2026-04-13');
@@ -1918,7 +1944,7 @@ function renderPTCountdown() {
         daysLeft + ' days left';
 }
 
-// V78: Error breakdown in performance dashboard
+// V79: Error breakdown in performance dashboard
 function renderErrorBreakdown() {
     const errTotals = { know:0, retrieval:0, reasoning:0 };
     sessions.forEach(s => {
@@ -1932,6 +1958,74 @@ function renderErrorBreakdown() {
         '<div style="text-align:center;"><div class="stat-val" style="font-size:1.5rem;color:var(--accent2);">' + errTotals.retrieval + '</div><div class="stat-lbl">Retrieval</div></div>' +
         '<div style="text-align:center;"><div class="stat-val" style="font-size:1.5rem;color:var(--accent);">' + errTotals.reasoning + '</div><div class="stat-lbl">Reasoning</div></div>' +
         '</div></div>';
+}
+
+
+// V79: Save consultant response as exam note + extract risk flag
+function saveAsExamNote() {
+    if(!aiCurrentWord || !lastAIResponseText) return;
+    const globalIdx = REVIEW_BANK.findIndex(b => b.word === aiCurrentWord);
+    if(globalIdx < 0) return;
+    
+    // Save the full AI response as exam note
+    REVIEW_BANK[globalIdx].examNote = lastAIResponseText;
+    
+    // Auto-extract risk flag from response
+    const riskMatch = lastAIResponseText.match(/RISK FLAG.*?(RED|YELLOW|GREEN)/i);
+    if(riskMatch) {
+        REVIEW_BANK[globalIdx].riskLevel = riskMatch[1].toLowerCase();
+    }
+    
+    persistData(); pushToCloud(); refreshCurrentView();
+    
+    const btn = $('btn-exam-note-ai');
+    btn.textContent = '\u2705 Exam Note Saved';
+    btn.style.color = '#4ade80'; btn.style.borderColor = '#4ade80';
+    setTimeout(() => {
+        btn.textContent = '\uD83D\uDCCC Save as Exam Note';
+        btn.style.color = 'var(--accent)'; btn.style.borderColor = 'var(--accent)';
+    }, 2000);
+}
+
+// V79: Edit exam note from action menu
+function editExamNote(word) {
+    const item = REVIEW_BANK.find(b => b.word === word);
+    if(!item) return;
+    $('action-title').textContent = 'EDIT EXAM NOTE';
+    $('action-msg').innerHTML = '<span style="color:var(--accent2);">' + word + '</span>' +
+        '<div class="row" style="gap:4px;margin-top:8px;justify-content:flex-start;flex-wrap:wrap;">' +
+        '<button class="btn btn-sm btn-ghost" onclick="wrapExamNote(\'**\',\'**\')" style="padding:3px 8px;font-size:0.65rem;font-weight:900;min-height:28px;">B</button>' +
+        '<button class="btn btn-sm btn-ghost" onclick="wrapExamNote(\'*\',\'*\')" style="padding:3px 8px;font-size:0.65rem;font-style:italic;min-height:28px;">I</button>' +
+        '<button class="btn btn-sm btn-ghost" onclick="wrapExamNote(\'__\',\'__\')" style="padding:3px 8px;font-size:0.65rem;text-decoration:underline;min-height:28px;">U</button>' +
+        '<button class="btn btn-sm btn-ghost" onclick="wrapExamNote(\'## \',\'\')" style="padding:3px 6px;font-size:0.6rem;min-height:28px;">H2</button>' +
+        '<button class="btn btn-sm btn-ghost" onclick="wrapExamNote(\'- \',\'\')" style="padding:3px 6px;font-size:0.6rem;min-height:28px;">List</button>' +
+        '</div>';
+    $('action-input').style.display = 'block';
+    $('action-input').value = item.examNote || '';
+    $('action-input').style.height = '150px';
+    $('action-input').style.fontFamily = "'JetBrains Mono', monospace";
+    $('action-input').style.fontSize = '0.72rem';
+    $('action-modal').classList.add('active');
+    $('btn-action-confirm').onclick = () => {
+        item.examNote = $('action-input').value;
+        persistData(); pushToCloud(); refreshCurrentView();
+        $('action-modal').classList.remove('active');
+        $('action-input').style.height = '';
+        $('action-input').style.fontFamily = '';
+        $('action-input').style.fontSize = '';
+        $('btn-action-confirm').onclick = null;
+    };
+}
+
+function wrapExamNote(before, after) {
+    const ta = $('action-input');
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const text = ta.value;
+    const selected = text.substring(start, end);
+    ta.value = text.substring(0, start) + before + selected + after + text.substring(end);
+    ta.focus();
+    ta.selectionStart = start + before.length;
+    ta.selectionEnd = start + before.length + selected.length;
 }
 
 function _showView(id) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); $(id).classList.add('active'); }
@@ -2042,7 +2136,7 @@ function applyTheme() {
   // V60: Theme break chips
   document.querySelectorAll('.break-chip:not(.active)').forEach(el => { el.style.color = t.fg; });
   
-  // V78: Toggle theme body classes
+  // V79: Toggle theme body classes
   document.body.classList.remove('pride-active','fandom-bridgerton','fandom-hogwarts','fandom-westeros','fandom-bollywood','fandom-greys','fandom-lasso','fandom-eras','fandom-schitts','fandom-ghibli','fandom-wednesday');
   if(t.isPride) document.body.classList.add('pride-active');
   if(t.isFandom) document.body.classList.add('fandom-' + t.isFandom);
@@ -2238,17 +2332,17 @@ function buildHomeLayout() {
       </div>
   `;
 
-  // V78: Home heatmap
+  // V79: Home heatmap
   renderHomeHeatmap();
   
-  // V78: PT countdown
+  // V79: PT countdown
   renderPTCountdown();
   
-  // V78: Morning features
+  // V79: Morning features
   updateMorningZone();
   initMicroQuiz();
   
-  // V78: Quote of the day
+  // V79: Quote of the day
   const quoteEl = $('home-quote');
   if(t.isPride) {
       quoteEl.textContent = prideQuotes[Math.floor(Math.random() * prideQuotes.length)];
@@ -2282,7 +2376,7 @@ function lmClick(i) {
     if(cpDone[i]) return;
     cpDone[i] = true;
     haptic(20); playBeep(880, 0.15);
-    // V78: Pride celebration on milestone
+    // V79: Pride celebration on milestone
     if(T().isPride) celebrateMilestone();
     const mn = Math.round(elapsed/60);
     const diff = mn - cpTimes[i];
@@ -2394,7 +2488,7 @@ function redrawScratchpad() {
 
 // Session Flow Controls
 
-// V78: Error taxonomy
+// V79: Error taxonomy
 let errorCounts = { know: 0, retrieval: 0, reasoning: 0 };
 function incError(type) {
     errorCounts[type]++;
@@ -2569,7 +2663,7 @@ function saveSessionResult() {
         breaks: sessionBreaks, breakSecs: totalBreakTime, breakLog: breakTally,
         startIso: globalSessionStart, endIso: globalSessionEnd, scratchpad: sessionScratchpad, errors: {...errorCounts}
     });
-    // V78: Log silent session time
+    // V79: Log silent session time
     if(silentSession && mn > 0) saveSilentTime(mn);
     persistData(); pushToCloud(); showTrackerView(); 
 }
@@ -2739,7 +2833,7 @@ function showHistoryView() {
     }
     
     const validSessions = sessions;
-    // V78: Only MCQ sessions count for score stats
+    // V79: Only MCQ sessions count for score stats
     const mcqSessions = validSessions.filter(s => (s.qbank||'').toUpperCase() !== 'FC');
     const sc = mcqSessions.map(s => Number(s.score) || 0);
     const avg = sc.length ? Math.round(sc.reduce((a,b) => a+b, 0) / sc.length) : 0;
@@ -2747,14 +2841,14 @@ function showHistoryView() {
     
     $('h-count').textContent = mcqSessions.length;
     
-    // V78: Error taxonomy display
+    // V79: Error taxonomy display
     const errHtml = renderErrorBreakdown();
     const errTarget = $('hist-list');
     if(errHtml && errTarget) errTarget.insertAdjacentHTML('beforebegin', errHtml);
     $('h-avg').textContent = avg + '%';
     $('h-best').textContent = best + '%';
     
-    // V78: Render new analytics
+    // V79: Render new analytics
     renderHeatmap(); renderQbankBreakdown(); calcReadiness();
     
     $('hist-list').innerHTML = validSessions.slice().reverse().map((s, reversedIdx) => {
@@ -2862,6 +2956,7 @@ function triggerDelete(word) {
 
 // --- V48+ PURE DOM GLOBAL MENU ENGINE ---
 function showGlobalMenu(e, word, context) {
+    // V79: Include exam note editing in menu
     e.stopPropagation();
     const menu = $('global-context-menu');
     
@@ -2888,6 +2983,7 @@ function showGlobalMenu(e, word, context) {
     
     createOpt('🤖 Ask Consultant', () => askConsultant(word));
     createOpt('✏️ Edit Flashcard', () => openFlashcardEditorEvent(word));
+    createOpt('📌 Edit Exam Note', () => editExamNote(word));
     createOpt('📝 Rename Word', () => triggerRename(word));
     createOpt('🧠 TeachMeAnatomy', () => markReviewedAndClose(word), true, `https://teachmeanatomy.info/?s=${encodeURIComponent(word)}`);
     createOpt('🔍 Image (Anatomy)', () => markReviewedAndClose(word), true, `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(word + " anatomy")}`);
@@ -2918,7 +3014,7 @@ function openFlashcardEditorEvent(word) {
     $('modal-word').textContent = item.word;
     $('modal-note-text').value = item.notes || '';
     $('modal-img-url').value = item.img || '';
-    // V78: Reset paste zone
+    // V79: Reset paste zone
     $('paste-preview').style.display = 'none'; $('paste-preview').src = '';
     $('paste-zone').classList.remove('active');
     $('paste-zone').childNodes[0].textContent = '\u{1F4CB} Paste or tap to add image from clipboard/camera';
@@ -3094,7 +3190,7 @@ function applyFlashcardSearch() {
     }
 }
 
-// V78: Flashcard focus time tracking (separate from MCQ sessions)
+// V79: Flashcard focus time tracking (separate from MCQ sessions)
 let fcSessionStart = 0;
 
 function openFlashcards() {
@@ -3107,7 +3203,7 @@ function closeFCSession() {
     if(fcSessionStart > 0) {
         const mins = Math.round((Date.now() - fcSessionStart) / 60000);
         if(mins >= 1) {
-            // V78: Store FC focus time separately - don't pollute MCQ sessions
+            // V79: Store FC focus time separately - don't pollute MCQ sessions
             const fcTime = parseInt(localStorage.getItem('mrcs-fc-focus') || '0');
             localStorage.setItem('mrcs-fc-focus', fcTime + mins);
         }
@@ -3135,6 +3231,12 @@ function renderFlashcard() {
         $('fc-img').style.display = 'none';
     }
     $('fc-counter').textContent = `${fcCurrentIdx + 1} / ${fcQueue.length}`;
+    
+    // V79: Exam notes + risk badge
+    const examNote = item.examNote || '';
+    const risk = item.riskLevel || '';
+    $('fc-exam-note').innerHTML = examNote ? '<div class="md-content">' + renderMarkdown(examNote) + '</div>' : '<span style="opacity:0.3;">No exam notes yet.</span>';
+    $('fc-exam-risk').innerHTML = risk ? '<span class="risk-badge risk-' + risk + '">' + risk.toUpperCase() + ' RISK</span> ' : '';
     
     const actionsFront = $('fc-actions-front');
     const actionsBack = $('fc-actions-back');
@@ -3238,7 +3340,14 @@ function closeExpandModal() { $('expand-modal').classList.remove('active'); }
 function renderGallery() {
     const grid = $('fc-gallery-state');
     
-    let itemsToRender = REVIEW_BANK;
+    let itemsToRender = [...REVIEW_BANK];
+    // V79: Sort by risk level (red first, then yellow, then green, then untagged)
+    const riskOrder = { red: 0, yellow: 1, green: 2 };
+    itemsToRender.sort((a, b) => {
+        const ra = a.riskLevel ? riskOrder[a.riskLevel] : 3;
+        const rb = b.riskLevel ? riskOrder[b.riskLevel] : 3;
+        return ra - rb;
+    });
     if(fcSearchQuery) {
         itemsToRender = REVIEW_BANK.filter(item => item.word.toLowerCase().includes(fcSearchQuery) || (item.notes && item.notes.toLowerCase().includes(fcSearchQuery)));
     }
@@ -3282,6 +3391,15 @@ function renderGallery() {
              
         } else {
              card.onclick = (e) => showGlobalMenu(e, item.word, 'gallery');
+            // V79: Risk badge in gallery
+            if(item.riskLevel) {
+                const rb = document.createElement('span');
+                rb.className = 'risk-badge risk-' + item.riskLevel;
+                rb.textContent = item.riskLevel.toUpperCase();
+                rb.style.cssText = 'position:absolute;top:6px;left:6px;';
+                card.style.position = 'relative';
+                card.appendChild(rb);
+            }
              card.classList.remove('revealed');
              card.innerHTML = `<b style="margin-bottom:8px;">${item.word}</b>
                                <span style="font-size:0.7rem; opacity:0.7; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;">${item.notes || (item.img ? '[Image Attached]' : 'No notes')}</span>`;
@@ -3308,7 +3426,7 @@ function openFlashcardEditor(e, fromHelper = false) {
     $('modal-word').textContent = globalObj.word;
     $('modal-note-text').value = globalObj.notes || '';
     $('modal-img-url').value = globalObj.img || '';
-    // V78: Reset paste zone
+    // V79: Reset paste zone
     $('paste-preview').style.display = 'none'; $('paste-preview').src = '';
     $('paste-zone').classList.remove('active');
     $('paste-zone').childNodes[0].textContent = '\u{1F4CB} Paste or tap to add image from clipboard/camera';
@@ -3347,7 +3465,10 @@ function saveFlashcardEditor() {
 }
 
 function exportFlashcardsPDF() {
-    let exportSet = REVIEW_BANK;
+    let exportSet = [...REVIEW_BANK];
+    // V79: Sort by risk
+    const riskOrd = { red: 0, yellow: 1, green: 2 };
+    exportSet.sort((a, b) => (a.riskLevel ? riskOrd[a.riskLevel] : 3) - (b.riskLevel ? riskOrd[b.riskLevel] : 3));
     if(isGalleryView && fcSearchQuery) {
         exportSet = REVIEW_BANK.filter(item => item.word.toLowerCase().includes(fcSearchQuery) || (item.notes && item.notes.toLowerCase().includes(fcSearchQuery)));
     }
@@ -3356,7 +3477,7 @@ function exportFlashcardsPDF() {
     const printContainer = $('print-container');
     printContainer.innerHTML = '';
 
-    // V78: Compact multi-card PDF layout
+    // V79: Compact multi-card PDF layout
     const style = document.createElement('style');
     style.textContent = `
         @media print {
@@ -3389,7 +3510,9 @@ function exportFlashcardsPDF() {
         card.className = 'print-card-compact';
         let notesHtml = renderMarkdown(item.notes);
         let imgHtml = (item.img && item.img.trim() && !item.img.startsWith('data:')) ? '<img class="pc-img" src="' + item.img + '" onerror="this.style.display=\'none\'">' : '';
-        card.innerHTML = '<div class="pc-title">' + item.word + '</div><div class="pc-notes">' + notesHtml + '</div>' + imgHtml;
+        const riskBadge = item.riskLevel ? '<span style="display:inline-block;font-size:0.6rem;padding:1px 5px;border-radius:3px;margin-left:6px;background:' + (item.riskLevel==='red'?'#ffebee':item.riskLevel==='yellow'?'#fff8e1':'#e8f5e9') + ';color:' + (item.riskLevel==='red'?'#c62828':item.riskLevel==='yellow'?'#f57f17':'#2e7d32') + ';">' + item.riskLevel.toUpperCase() + '</span>' : '';
+        const examNoteHtml = item.examNote ? '<div style="margin-top:8px;padding:6px 8px;background:#f5f5ff;border-left:3px solid #7c3aed;border-radius:4px;font-size:0.7rem;line-height:1.4;color:#555;"><div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:3px;">Exam Note</div>' + renderMarkdown(item.examNote) + '</div>' : '';
+        card.innerHTML = '<div class="pc-title">' + item.word + riskBadge + '</div><div class="pc-notes">' + notesHtml + '</div>' + examNoteHtml + imgHtml;
         grid.appendChild(card);
     });
     
@@ -3436,12 +3559,32 @@ async function askConsultant(word) {
     $('ai-modal').classList.add('active');
     $('ai-word').textContent = word;
     $('btn-append-ai').style.display = 'none';
+    if($('btn-exam-note-ai')) $('btn-exam-note-ai').style.display = 'none';
     $('ai-response').innerHTML = '<div style="opacity:0.6; text-align:center; padding: 20px;" id="ai-loading">Consultant is reviewing the literature...</div>';
     
     const input = $('ai-followup-input');
     input.value = ''; input.disabled = true;
     
-    const initialPrompt = `You are an MRCS Part A surgical tutor. Explain "${word}" in 2-4 concise sentences maximum. Use **bold** for key terms. Only include what an MRCS candidate needs to know \u2014 no textbook essays. If anatomy: key relations and nerve supply. If pathology: definition, presentation, management. If surgical: indications, approach, complications. Be direct.`;
+    const initialPrompt = `You are an MRCS Part A exam coach. The candidate has 16 days to exam and asks about "${word}".
+
+RESPOND IN THIS EXACT FORMAT — never exceed 12 lines total:
+
+**CORE FACT** (2-3 sentences)
+Key testable facts only. Bold the most examined detail. If anatomy: key RELATION. If physiology: direction of change. If pathology: buzzword → diagnosis.
+
+**EXAM TRAP** (1 sentence)
+The common wrong answer and why candidates pick it.
+
+**SBA LOGIC** (1-2 sentences)
+Question pattern, "most likely" answer, reasoning shortcut. Use arrows for decision chains.
+
+**RISK FLAG:** [RED|YELLOW|GREEN]
+RED if topic is in: surgical technique, peri-op care, pathology (CVS/respiratory/endocrine/digestive), management & legal, intraoperative care, burns, organ transplant, musculoskeletal pathology.
+YELLOW if topic is in: anatomy, physiology, GI/colorectal/HPB, vascular, urology, orthopaedics.
+GREEN if topic is in: emergency medicine, post-op management, skin, hand disorders, breast.
+State the ONE fact they are most likely to get wrong.
+
+RULES: Max 12 lines. Bold key terms. No "in summary." If a mnemonic exists, add it as final line.`;
     
     aiChatHistory.push({ role: 'user', parts: [{ text: initialPrompt }] });
     
@@ -3463,7 +3606,7 @@ async function askConsultant(word) {
             let formattedHtml = formatAIResponse(text);
             $('ai-response').innerHTML = `<div class="ai-msg-model"><b>Consultant:</b><br>${formattedHtml}</div>`;
             
-            $('btn-append-ai').style.display = 'block';
+            $('btn-append-ai').style.display = 'block'; $('btn-exam-note-ai').style.display = 'block';
             input.disabled = false; input.focus();
         } else {
             $('ai-response').innerHTML = '<div style="color:#ff5252; text-align:center;">Consultant unavailable. Unrecognized response format.</div>';
@@ -3508,7 +3651,7 @@ async function sendFollowUp() {
             let formattedHtml = formatAIResponse(text);
             respBox.innerHTML += `<div class="ai-msg-model"><b>Consultant:</b><br>${formattedHtml}</div>`;
             $('btn-append-ai').style.display = 'block';
-        }
+        } $('btn-exam-note-ai').style.display = 'block';
         respBox.scrollTop = respBox.scrollHeight;
         input.disabled = false; input.focus();
     } catch(e) {
@@ -3518,7 +3661,7 @@ async function sendFollowUp() {
     }
 }
 
-// V78: Multi-selection buffer - accumulates multiple highlights
+// V79: Multi-selection buffer - accumulates multiple highlights
 let aiSelectionBuffer = [];
 
 function appendAIToNote() {
@@ -3663,7 +3806,7 @@ function openSessionSummary(idx) {
         const fq = fandomQuotes[T().isFandom];
         affirmation = fq[Math.floor(Math.random() * fq.length)];
     } else if(T().isPride) {
-        // V78: Pride affirmations
+        // V79: Pride affirmations
         if (badBreaks > 0 || bRatio > 0.25) affirmation = prideAffirmations[1];
         else if (score >= 75) affirmation = prideAffirmations[2];
         else if (score >= 60) affirmation = prideAffirmations[3];
@@ -3702,7 +3845,7 @@ function toggleFS() { if(document.fullscreenElement) document.exitFullscreen(); 
 document.addEventListener('keydown', e => { if(e.key === 'F11'){ e.preventDefault(); toggleFS(); } });
 
 
-// =================== V78: HOME HEATMAP ===================
+// =================== V79: HOME HEATMAP ===================
 function renderHomeHeatmap() {
     const grid = $('home-heatmap'); if(!grid) return; grid.innerHTML = '';
     const t = T();
@@ -3760,14 +3903,14 @@ function renderFCHeatmap() {
     }
 }
 
-// =================== V78: QUICK PRESETS ===================
+// =================== V79: QUICK PRESETS ===================
 function applyPreset(mins, qs, cps) {
     $('set-time').value = mins; $('set-qs').value = qs; $('set-cp').value = cps;
     document.querySelectorAll('.preset-btn').forEach(b => { b.style.opacity = '0.5'; b.style.transform = ''; });
     event.currentTarget.style.opacity = '1'; event.currentTarget.style.transform = 'translateY(-2px)';
 }
 
-// =================== V78: HEATMAP CALENDAR ===================
+// =================== V79: HEATMAP CALENDAR ===================
 function renderHeatmap() {
     const grid = $('heatmap-grid'); grid.innerHTML = '';
     const t = T();
@@ -3792,7 +3935,7 @@ function renderHeatmap() {
     }
 }
 
-// =================== V78: QBANK BREAKDOWN ===================
+// =================== V79: QBANK BREAKDOWN ===================
 function renderQbankBreakdown() {
     const ptSess = sessions.filter(s => (s.qbank||'').toUpperCase() === 'PT' && s.score > 0);
     const emSess = sessions.filter(s => (s.qbank||'').toUpperCase() === 'EM' && s.score > 0);
@@ -3805,7 +3948,7 @@ function renderQbankBreakdown() {
     $('h-em-avg').style.color = emAvg >= 70 ? T().alertOk : emAvg >= 50 ? T().accent2 : T().accent;
 }
 
-// =================== V78: READINESS GAUGE ===================
+// =================== V79: READINESS GAUGE ===================
 function calcReadiness() {
     const ptPct = PT_TOTAL > 0 ? (DASH_STATS.ptGlobal || 0) / PT_TOTAL : 0;
     const emPct = EM_TOTAL > 0 ? (DASH_STATS.emGlobal || 0) / EM_TOTAL : 0;
@@ -3820,7 +3963,7 @@ function calcReadiness() {
     return readiness;
 }
 
-// =================== V78: SOUND & HAPTICS ===================
+// =================== V79: SOUND & HAPTICS ===================
 let audioCtx = null;
 function playBeep(freq = 880, dur = 0.12) {
     try {
@@ -3835,7 +3978,7 @@ function playBeep(freq = 880, dur = 0.12) {
 }
 function haptic(ms = 10) { try { navigator.vibrate(ms); } catch(e) {} }
 
-// =================== V78: KEYBOARD SHORTCUTS ===================
+// =================== V79: KEYBOARD SHORTCUTS ===================
 document.addEventListener('keydown', function(e) {
     // Only active in flashcard view
     if(!$('v-flashcards').classList.contains('active')) return;
@@ -3854,7 +3997,7 @@ document.addEventListener('keydown', function(e) {
     else if(isFlipped && e.key === '4') { e.preventDefault(); logSRS(4); }
 });
 
-// =================== V78: SWIPE GESTURES ===================
+// =================== V79: SWIPE GESTURES ===================
 let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
 
 document.addEventListener('touchstart', function(e) {
@@ -3883,7 +4026,7 @@ document.addEventListener('touchend', function(e) {
     }
 }, { passive: true });
 
-// =================== V78: MARKDOWN RENDERER ===================
+// =================== V79: MARKDOWN RENDERER ===================
 function renderMarkdown(text) {
     if(!text) return '<span style="opacity:0.5;font-style:italic;">No notes added yet.</span>';
     let html = text
@@ -3922,7 +4065,7 @@ function renderMarkdown(text) {
     return out.join('\n').replace(/<br>\n<br>/g, '<br>').replace(/(<br>\s*)+$/g, '');
 }
 
-// =================== V78: CLIPBOARD IMAGE PASTE ===================
+// =================== V79: CLIPBOARD IMAGE PASTE ===================
 document.addEventListener('paste', function(e) {
     // Only handle in flashcard editor
     if(!$('fc-modal').classList.contains('active')) return;
@@ -3956,7 +4099,7 @@ function convertImageToDataURI(blob) {
     reader.readAsDataURL(blob);
 }
 
-// =================== V78: PROGRESS CARD GENERATOR ===================
+// =================== V79: PROGRESS CARD GENERATOR ===================
 function generateProgressCard() {
     const canvas = $('progress-card-canvas');
     const ctx = canvas.getContext('2d');
@@ -4017,7 +4160,7 @@ function generateProgressCard() {
     ctx.font='700 9px "DM Sans"'; ctx.fillStyle=rc+'88'; ctx.fillText(rd>=70?'ON TRACK':rd>=40?'BUILDING':'EARLY STAGES',w/2,292);
 
     if(t.isPride) { const q=prideQuotes[Math.floor(Math.random()*prideQuotes.length)]; ctx.font='italic 600 9px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff44':'#00000044'; let tx=q; while(ctx.measureText(tx).width>w-48)tx=tx.slice(0,-4)+'...'; ctx.fillText(tx,w/2,316); }
-    ctx.font='600 8px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff15':'#00000015'; ctx.fillText('MRCS TRACKER V78',w/2,h-12);
+    ctx.font='600 8px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff15':'#00000015'; ctx.fillText('MRCS TRACKER V79',w/2,h-12);
     $('progress-modal').classList.add('active');
 }
 
@@ -4103,13 +4246,13 @@ async function shareProgressCard() {
     } catch(e) { downloadProgressCard(); }
 }
 
-// V78: PWA manifest only (blob service workers don't work cross-origin on Netlify)
+// V79: PWA manifest only (blob service workers don't work cross-origin on Netlify)
 const manifest = { name: "MRCS QBank Tracker", short_name: "MRCS", start_url: ".", display: "standalone", background_color: "#1c0028", theme_color: "#ff007f", icons: [{ src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231c0028' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='%23ff007f'>M</text></svg>", sizes: "any", type: "image/svg+xml" }] };
-// V78: Manifest disabled on GitHub Pages (blob URLs cause CORS Script Error)
+// V79: Manifest disabled on GitHub Pages (blob URLs cause CORS Script Error)
 // PWA works via meta tags alone for Add to Home Screen
 
 
-// V78: View history stack for swipe-back navigation
+// V79: View history stack for swipe-back navigation
 let viewHistory = ['v-setup'];
 
 function show(id) {
@@ -4156,7 +4299,7 @@ function initApp() {
     $('cloud-bin').value = CLOUD_BIN;
     $('gemini-key').value = GEMINI_KEY;
 
-    // V78: Load saved theme
+    // V79: Load saved theme
     const savedTheme = localStorage.getItem('mrcs-theme');
     if(savedTheme && THEMES[savedTheme]) theme = savedTheme;
 
@@ -4215,7 +4358,7 @@ function initApp() {
     $('btn-action-cancel').onclick = () => $('action-modal').classList.remove('active');
     $('action-modal').onclick = () => $('action-modal').classList.remove('active');
     
-    logDebug("V78 App initialized successfully. All systems operational.");
+    logDebug("V79 App initialized successfully. All systems operational.");
 }
 
 initApp();
