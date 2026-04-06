@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V81</title>
+<title>MRCS QBank Tracker Pro Max V89</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -158,12 +158,13 @@
     #v-flashcards.active { max-width: 100%; width: 100%; height: 100%; flex: 1; display: flex; flex-direction: column; }
     #fc-active-state { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px 0; overflow-y: auto; perspective: 1200px; }
 
-    .fc-card { width: 100%; max-width: 900px; display: grid; border: 2px solid var(--accent); border-radius: 16px; background: transparent; cursor: pointer; transform-style: preserve-3d; transition: transform 0.6s; margin: 0 auto 12px; min-height: 300px; }
+    .fc-card { width: 100%; max-width: 900px; display: grid; border: 2px solid var(--accent); border-radius: 16px; background: transparent; cursor: pointer; transform-style: preserve-3d; transition: transform 0.6s; margin: 0 auto 12px; min-height: 220px; height: auto; }
     .fc-card.flipped { transform: rotateY(180deg); }
     
     .fc-face { grid-area: 1 / 1; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; border-radius: 16px; background: rgba(128,128,128,0.05); }
     .fc-front { transform: rotateY(0deg); z-index: 2; }
-    .fc-back { transform: rotateY(180deg); z-index: 1; padding-top: 50px; padding-bottom: 32px; align-items: flex-start; justify-content: flex-start; overflow-y: auto; }
+    .fc-back { transform: rotateY(180deg); z-index: 1; padding-top: 50px; padding-bottom: 32px; align-items: flex-start; justify-content: flex-start; overflow-y: auto; overflow-x: visible; max-height: 70vh; }
+    .fc-back .fc-actions-wrapper { position: sticky; top: 0; right: 0; z-index: 20; float: right; }
     
     .fc-word { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; letter-spacing: 2px; color: var(--accent2); text-align: center; transition: opacity 0.3s; }
     .fc-notes { font-size: 0.95rem; opacity: 0.9; text-align: left; width: 100%; max-width: 800px; word-wrap: break-word; line-height: 1.6; flex-shrink: 0; }
@@ -471,23 +472,151 @@
 
     
     
-    /* V81: Exam notes sidebar - separate from flashcard */
-    .fc-exam-sidebar { width: 200px; min-width: 160px; max-width: 240px; padding: 12px 14px; overflow-y: auto; font-size: 0.7rem; line-height: 1.6; font-family: 'JetBrains Mono', monospace; background: rgba(128,128,128,0.04); border-radius: 12px; border: 1px solid rgba(128,128,128,0.12); max-height: 400px; flex-shrink: 0; }
-    .fc-exam-sidebar .exam-note-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.4; margin-bottom: 6px; font-weight: 700; font-family: 'DM Sans', sans-serif; }
-    .fc-exam-sidebar .exam-note-content { white-space: pre-wrap; word-wrap: break-word; opacity: 0.8; }
+    /* V82: Stack view - exam note popup dialog (only on flipped) */
+    .fc-exam-sidebar { display: none; }
+    .exam-note-popup { position: absolute; top: 10px; right: -320px; width: 300px; max-height: 80vh; padding: 14px 16px; overflow-y: auto; font-size: 0.72rem; line-height: 1.6; font-family: 'JetBrains Mono', monospace; background: rgba(20,10,30,0.97); border-radius: 14px; border: 1.5px solid rgba(124,58,237,0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.6); z-index: 100; animation: popIn 0.2s ease; backdrop-filter: blur(12px); }
+    .exam-note-popup .exam-note-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.4; margin-bottom: 6px; font-weight: 700; font-family: 'DM Sans', sans-serif; }
+    .exam-note-popup .exam-note-content { white-space: pre-wrap; word-wrap: break-word; opacity: 0.85; }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.9) translateX(-10px); } to { opacity: 1; transform: scale(1) translateX(0); } }
+    @media (max-width: 700px) {
+        #fc-stack-layout { flex-direction: column !important; }
+        .exam-note-popup { position: fixed; top: 50%; left: 50%; right: auto; transform: translate(-50%, -50%); width: 90vw; max-width: 360px; max-height: 70vh; }
+    }
+
+    /* V82: Gallery exam note - fixed right panel — V88: theme-adaptive */
+    .gallery-exam-panel { position: fixed; top: 0; right: 0; width: 320px; height: 100vh; padding: 80px 18px 24px; overflow-y: auto; font-size: 0.72rem; line-height: 1.65; font-family: 'JetBrains Mono', monospace; background: #fef9e7; color: #2c2c2c; border-left: 3px solid #e6c54b; z-index: 1000; transform: translateX(100%); transition: transform 0.3s ease; }
+    .gallery-exam-panel.open { transform: translateX(0); }
+    .gallery-exam-panel.open { transform: translateX(0); }
+    .gallery-exam-panel .panel-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; margin-bottom: 4px; letter-spacing: 1px; color: #5a4510; }
+    .gallery-exam-panel .panel-close { position: absolute; top: 80px; right: 16px; font-size: 1.2rem; cursor: pointer; opacity: 0.6; padding: 4px 8px; border: 1px solid #c9a84c; border-radius: 6px; color: #5a4510; }
+    .gallery-exam-panel .panel-close:hover { opacity: 1; }
+    .gallery-exam-panel .panel-risk { margin-bottom: 8px; }
+    .gallery-exam-panel .panel-content { white-space: pre-wrap; word-wrap: break-word; opacity: 0.9; color: #2c2c2c; }
+    .gallery-exam-panel, .gallery-exam-panel *, .gallery-exam-panel .md-content, .gallery-exam-panel .md-content * { color: #2c2c2c !important; }
+    .gallery-exam-panel b, .gallery-exam-panel strong { color: #1a1a1a !important; font-weight: 900; }
+    .gallery-exam-panel .panel-title { color: #5a4510 !important; }
+    .gallery-exam-panel .risk-badge { color: inherit !important; }
+    .gallery-exam-panel .btn-ghost { color: #5a4510 !important; border-color: #c9a84c !important; }
+    .gallery-exam-panel .fc-add-btn { color: #5a4510 !important; background: rgba(201,168,76,0.2) !important; border-color: #c9a84c !important; }
+    .gallery-exam-panel textarea { color: #2c2c2c !important; background: #fdf5d6 !important; border-color: #ddc66e !important; }
+    .gallery-exam-panel .panel-edit-btn { margin-top: 12px; text-align: center; }
+    .gallery-exam-panel .panel-toolbar { display: none; flex-wrap: wrap; gap: 4px; margin-top: 8px; justify-content: flex-start; }
+    .gallery-exam-panel .panel-toolbar.active { display: flex; }
+    @media (max-width: 700px) {
+        .gallery-exam-panel { width: 85vw; }
+    }
+
     .risk-badge { display: inline-block; font-size: 0.55rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
     .risk-red { background: rgba(255,50,50,0.15); color: #ff5252; }
     .risk-yellow { background: rgba(255,180,0,0.15); color: #ffab00; }
     .risk-green { background: rgba(50,200,100,0.15); color: #4ade80; }
-    @media (max-width: 700px) {
-        #fc-stack-layout { flex-direction: column !important; }
-        .fc-exam-sidebar { width: 100% !important; max-width: 100% !important; max-height: 150px; margin-top: 8px; }
-    }
 
-    /* V81: Gallery exam note badge */
+    /* V82: Gallery exam note badge */
     .gallery-exam-badge { display: flex; align-items: center; gap: 4px; font-size: 0.5rem; padding: 3px 6px; border-radius: 6px; background: rgba(124,58,237,0.15); color: #a78bfa; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s; margin-top: 6px; text-transform: uppercase; }
     .gallery-exam-badge:hover { background: rgba(124,58,237,0.3); transform: scale(1.05); }
     .gallery-exam-expanded { margin-top: 8px; padding: 8px 10px; background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.15); border-radius: 8px; font-size: 0.65rem; line-height: 1.5; font-family: 'JetBrains Mono', monospace; white-space: pre-wrap; word-wrap: break-word; max-height: 200px; overflow-y: auto; text-align: left; }
+
+    /* V82: Gallery risk filter */
+    .gallery-risk-filter { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .risk-filter-btn { font-size: 0.65rem; padding: 4px 10px; border-radius: 8px; border: 1.5px solid rgba(128,128,128,0.3); background: transparent; color: inherit; cursor: pointer; font-weight: 700; letter-spacing: 0.5px; transition: all 0.2s; opacity: 0.6; }
+    .risk-filter-btn.active { opacity: 1; border-color: var(--accent); background: rgba(128,128,128,0.1); }
+    .risk-filter-btn:hover { opacity: 1; }
+
+    /* V86: Risk-colored card backgrounds instead of emoji dots */
+    .fc-mini-card.risk-card-red { background: rgba(255,50,50,0.12); border-color: rgba(255,50,50,0.4); }
+    .fc-mini-card.risk-card-red b, .fc-mini-card.risk-card-red .fc-word { color: #ff5252; }
+    .fc-mini-card.risk-card-yellow { background: rgba(255,180,0,0.1); border-color: rgba(255,180,0,0.35); }
+    .fc-mini-card.risk-card-yellow b, .fc-mini-card.risk-card-yellow .fc-word { color: #e6a200; }
+    .fc-mini-card.risk-card-green { background: rgba(50,200,100,0.1); border-color: rgba(50,200,100,0.35); }
+    .fc-mini-card.risk-card-green b, .fc-mini-card.risk-card-green .fc-word { color: #2ecc71; }
+    .fc-mini-card.risk-card-red span, .fc-mini-card.risk-card-yellow span, .fc-mini-card.risk-card-green span { opacity: 0.85; }
+    
+    /* V88: Active card glow when panel is open for this card */
+    .fc-mini-card.active-working { opacity: 1 !important; box-shadow: 0 0 20px rgba(167,139,250,0.5), 0 0 40px rgba(167,139,250,0.2); border-color: #a78bfa !important; z-index: 5; position: relative; }
+    .fc-mini-card.active-working::before { content: ''; position: absolute; inset: -3px; border-radius: 14px; border: 2px solid rgba(167,139,250,0.6); pointer-events: none; animation: activeGlow 2s ease-in-out infinite; }
+    @keyframes activeGlow { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+    /* V82: Gallery select mode for batch AI */
+    .fc-mini-card.selectable { cursor: pointer; }
+    .fc-mini-card.selected { border-color: #a78bfa !important; box-shadow: 0 0 12px rgba(124,58,237,0.4); }
+    .fc-mini-card.selected::after { content: '✓'; position: absolute; top: 4px; left: 6px; font-size: 0.7rem; color: #a78bfa; font-weight: 900; }
+    .gallery-batch-bar { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 8px 16px; background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.3); border-radius: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+
+    /* V82: Post-Op Review Page */
+    .postop-strip { width: 100%; overflow: hidden; padding: 8px 0; margin-bottom: 16px; position: relative; }
+    .postop-strip-inner { display: flex; gap: 24px; animation: stripScroll 20s linear infinite; white-space: nowrap; }
+    @keyframes stripScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .strip-word { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px; opacity: 0.7; color: var(--accent2); }
+    .postop-fact-mosaic { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; margin: 16px 0; }
+    .postop-fact-tile { flex: 1 1 280px; max-width: 380px; min-height: 100px; padding: 14px 16px; border-radius: 12px; border: 1.5px solid rgba(128,128,128,0.15); background: rgba(128,128,128,0.04); font-size: 0.78rem; line-height: 1.55; position: relative; transition: all 0.3s; cursor: default; }
+    .postop-fact-tile:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .postop-fact-tile .tile-word { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: var(--accent2); margin-bottom: 6px; }
+    .postop-fact-tile .tile-risk { position: absolute; top: 8px; right: 10px; font-size: 0.75rem; }
+    .postop-generating { text-align: center; padding: 24px; font-size: 0.85rem; opacity: 0.7; font-style: italic; }
+    .postop-progress-bar { width: 100%; height: 4px; background: rgba(128,128,128,0.15); border-radius: 2px; margin: 12px 0; overflow: hidden; }
+    .postop-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width 0.5s; }
+
+    /* V82: Weak topic heatmap */
+    .error-trend-chart { width: 100%; margin-top: 16px; }
+    .trend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .trend-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; width: 90px; flex-shrink: 0; }
+    .trend-bars { display: flex; gap: 3px; flex: 1; align-items: flex-end; height: 32px; }
+    .trend-bar { flex: 1; border-radius: 3px 3px 0 0; min-width: 8px; transition: height 0.3s; position: relative; }
+    .trend-bar:hover::after { content: attr(data-val); position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 0.55rem; font-weight: 700; white-space: nowrap; }
+
+    /* V82: 3-field scratchpad */
+    .scratch-3col { display: flex; gap: 8px; width: 100%; }
+    .scratch-3col .scratch-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .scratch-3col .scratch-field label { font-size: 0.5rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.5; font-weight: 700; text-align: center; }
+    .scratch-3col .scratch-input { font-size: 0.75rem; padding: 6px 8px; }
+    @media (max-width: 480px) { .scratch-3col { flex-direction: column; gap: 4px; } .scratch-3col .scratch-input { font-size: 0.8rem; } }
+
+    /* V89: Stack + gallery sidebar — sticky note style, universal */
+    .fc-exam-sidebar { width: 220px; min-width: 180px; max-width: 260px; padding: 14px 16px; overflow-y: auto; font-size: 0.72rem; line-height: 1.65; font-family: 'JetBrains Mono', monospace; background: #fef9e7; color: #2c2c2c; border-radius: 12px; border: 1px solid #e6c54b; flex-shrink: 0; position: sticky; top: 60px; align-self: flex-start; max-height: calc(100vh - 120px); }
+    .fc-exam-sidebar .exam-note-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; margin-bottom: 6px; font-weight: 700; font-family: 'DM Sans', sans-serif; color: #8b6914; }
+    .fc-exam-sidebar .exam-note-content { white-space: pre-wrap; word-wrap: break-word; opacity: 0.9; color: #2c2c2c; }
+    .fc-exam-sidebar, .fc-exam-sidebar *, .fc-exam-sidebar .md-content, .fc-exam-sidebar .md-content * { color: #2c2c2c !important; }
+    .fc-exam-sidebar b, .fc-exam-sidebar strong { color: #1a1a1a !important; font-weight: 900; }
+    .fc-exam-sidebar .exam-note-label { color: #8b6914 !important; }
+    .fc-exam-sidebar .risk-badge { color: inherit !important; }
+    .fc-exam-sidebar .btn-ghost { color: #5a4510 !important; border-color: #c9a84c !important; }
+    .fc-exam-sidebar .fc-add-btn { color: #5a4510 !important; background: rgba(201,168,76,0.2) !important; border-color: #c9a84c !important; }
+    .fc-exam-sidebar textarea { color: #2c2c2c !important; background: #fdf5d6 !important; border-color: #ddc66e !important; }
+    .fc-exam-sidebar .sidebar-toolbar { display: none; flex-wrap: wrap; gap: 4px; margin-top: 8px; justify-content: flex-start; }
+    .fc-exam-sidebar .sidebar-toolbar.active { display: flex; }
+    @media (max-width: 700px) {
+        #fc-stack-layout { flex-direction: column !important; }
+        .fc-exam-sidebar { width: 100% !important; max-width: 100% !important; max-height: 180px; margin-top: 8px; position: relative; top: 0; }
+    }
+
+    /* V84: Front card constrained to viewport, back scrollable */
+    .fc-card { width: 100%; max-width: 900px; display: grid; border: 2px solid var(--accent); border-radius: 16px; background: transparent; cursor: pointer; transform-style: preserve-3d; transition: transform 0.6s; margin: 0 auto 12px; }
+    .fc-card:not(.flipped) { min-height: 200px; max-height: calc(100vh - 280px); }
+    .fc-card.flipped { min-height: 300px; }
+    
+    /* V84: SRS buttons sticky at bottom of screen */
+    #srs-btn-group { position: sticky; bottom: 0; z-index: 10; padding: 12px 0; background: inherit; }
+    
+    /* V84: Surgeon's report — dynamic flex layout */
+    .ss-flex-grid { display: flex; flex-wrap: wrap; gap: 12px; width: 100%; align-items: flex-start; }
+    .ss-flex-grid > .dash-card { flex: 1 1 280px; min-width: 240px; }
+    .ss-flex-grid > .dash-card.ss-full { flex: 1 1 100%; min-width: 100%; }
+    .ss-flex-grid > .dash-card.ss-wide { flex: 2 1 500px; }
+    
+    /* V84: Sparklines for error types */
+    .spark-container { display: flex; gap: 2px; align-items: flex-end; height: 20px; }
+    .spark-bar { width: 4px; border-radius: 2px 2px 0 0; background: var(--accent); transition: height 0.3s; min-height: 2px; }
+    .spark-inline { display: inline-flex; gap: 1px; align-items: flex-end; height: 14px; vertical-align: middle; margin-left: 4px; }
+    .spark-inline .spark-bar { width: 3px; min-height: 1px; }
+    
+    /* V84: Add to card button */
+    .fc-add-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 0.5rem; padding: 3px 8px; border-radius: 6px; background: rgba(255,171,0,0.15); color: var(--accent2); font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s; margin-top: 4px; text-transform: uppercase; border: 1px solid rgba(255,171,0,0.2); }
+    .fc-add-btn:hover { background: rgba(255,171,0,0.3); transform: scale(1.05); }
+    
+    /* V84: Date filter picker */
+    .date-filter-bar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; margin-bottom: 8px; }
+    .date-filter-bar input[type="date"] { background: rgba(128,128,128,0.15); border: 1.5px solid rgba(128,128,128,0.3); border-radius: 8px; color: inherit; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 4px 8px; outline: none; }
+    .date-filter-bar input[type="date"]:focus { border-color: var(--accent); }
 
     /* V79: Theme Picker Popup */
     .theme-picker-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
@@ -665,7 +794,20 @@
     </div>
 
     <div id="scratch-ui" style="display:flex; flex-direction:column; align-items:center; margin-bottom:16px; width:100%;">
-        <input type="text" id="scratch-input" class="scratch-input" placeholder="Type term & hit Enter (e.g. Triangle of Calot)" autocomplete="off">
+        <div class="scratch-3col">
+            <div class="scratch-field">
+                <label>🧠 Knowledge Gap</label>
+                <input type="text" id="scratch-input-know" class="scratch-input" placeholder="e.g. Triangle of Calot" autocomplete="off">
+            </div>
+            <div class="scratch-field">
+                <label>🔁 Retrieval Issue</label>
+                <input type="text" id="scratch-input-retrieval" class="scratch-input" placeholder="e.g. Knew it, couldn't recall" autocomplete="off">
+            </div>
+            <div class="scratch-field">
+                <label>⚡ Reasoning</label>
+                <input type="text" id="scratch-input-reasoning" class="scratch-input" placeholder="e.g. Misapplied rule" autocomplete="off">
+            </div>
+        </div>
     </div>
 
     <div class="bar-track" id="bar-track"><div class="bar-fill" id="bar"></div></div>
@@ -864,8 +1006,13 @@
         </div>
     </div>
 
-    <div style="width: 100%; display: flex; justify-content: center; margin-bottom: 8px;">
-        <input type="text" id="fc-search-input" class="input-field" placeholder="🔍 Search notes or words..." style="padding: 8px; font-size: 0.8rem; max-width: 400px; border-radius: 20px;" oninput="applyFlashcardSearch()">
+    <div style="width: 100%; display: flex; justify-content: center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap;">
+        <input type="text" id="fc-search-input" class="input-field" placeholder="🔍 Search notes or words..." style="padding: 8px; font-size: 0.8rem; max-width: 300px; border-radius: 20px; flex:1;" oninput="applyFlashcardSearch()">
+        <div class="date-filter-bar" id="fc-date-filter">
+            <input type="date" id="fc-date-from" onchange="applyFlashcardSearch()" title="From date">
+            <input type="date" id="fc-date-to" onchange="applyFlashcardSearch()" title="To date">
+            <button class="btn btn-sm btn-ghost" style="font-size:0.5rem; padding:3px 6px; border-style:dashed;" onclick="clearDateFilter()">✕</button>
+        </div>
     </div>
 
     <div id="fc-empty-state" style="display:none; flex-direction:column; align-items:center; opacity:0.6; padding:40px 0;">
@@ -889,28 +1036,42 @@
                         <img id="fc-img" class="fc-img-preview" src="" style="display:none;" onerror="this.style.display='none'">
                     </div>
                 </div>
+                
+                <div class="row" id="fc-nav-group" style="justify-content:space-between; width:100%; max-width:600px; margin-top:12px;">
+                    <button class="btn btn-sm btn-ghost" id="btn-prev-card">← Prev</button>
+                    <div style="font-family:'JetBrains Mono', monospace; font-size:0.8rem; font-weight:700;" id="fc-counter">1 / 10</div>
+                    <button class="btn btn-sm btn-ghost" id="btn-next-card">Next →</button>
+                </div>
+                
+                <div id="srs-btn-group" class="row" style="justify-content:center; gap:8px; margin-top:12px; opacity:0; pointer-events:none; transition: opacity 0.3s; max-width:600px;">
+                    <button class="srs-btn" style="background:#ff5252; color:#fff;" id="btn-srs-1">Again <br><span id="srs-lbl-1" style="font-size:0.6rem; opacity:0.8;">10m</span></button>
+                    <button class="srs-btn" style="background:#ffab00; color:#111;" id="btn-srs-2">Hard <br><span id="srs-lbl-2" style="font-size:0.6rem; opacity:0.8;">1d</span></button>
+                    <button class="srs-btn" style="background:#00e676; color:#111;" id="btn-srs-3">Good <br><span id="srs-lbl-3" style="font-size:0.6rem; opacity:0.8;">3d</span></button>
+                    <button class="srs-btn" style="background:#448aff; color:#fff;" id="btn-srs-4">Easy <br><span id="srs-lbl-4" style="font-size:0.6rem; opacity:0.8;">7d</span></button>
+                </div>
             </div>
+            <!-- V88: Exam sidebar — always visible, inline edit -->
             <div class="fc-exam-sidebar" id="fc-exam-sidebar">
                 <div class="exam-note-label">EXAM NOTES</div>
                 <div id="fc-exam-risk"></div>
-                <div class="exam-note-content" id="fc-exam-note">No exam notes yet.</div>
-                <div id="fc-exam-edit-btn" style="margin-top:8px; text-align:center;">
-                    <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-style:dashed; opacity:0.6;" id="btn-edit-exam-inline">✏️ Edit</button>
+                <div id="fc-exam-view">
+                    <div class="exam-note-content" id="fc-exam-note">No exam notes yet.</div>
+                </div>
+                <div id="fc-exam-edit-area" style="display:none;">
+                    <textarea id="fc-exam-textarea" style="width:100%; height:200px; background:rgba(128,128,128,0.1); border:1px solid rgba(128,128,128,0.3); border-radius:6px; color:inherit; padding:8px; font-family:'JetBrains Mono',monospace; font-size:0.68rem; resize:none; outline:none;"></textarea>
+                </div>
+                <div id="fc-exam-edit-btn" style="margin-top:6px; display:flex; gap:4px; justify-content:center; flex-wrap:wrap;">
+                    <button class="btn btn-sm btn-ghost" style="font-size:0.5rem; padding:2px 6px; border-style:dashed;" id="btn-edit-exam-inline" onclick="toggleSidebarEdit()">✏️ Edit</button>
+                    <button class="btn btn-sm btn-ghost" style="font-size:0.5rem; padding:2px 6px; border-style:dashed; display:none;" id="btn-save-exam-inline" onclick="saveSidebarEdit()">💾 Save</button>
+                    <button class="fc-add-btn" id="btn-add-exam-to-fc" style="display:none; font-size:0.5rem;">📥 Add Selected</button>
+                </div>
+                <div class="sidebar-toolbar" id="fc-sidebar-toolbar">
+                    <button class="btn btn-sm btn-ghost" onclick="wrapSidebarText('**','**')" style="padding:2px 6px;font-size:0.6rem;font-weight:900;min-height:22px;">B</button>
+                    <button class="btn btn-sm btn-ghost" onclick="wrapSidebarText('*','*')" style="padding:2px 6px;font-size:0.6rem;font-style:italic;min-height:22px;">I</button>
+                    <button class="btn btn-sm btn-ghost" onclick="wrapSidebarText('__','__')" style="padding:2px 6px;font-size:0.6rem;text-decoration:underline;min-height:22px;">U</button>
+                    <button class="btn btn-sm btn-ghost" onclick="wrapSidebarText('- ','')" style="padding:2px 6px;font-size:0.55rem;min-height:22px;">List</button>
                 </div>
             </div>
-        </div>
-        
-        <div class="row" id="fc-nav-group" style="justify-content:space-between; width:100%; max-width:600px; margin-top:24px;">
-            <button class="btn btn-sm btn-ghost" id="btn-prev-card">← Prev</button>
-            <div style="font-family:'JetBrains Mono', monospace; font-size:0.8rem; font-weight:700;" id="fc-counter">1 / 10</div>
-            <button class="btn btn-sm btn-ghost" id="btn-next-card">Next →</button>
-        </div>
-        
-        <div id="srs-btn-group" class="row" style="justify-content:center; gap:8px; margin-top:16px; opacity:0; pointer-events:none; transition: opacity 0.3s;">
-            <button class="srs-btn" style="background:#ff5252; color:#fff;" id="btn-srs-1">Again <br><span id="srs-lbl-1" style="font-size:0.6rem; opacity:0.8;">10m</span></button>
-            <button class="srs-btn" style="background:#ffab00; color:#111;" id="btn-srs-2">Hard <br><span id="srs-lbl-2" style="font-size:0.6rem; opacity:0.8;">1d</span></button>
-            <button class="srs-btn" style="background:#00e676; color:#111;" id="btn-srs-3">Good <br><span id="srs-lbl-3" style="font-size:0.6rem; opacity:0.8;">3d</span></button>
-            <button class="srs-btn" style="background:#448aff; color:#fff;" id="btn-srs-4">Easy <br><span id="srs-lbl-4" style="font-size:0.6rem; opacity:0.8;">7d</span></button>
         </div>
         <div class="kb-hint" id="kb-hint">SPACE flip · ←→ navigate · 1-4 grade</div>
     </div>
@@ -925,68 +1086,72 @@
 
   </div>
 
-  <div id="v-session-summary" class="view" style="max-width: 900px;">
-    <div class="clock" style="font-size:3rem;margin-bottom:4px;">Surgeon's Report</div>
-    <div class="clock-label" id="ss-date-subtitle" style="margin-bottom:24px; color:var(--accent2); font-weight:700;">--</div>
+  <div id="v-session-summary" class="view" style="max-width: 1100px;">
+    <div class="clock" style="font-size:2.5rem;margin-bottom:4px;">Surgeon's Report</div>
+    <div class="clock-label" id="ss-date-subtitle" style="margin-bottom:16px; color:var(--accent2); font-weight:700;">--</div>
 
-    <div class="split-layout">
-        <div class="col">
-            <div class="dash-card" style="margin-bottom:16px;">
-                <div class="row" style="margin-bottom: 16px;">
-                    <div class="stat"><div class="stat-lbl">Score</div><div class="stat-val" id="ss-score">0%</div></div>
-                    <div class="stat"><div class="stat-lbl">Questions</div><div class="stat-val" id="ss-qs">0/0</div></div>
-                    <div class="stat"><div class="stat-val" id="ss-time">0m</div></div>
-                </div>
-                
-                <div style="border-top:1px solid rgba(128,128,128,0.2); padding-top:16px;">
-                    <div class="row" style="justify-content:space-between; margin-bottom:8px;">
-                        <span style="font-size:0.8rem; font-weight:700; text-transform:uppercase;">Actual Pace</span>
-                        <span style="font-family:'JetBrains Mono', monospace; font-size:0.8rem;" id="ss-pace">0m / Q</span>
-                    </div>
-                    <div class="row" style="justify-content:space-between; margin-bottom:8px;">
-                        <span style="font-size:0.8rem; font-weight:700; text-transform:uppercase;">Target Pace</span>
-                        <span style="font-family:'JetBrains Mono', monospace; font-size:0.8rem;" id="ss-tgt-pace">0m / Q</span>
-                    </div>
-                    <div class="row" style="justify-content:space-between; margin-bottom:8px;">
-                        <span style="font-size:0.8rem; font-weight:700; text-transform:uppercase;">Total Breaks</span>
-                        <span style="font-family:'JetBrains Mono', monospace; font-size:0.8rem;" id="ss-breaks">0</span>
-                    </div>
-                </div>
+    <div class="ss-flex-grid">
+        <div class="dash-card">
+            <div class="row" style="margin-bottom: 12px;">
+                <div class="stat"><div class="stat-lbl">Score</div><div class="stat-val" id="ss-score">0%</div></div>
+                <div class="stat"><div class="stat-lbl">Questions</div><div class="stat-val" id="ss-qs">0/0</div></div>
+                <div class="stat"><div class="stat-val" id="ss-time">0m</div></div>
             </div>
-
-            <div class="dash-card" style="margin-bottom: 16px; position:relative;">
-                <div class="row" style="justify-content:space-between; font-size:0.65rem; text-transform:uppercase; font-weight:700; opacity:0.6;">
-                    <span id="ss-t-start">Start</span>
-                    <span>Timeline</span>
-                    <span id="ss-t-end">End</span>
+            <div style="border-top:1px solid rgba(128,128,128,0.2); padding-top:12px;">
+                <div class="row" style="justify-content:space-between; margin-bottom:6px;">
+                    <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase;">Actual Pace</span>
+                    <span style="font-family:'JetBrains Mono', monospace; font-size:0.75rem;" id="ss-pace">0m / Q</span>
                 </div>
-                <div class="ratio-bar" id="ss-ratio-bar">
-                    <div class="ratio-focus" id="ss-focus-bar" style="width:100%;"></div>
-                    <div class="ratio-break" id="ss-break-bar" style="width:0%;"></div>
+                <div class="row" style="justify-content:space-between; margin-bottom:6px;">
+                    <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase;">Target Pace</span>
+                    <span style="font-family:'JetBrains Mono', monospace; font-size:0.75rem;" id="ss-tgt-pace">0m / Q</span>
                 </div>
-                <div class="tooltip" id="ss-tooltip">--</div>
-            </div>
-
-            <div class="dash-card" style="margin-bottom: 16px; text-align: center;" id="ss-autopsy-card">
-                <div class="dash-lbl" style="margin-bottom:8px; color:var(--accent2);">Break Autopsy</div>
-                <div class="row" style="flex-wrap:wrap; justify-content:center; gap:6px;" id="ss-autopsy-grid"></div>
+                <div class="row" style="justify-content:space-between;">
+                    <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase;">Total Breaks</span>
+                    <span style="font-family:'JetBrains Mono', monospace; font-size:0.75rem;" id="ss-breaks">0</span>
+                </div>
             </div>
         </div>
 
-        <div class="col">
-            <div class="dash-card" style="margin-bottom: 16px; display:flex; flex-direction:column;" id="ss-postop-card">
-                <div class="dash-lbl" style="text-align:center; margin-bottom:8px; color:var(--accent);">Post-Op Review Queue</div>
-                <div class="row" style="flex-wrap:wrap; justify-content:flex-start; align-content:flex-start; gap:6px;" id="ss-postop-grid"></div>
+        <div class="dash-card" style="position:relative;">
+            <div class="row" style="justify-content:space-between; font-size:0.6rem; text-transform:uppercase; font-weight:700; opacity:0.6;">
+                <span id="ss-t-start">Start</span>
+                <span>Timeline</span>
+                <span id="ss-t-end">End</span>
             </div>
+            <div class="ratio-bar" id="ss-ratio-bar">
+                <div class="ratio-focus" id="ss-focus-bar" style="width:100%;"></div>
+                <div class="ratio-break" id="ss-break-bar" style="width:0%;"></div>
+            </div>
+            <div class="tooltip" id="ss-tooltip">--</div>
         </div>
-    </div>
 
-    <div class="dash-card" style="margin-bottom: 24px; text-align: center; width: 100%;">
-        <div class="dash-lbl" style="margin-bottom:8px; color:var(--accent2);">Pace Analysis</div>
-        <div style="font-size:0.9rem; font-style:italic; margin-bottom:16px;" id="ss-pace-comment">--</div>
-        
-        <div class="dash-lbl" style="margin-top:16px; margin-bottom:8px; color:var(--accent);">Consultant's Notes</div>
-        <div style="font-size:0.95rem; font-style:italic; font-weight:500;" id="ss-affirmation">--</div>
+        <div class="dash-card" id="ss-autopsy-card" style="text-align:center;">
+            <div class="dash-lbl" style="margin-bottom:6px; color:var(--accent2);">Break Autopsy</div>
+            <div class="row" style="flex-wrap:wrap; justify-content:center; gap:6px;" id="ss-autopsy-grid"></div>
+        </div>
+
+        <div class="dash-card">
+            <div class="dash-lbl" style="text-align:center; margin-bottom:6px; color:var(--accent2);">Error Sparklines (Last 10 Sessions)</div>
+            <div id="ss-error-sparklines"></div>
+        </div>
+
+        <div class="dash-card" id="ss-weak-topic-card">
+            <div class="dash-lbl" style="text-align:center; margin-bottom:6px; color:var(--accent2);">Weak Topic Heatmap</div>
+            <div id="error-trend-container"></div>
+        </div>
+
+        <div class="dash-card ss-full" style="text-align: center;">
+            <div class="dash-lbl" style="margin-bottom:6px; color:var(--accent2);">Pace Analysis</div>
+            <div style="font-size:0.85rem; font-style:italic; margin-bottom:12px;" id="ss-pace-comment">--</div>
+            <div class="dash-lbl" style="margin-top:8px; margin-bottom:6px; color:var(--accent);">Consultant's Notes</div>
+            <div style="font-size:0.9rem; font-style:italic; font-weight:500;" id="ss-affirmation">--</div>
+        </div>
+
+        <div class="dash-card ss-full" style="cursor:pointer;" id="ss-postop-card" onclick="openPostOpFromReport()">
+            <div class="dash-lbl" style="text-align:center; margin-bottom:8px; color:var(--accent);">Post-Op Review Queue <span style="font-size:0.5rem;opacity:0.4;">(tap to open full review)</span></div>
+            <div class="row" style="flex-wrap:wrap; justify-content:flex-start; align-content:flex-start; gap:6px;" id="ss-postop-grid"></div>
+        </div>
     </div>
 
     <div class="row" style="justify-content:center; gap:8px; margin-top:16px;">
@@ -1039,21 +1204,69 @@
   </div>
 
   <div class="modal-overlay" id="expand-modal" onclick="closeExpandModal()">
-    <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;" id="expand-modal-content" onclick="event.stopPropagation()">
-        <div class="row" style="justify-content:space-between; margin-bottom:16px;">
-            <div class="dash-lbl" style="color:var(--accent2); margin:0;">Card Focus View</div>
-            <button class="btn-ghost btn-sm" id="btn-expand-close" style="border-color:rgba(255,255,255,0.2); color:#fff; padding:4px 10px;">Close</button>
+    <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto; margin-right: 340px;" id="expand-modal-content" onclick="event.stopPropagation()">
+        <div class="row" style="justify-content:space-between; margin-bottom:12px;">
+            <div style="font-family:'Bebas Neue', sans-serif; font-size:2.5rem; color:var(--accent2); line-height:1;" id="expand-word"></div>
+            <div style="display:flex; gap:4px;">
+                <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 6px;" id="btn-expand-edit" onclick="toggleExpandEdit()">✏️ Edit Notes</button>
+                <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 6px;" id="btn-expand-action" onclick="expandAction()">⋮</button>
+                <button class="btn-ghost btn-sm" id="btn-expand-close" style="border-color:rgba(255,255,255,0.2); color:#fff; padding:3px 8px; font-size:0.55rem;">✕</button>
+            </div>
         </div>
-        <div style="font-family:'Bebas Neue', sans-serif; font-size:3.5rem; text-align:center; color:var(--accent2); margin-bottom: 24px; line-height:1;" id="expand-word"></div>
-        <div style="font-size:1.1rem; line-height:1.6; padding:0 20px; word-wrap:break-word;" id="expand-notes"></div>
-        
+        <div style="font-size:1rem; line-height:1.6; padding:0 4px; word-wrap:break-word;" id="expand-notes"></div>
         <div class="expand-img-wrap" id="expand-img-wrap">
-            <img id="expand-img" style="max-width:100%; max-height:60vh; object-fit:contain; border-radius:8px;" src="">
+            <img id="expand-img" style="max-width:100%; max-height:50vh; object-fit:contain; border-radius:8px;" src="">
         </div>
     </div>
   </div>
 
-  <div class="modal-overlay" id="ai-modal" onclick="closeAIModal()">
+  <!-- V82: Gallery exam note right panel -->
+  <div class="gallery-exam-panel" id="gallery-exam-panel">
+    <div class="panel-close" onclick="closeGalleryExamPanel()">✕</div>
+    <div class="panel-title" id="gallery-panel-word">WORD</div>
+    <div class="panel-risk" id="gallery-panel-risk"></div>
+    <div id="gallery-panel-view">
+        <div class="panel-content md-content" id="gallery-panel-content">No exam notes.</div>
+    </div>
+    <div id="gallery-panel-edit-area" style="display:none;">
+        <textarea id="gallery-panel-textarea" class="modal-textarea" style="height:250px; font-size:0.75rem; background:rgba(128,128,128,0.1); border-color:rgba(128,128,128,0.3);"></textarea>
+    </div>
+    <div class="panel-edit-btn" style="display:flex; gap:4px; justify-content:center; flex-wrap:wrap; margin-top:8px;">
+        <button class="btn btn-sm btn-ghost" style="font-size:0.5rem; padding:3px 6px; border-style:dashed;" id="btn-gallery-panel-edit" onclick="togglePanelEdit()">✏️ Edit</button>
+        <button class="btn btn-sm btn-ghost" style="font-size:0.5rem; padding:3px 6px; border-style:dashed; display:none;" id="btn-gallery-panel-save" onclick="savePanelEdit()">💾 Save</button>
+        <button class="fc-add-btn" id="btn-gallery-panel-add" style="font-size:0.5rem;">📥 Add Selected to Card</button>
+    </div>
+    <div class="panel-toolbar" id="gallery-panel-toolbar">
+        <button class="btn btn-sm btn-ghost" onclick="wrapPanelText('**','**')" style="padding:2px 6px;font-size:0.6rem;font-weight:900;min-height:24px;">B</button>
+        <button class="btn btn-sm btn-ghost" onclick="wrapPanelText('*','*')" style="padding:2px 6px;font-size:0.6rem;font-style:italic;min-height:24px;">I</button>
+        <button class="btn btn-sm btn-ghost" onclick="wrapPanelText('__','__')" style="padding:2px 6px;font-size:0.6rem;text-decoration:underline;min-height:24px;">U</button>
+        <button class="btn btn-sm btn-ghost" onclick="wrapPanelText('## ','')" style="padding:2px 6px;font-size:0.55rem;min-height:24px;">H2</button>
+        <button class="btn btn-sm btn-ghost" onclick="wrapPanelText('- ','')" style="padding:2px 6px;font-size:0.55rem;min-height:24px;">List</button>
+    </div>
+  </div>
+
+  <!-- V82: Post-Op Review Page -->
+  <div id="v-postop-review" class="view" style="max-width: 1100px;">
+    <div class="clock" style="font-size:2.5rem;margin-bottom:4px;">Post-Op Review</div>
+    <div class="clock-label" id="postop-subtitle" style="margin-bottom:8px; color:var(--accent2); font-weight:700;">Session Debrief</div>
+    <div id="postop-strip-wrap" class="postop-strip"><div class="postop-strip-inner" id="postop-strip-inner"></div></div>
+    <div id="postop-progress-wrap" style="width:100%; max-width:600px; margin:0 auto;">
+        <div class="postop-progress-bar"><div class="postop-progress-fill" id="postop-progress-fill" style="width:0%"></div></div>
+        <div class="postop-generating" id="postop-status">Generating AI summaries...</div>
+    </div>
+    <div class="gallery-risk-filter" id="postop-risk-filter" style="justify-content:center; margin-bottom:12px;">
+        <button class="risk-filter-btn active" onclick="filterPostOp('all')">All</button>
+        <button class="risk-filter-btn" onclick="filterPostOp('red')">🔴 High</button>
+        <button class="risk-filter-btn" onclick="filterPostOp('yellow')">🟡 Medium</button>
+        <button class="risk-filter-btn" onclick="filterPostOp('green')">🟢 Low</button>
+    </div>
+    <div class="postop-fact-mosaic" id="postop-mosaic"></div>
+    <div class="row" style="justify-content:center; gap:8px; margin-top:16px;">
+        <button class="btn btn-sm btn-ghost" id="btn-postop-close" onclick="closePostOpReview()">Close Post-Op Review</button>
+    </div>
+  </div>
+
+    <div class="modal-overlay" id="ai-modal" onmousedown="aiModalOverlayDown(event)" onmouseup="aiModalOverlayUp(event)">
     <div class="modal-content" style="max-width: 800px;" id="ai-modal-content" onclick="event.stopPropagation()">
         <div class="dash-lbl" style="color:#00f2fe; text-align:center;">Consultant AI Analysis</div>
         <div style="font-family:'Bebas Neue', sans-serif; font-size:2rem; text-align:center; color:#00f2fe;" id="ai-word">WORD</div>
@@ -1086,7 +1299,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
     return false; 
 };
 function logDebug(msg) { const logsEl = document.getElementById('debug-logs'); if (logsEl) logsEl.innerHTML += `<div class="log-line log-boot">[BOOT] ${msg}</div>`; }
-logDebug("V81 Script execution started.");
+logDebug("V89 Script execution started.");
 
 // V56 Selection Cache - fixes Safari/mobile highlight disappearing on button click
 let activeSelection = "";
@@ -1128,7 +1341,19 @@ let fcSearchQuery = "";
 
 let aiChatHistory = [];
 let aiCurrentWord = "";
-let lastAIResponseText = ""; 
+let lastAIResponseText = "";
+
+// V82: Gallery risk filter
+let galleryRiskFilter = 'all';
+// V82: Gallery select mode for batch AI
+let gallerySelectMode = false;
+let gallerySelected = new Set();
+// V82: Post-op review data
+let postOpSessionWords = [];
+let postOpResults = [];
+let postOpRiskFilter = 'all';
+// V82: Session auto-save
+let sessionAutoSave = {}; 
 
 let currentSessionIdx = -1; 
 let globalSessionStart = null;
@@ -1535,7 +1760,7 @@ function colorWrap() {
 function addNewCardFromGallery() {
     const word = prompt('Enter new term:');
     if(word && word.trim()) {
-        REVIEW_BANK.push({ word: word.trim(), reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now() });
+        REVIEW_BANK.push({ word: word.trim(), reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now() });
         persistData(); pushToCloud(); renderGallery();
         openFlashcardEditorEvent(word.trim());
     }
@@ -2147,6 +2372,8 @@ function applyTheme() {
   // V60: Theme SRS buttons text on non-dark themes
   document.querySelectorAll('.srs-btn').forEach(el => { el.style.fontFamily = "'DM Sans', sans-serif"; });
   
+  // V89: Sidebar/panel uses fixed sticky-note style — no JS theming needed
+  
   // V60: Theme break chips
   document.querySelectorAll('.break-chip:not(.active)').forEach(el => { el.style.color = t.fg; });
   
@@ -2425,6 +2652,8 @@ function tick() {
     elapsed = elapsedBeforePause + Math.floor((Date.now() - sessionStartTime) / 1000);
     const rem = totalMin * 60 - elapsed;
     
+    // V82: Auto-save session state every 30 seconds
+    if(elapsed % 30 === 0) saveSessionState();
     if(rem <= 0) { endSession(); return; }
     $('clock').textContent = fmt(rem);
     
@@ -2477,25 +2706,37 @@ function logBreak(type) {
     msg.style.color = (type === 'Doomscroll' || type === 'Media') ? '#ff5252' : T().accent2;
 }
 
-// SCRATCHPAD ENGINE
-$('scratch-input').addEventListener('keypress', function(e) {
-    if(e.key === 'Enter' && this.value.trim() !== '') {
-        const word = this.value.trim();
-        sessionScratchpad.push(word);
-        REVIEW_BANK.push({ word: word, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now() });
-        this.value = '';
-        persistData(); redrawScratchpad();
-    }
+// V82: SCRATCHPAD ENGINE - 3 fields (Knowledge Gap / Retrieval / Reasoning)
+['scratch-input-know', 'scratch-input-retrieval', 'scratch-input-reasoning'].forEach(inputId => {
+    $(inputId).addEventListener('keypress', function(e) {
+        if(e.key === 'Enter' && this.value.trim() !== '') {
+            const word = this.value.trim();
+            const errorType = inputId.includes('know') ? 'know' : inputId.includes('retrieval') ? 'retrieval' : 'reasoning';
+            sessionScratchpad.push({ word, errorType });
+            // Also increment error counter
+            incError(errorType);
+            const existing = REVIEW_BANK.find(b => b.word === word);
+            if(!existing) {
+                REVIEW_BANK.push({ word: word, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now(), errorType: errorType });
+            } else {
+                existing.errorType = errorType;
+            }
+            this.value = '';
+            persistData(); redrawScratchpad();
+        }
+    });
 });
 
 function redrawScratchpad() {
     const container = $('scratch-chips');
     container.innerHTML = '';
-    sessionScratchpad.forEach(w => {
+    const items = sessionScratchpad.map(s => typeof s === 'string' ? { word: s, errorType: 'know' } : s);
+    items.forEach(s => {
         const chip = document.createElement('div');
         chip.className = 'scratch-chip';
-        chip.textContent = w;
-        chip.onclick = (e) => showGlobalMenu(e, w, 'scratchpad');
+        const typeIcon = s.errorType === 'know' ? '🧠' : s.errorType === 'retrieval' ? '🔁' : '⚡';
+        chip.textContent = typeIcon + ' ' + s.word;
+        chip.onclick = (e) => showGlobalMenu(e, s.word, 'scratchpad');
         container.appendChild(chip);
     });
 }
@@ -2550,7 +2791,7 @@ function _startSessionCore() {
     $('timer-stats').style.opacity = '1';
     $('lm-row').style.opacity = '1';
     
-    $('scratch-input').value = '';
+    ['scratch-input-know','scratch-input-retrieval','scratch-input-reasoning'].forEach(id => $(id).value = '');
     $('scratch-chips').innerHTML = '';
     
     document.querySelectorAll('.chip-badge').forEach(b => { b.textContent='0'; b.classList.remove('show'); });
@@ -2634,6 +2875,9 @@ function abandonSession() {
 function endSession() {
     running = false; clearInterval(iv); clearInterval(breakIv);
     globalSessionEnd = Date.now();
+    // V82: Clear session auto-save
+    localStorage.removeItem('mrcs-session-autosave');
+    
     playBeep(523, 0.15); setTimeout(() => playBeep(659, 0.15), 150); setTimeout(() => playBeep(784, 0.25), 300); // completion chord
     haptic(40);
     $('clock').classList.remove('pulse');
@@ -2678,11 +2922,19 @@ function saveSessionResult() {
         date: new Date().toISOString(), phase: phase.toUpperCase(), qbank: qb.toUpperCase(),
         totalMin, totalQs, usedMin: mn, done: actualDone, score,
         breaks: sessionBreaks, breakSecs: totalBreakTime, breakLog: breakTally,
-        startIso: globalSessionStart, endIso: globalSessionEnd, scratchpad: sessionScratchpad, errors: {...errorCounts}
+        startIso: globalSessionStart, endIso: globalSessionEnd, scratchpad: sessionScratchpad.map(s => typeof s === 'string' ? s : s.word), scratchpadTyped: [...sessionScratchpad], errors: {...errorCounts}
     });
     // V79: Log silent session time
     if(silentSession && mn > 0) saveSilentTime(mn);
-    persistData(); pushToCloud(); showTrackerView(); 
+    persistData(); pushToCloud();
+    // V82: Auto-trigger post-op review if scratchpad has words
+    const lastSession = sessions[sessions.length - 1];
+    const scratchWords = lastSession ? (lastSession.scratchpadTyped || (lastSession.scratchpad || []).map(w => ({word: w, errorType: 'know'}))) : [];
+    if(scratchWords.length > 0 && (GEMINI_KEY || $('gemini-key').value.trim())) {
+        autoPostOpReview(scratchWords);
+    } else {
+        showTrackerView();
+    }
 }
 
 function addManual() {
@@ -2953,8 +3205,8 @@ function triggerRename(word) {
             }
             const idx = REVIEW_BANK.findIndex(b => b.word === word);
             if(idx > -1) REVIEW_BANK[idx].word = newWord;
-            const sIdx = sessionScratchpad.indexOf(word);
-            if(sIdx > -1) sessionScratchpad[sIdx] = newWord;
+            const sIdx = sessionScratchpad.findIndex(s => (typeof s === 'string' ? s : s.word) === word);
+            if(sIdx > -1) { const sp = sessionScratchpad[sIdx]; if(typeof sp === 'string') sessionScratchpad[sIdx] = newWord; else sp.word = newWord; }
             persistData(); pushToCloud(); refreshCurrentView();
         }
         $('action-modal').classList.remove('active');
@@ -2979,7 +3231,7 @@ function triggerDelete(word) {
     
     $('btn-action-confirm').onclick = () => {
         REVIEW_BANK = REVIEW_BANK.filter(item => item.word !== word);
-        sessionScratchpad = sessionScratchpad.filter(item => item !== word);
+        sessionScratchpad = sessionScratchpad.filter(item => (typeof item === 'string' ? item : item.word) !== word);
         persistData(); pushToCloud(); refreshCurrentView();
         $('action-modal').classList.remove('active');
         $('action-modal-content').style.maxWidth = '700px';
@@ -3041,7 +3293,7 @@ document.addEventListener('scroll', hideGlobalMenu, true);
 
 function openFlashcardEditorEvent(word) {
     let bIdx = REVIEW_BANK.findIndex(b => b.word === word);
-    if (bIdx === -1) REVIEW_BANK.push({ word: word, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now() });
+    if (bIdx === -1) REVIEW_BANK.push({ word: word, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now() });
     editingWordFromReport = word;
     const item = REVIEW_BANK.find(b => b.word === word);
     $('modal-word').textContent = item.word;
@@ -3062,6 +3314,8 @@ function markReviewedAndClose(word) {
         REVIEW_BANK[bIdx].reviewed = true;
         persistData(); pushToCloud(); refreshCurrentView();
     }
+    // V84: Auto-open flashcard editor so user can paste when they return from external search
+    setTimeout(() => openFlashcardEditorEvent(word), 300);
 }
 
 function toggleReviewedStatus(word) {
@@ -3104,7 +3358,7 @@ function addManualBankWord() {
     const input = $('bank-manual-input');
     const word = input.value.trim();
     if(word !== '') {
-        REVIEW_BANK.push({ word: word, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now() });
+        REVIEW_BANK.push({ word: word, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now() });
         persistData(); pushToCloud(); buildGlobalReviewBank(); input.value = '';
     }
 }
@@ -3194,10 +3448,31 @@ function applyFlashcardSearch() {
     fcSearchQuery = $('fc-search-input').value.toLowerCase();
     const now = Date.now();
     
+    // V84: Date filter
+    const dateFromEl = $('fc-date-from');
+    const dateToEl = $('fc-date-to');
+    const dateFrom = dateFromEl && dateFromEl.value ? new Date(dateFromEl.value).getTime() : 0;
+    const dateTo = dateToEl && dateToEl.value ? new Date(dateToEl.value + 'T23:59:59').getTime() : Infinity;
+    
     fcQueue = REVIEW_BANK.filter(item => {
         const isDue = !item.dueDate || item.dueDate <= now;
         const matchesSearch = item.word.toLowerCase().includes(fcSearchQuery) || (item.notes && item.notes.toLowerCase().includes(fcSearchQuery));
-        return isDue && (fcSearchQuery === "" || matchesSearch);
+        // V84: Date range filter
+        const created = item.createdAt || 0;
+        const matchesDate = (dateFrom === 0 && dateTo === Infinity) || (created >= dateFrom && created <= dateTo);
+        return isDue && matchesDate && (fcSearchQuery === "" || matchesSearch);
+    });
+    // V82: Spaced repetition priority sort - Again/Hard float to top, most overdue first
+    fcQueue.sort((a, b) => {
+        // Cards with lower ease (failed more) come first
+        const easeA = a.ease || 2.5;
+        const easeB = b.ease || 2.5;
+        // Cards that are more overdue come first
+        const overdueA = now - (a.dueDate || 0);
+        const overdueB = now - (b.dueDate || 0);
+        // Primary: lower ease first (struggled cards). Secondary: more overdue first.
+        if(easeA !== easeB) return easeA - easeB;
+        return overdueB - overdueA;
     });
 
     if(fcQueue.length === 0) {
@@ -3269,13 +3544,24 @@ function renderFlashcard() {
     }
     $('fc-counter').textContent = `${fcCurrentIdx + 1} / ${fcQueue.length}`;
     
-    // V81: Exam notes in sidebar (outside card)
+    // V88: Update exam sidebar
+    sidebarEditingWord = item.word;
     const examNote = item.examNote || '';
     const risk = item.riskLevel || '';
+    // Reset edit state
+    $('fc-exam-view').style.display = ''; $('fc-exam-edit-area').style.display = 'none';
+    $('fc-sidebar-toolbar').classList.remove('active');
+    $('btn-edit-exam-inline').style.display = 'inline-flex'; $('btn-save-exam-inline').style.display = 'none';
     $('fc-exam-note').innerHTML = examNote ? '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(examNote) + '</div>' : '<span style="opacity:0.3;">No exam notes yet.</span>';
     $('fc-exam-risk').innerHTML = risk ? '<span class="risk-badge risk-' + risk + '" style="margin-bottom:6px;">' + risk.toUpperCase() + ' RISK</span> ' : '';
-    // V81: Inline edit button for exam note
-    $('btn-edit-exam-inline').onclick = () => editExamNote(item.word);
+    // V88: Add Selected button — always visible if exam note exists
+    const addBtn = $('btn-add-exam-to-fc');
+    if(examNote) { addBtn.style.display = 'inline-flex'; addBtn.onclick = () => addExamNoteToFlashcard(item.word); }
+    else { addBtn.style.display = 'none'; }
+    
+    // V82: Remove any old popup
+    const oldPopup = document.querySelector('.exam-note-popup');
+    if(oldPopup) oldPopup.remove();
     
     const actionsFront = $('fc-actions-front');
     const actionsBack = $('fc-actions-back');
@@ -3293,11 +3579,26 @@ function renderFlashcard() {
     btnBack.textContent = '\u22EE';
     btnBack.onclick = (e) => { e.stopPropagation(); showGlobalMenu(e, item.word, 'fc'); };
     
-    actionsFront.appendChild(btnFront); actionsBack.appendChild(btnBack);
+    // V89: Add inline edit button on back
+    const btnBackEdit = document.createElement('div');
+    btnBackEdit.className = 'fc-edit-btn';
+    btnBackEdit.style.cssText = 'position:absolute; top:10px; left:10px; background:transparent; border:1.5px solid; border-color:var(--accent2); color:var(--accent2); opacity:0.6; padding:3px 6px; font-size:0.55rem; border-radius:6px; line-height:1; z-index:20; font-weight:700;';
+    btnBackEdit.textContent = '✏️ Edit';
+    btnBackEdit.onclick = (e) => { e.stopPropagation(); toggleStackEdit(); };
+    
+    actionsFront.appendChild(btnFront); actionsBack.appendChild(btnBack); actionsBack.appendChild(btnBackEdit);
+    
+    // V89: Set stack editing word and reset contenteditable state
+    stackEditingWord = item.word;
+    stackEditActive = false;
+    $('fc-notes').contentEditable = 'false';
+    $('fc-notes').style.outline = ''; $('fc-notes').style.padding = '';
+    const oldUrlBar = $('fc-back-img-bar');
+    if(oldUrlBar) oldUrlBar.style.display = 'none';
 }
 
 function flipCard(e) {
-    if(e && e.target && (e.target.closest('.fc-edit-btn') || e.target.closest('.review-tile-menu'))) return;
+    if(e && e.target && (e.target.closest('.fc-edit-btn') || e.target.closest('.review-tile-menu') || e.target.closest('.exam-note-popup'))) return;
     if(fcQueue.length === 0) return;
     
     const card = $('fc-card');
@@ -3315,10 +3616,59 @@ function flipCard(e) {
         $('fc-nav-group').style.display = 'none';
         $('srs-btn-group').style.opacity = '1';
         $('srs-btn-group').style.pointerEvents = 'auto';
+        
+        // V82: Show exam note popup on flip (if has exam note)
+        showExamNotePopup(item);
     } else {
         $('srs-btn-group').style.opacity = '0';
         $('srs-btn-group').style.pointerEvents = 'none';
         $('fc-nav-group').style.display = 'flex';
+        // V82: Hide exam note popup
+        hideExamNotePopup();
+    }
+}
+
+// V82: Exam note popup for stack view
+function showExamNotePopup(item) {
+    hideExamNotePopup();
+    if(!item) return;
+    const examNote = item.examNote || '';
+    const risk = item.riskLevel || '';
+    
+    const popup = document.createElement('div');
+    popup.className = 'exam-note-popup';
+    popup.id = 'exam-note-popup-active';
+    popup.onclick = (e) => e.stopPropagation();
+    
+    let riskHtml = risk ? '<span class="risk-badge risk-' + risk + '" style="margin-bottom:6px; display:inline-block;">' + risk.toUpperCase() + ' RISK</span>' : '';
+    let contentHtml = examNote ? '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(examNote) + '</div>' : '<span style="opacity:0.3;">No exam notes yet.</span>';
+    
+    popup.innerHTML = '<div class="exam-note-label">EXAM NOTES</div>' + riskHtml + '<div class="exam-note-content">' + contentHtml + '</div>' +
+        '<div style="margin-top:8px; text-align:center;"><button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-style:dashed; opacity:0.6;" onclick="event.stopPropagation(); editExamNote(\''+item.word.replace(/'/g,"\\'")+'\')">✏️ Edit</button></div>';
+    
+    // Attach to the card wrapper
+    const cardWrapper = $('fc-stack-layout').querySelector('div');
+    if(cardWrapper) {
+        cardWrapper.style.position = 'relative';
+        cardWrapper.appendChild(popup);
+    }
+    
+    // Close on outside click
+    setTimeout(() => {
+        document.addEventListener('click', handleExamPopupOutsideClick);
+    }, 100);
+}
+
+function hideExamNotePopup() {
+    const existing = document.getElementById('exam-note-popup-active');
+    if(existing) existing.remove();
+    document.removeEventListener('click', handleExamPopupOutsideClick);
+}
+
+function handleExamPopupOutsideClick(e) {
+    const popup = document.getElementById('exam-note-popup-active');
+    if(popup && !popup.contains(e.target)) {
+        hideExamNotePopup();
     }
 }
 
@@ -3359,6 +3709,7 @@ function toggleGalleryReveal() {
 function openExpandedCard(word) {
     const item = REVIEW_BANK.find(b => b.word === word);
     if(!item) return;
+    expandEditingWord = word;
     
     $('expand-word').textContent = item.word;
     $('expand-notes').innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
@@ -3371,7 +3722,75 @@ function openExpandedCard(word) {
         $('expand-img').style.display = 'none';
         $('expand-img-wrap').style.display = 'none';
     }
+    // Reset edit state
+    $('expand-view-area').style.display = ''; $('expand-edit-area').style.display = 'none';
     $('expand-modal').classList.add('active');
+    
+    // V87: Also open the right panel with editable exam note
+    openGalleryExamPanel(item);
+}
+
+let expandEditingWord = '';
+let expandEditActive = false;
+function toggleExpandEdit() {
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(!item) return;
+    const notesEl = $('expand-notes');
+    if(!expandEditActive) {
+        expandEditActive = true;
+        notesEl.contentEditable = 'true';
+        notesEl.style.outline = '2px dashed var(--accent2)';
+        notesEl.style.borderRadius = '8px';
+        notesEl.style.padding = '12px';
+        notesEl.style.minHeight = '100px';
+        notesEl.focus();
+        // Show image URL bar above image
+        let urlBar = $('expand-img-bar');
+        if(!urlBar) {
+            urlBar = document.createElement('div');
+            urlBar.id = 'expand-img-bar';
+            urlBar.style.cssText = 'width:100%;padding:0 20px;margin-top:8px;';
+            urlBar.innerHTML = '<input type="text" id="expand-img-url-inline" class="input-field" placeholder="Image URL" style="font-size:0.7rem; padding:5px 8px;" onclick="event.stopPropagation()">';
+            $('expand-img-wrap').parentNode.insertBefore(urlBar, $('expand-img-wrap'));
+        }
+        urlBar.style.display = 'block';
+        $('expand-img-url-inline').value = (item.img && !item.img.startsWith('data:')) ? item.img : '';
+        $('btn-expand-edit').textContent = '💾 Save';
+    } else {
+        expandEditActive = false;
+        let html = notesEl.innerHTML;
+        let text = html.replace(/<div>/gi, '\n').replace(/<\/div>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+        item.notes = text.trim();
+        const imgUrl = $('expand-img-url-inline')?.value?.trim();
+        if(imgUrl) item.img = imgUrl;
+        persistData(); pushToCloud();
+        notesEl.contentEditable = 'false';
+        notesEl.style.outline = ''; notesEl.style.padding = '0 4px';
+        notesEl.innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
+        if(item.img) { $('expand-img').src = item.img; $('expand-img').style.display = 'block'; $('expand-img-wrap').style.display = 'flex'; }
+        const urlBar = $('expand-img-bar');
+        if(urlBar) urlBar.style.display = 'none';
+        $('btn-expand-edit').textContent = '✏️ Edit Notes';
+        refreshCurrentView();
+    }
+}
+function saveExpandEdit() { if(expandEditActive) toggleExpandEdit(); }
+function cancelExpandEdit() {
+    if(!expandEditActive) return;
+    expandEditActive = false;
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    const notesEl = $('expand-notes');
+    notesEl.contentEditable = 'false';
+    notesEl.style.outline = ''; notesEl.style.padding = '0 4px';
+    if(item) notesEl.innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
+    const urlBar = $('expand-img-bar');
+    if(urlBar) urlBar.style.display = 'none';
+    $('btn-expand-edit').textContent = '✏️ Edit Notes';
+}
+function wrapExpandText(before, after) {} // contenteditable handles formatting
+function expandAction() {
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(item) showGlobalMenu(event, item.word, 'gallery');
 }
 
 function closeExpandModal() { $('expand-modal').classList.remove('active'); }
@@ -3380,7 +3799,22 @@ function renderGallery() {
     const grid = $('fc-gallery-state');
     
     let itemsToRender = [...REVIEW_BANK];
-    // V79: Sort by risk level (red first, then yellow, then green, then untagged)
+    // V82: Risk filter
+    if(galleryRiskFilter !== 'all') {
+        itemsToRender = itemsToRender.filter(item => item.riskLevel === galleryRiskFilter);
+    }
+    // V84: Date filter
+    const dateFromEl = $('fc-date-from');
+    const dateToEl = $('fc-date-to');
+    const dateFrom = dateFromEl && dateFromEl.value ? new Date(dateFromEl.value).getTime() : 0;
+    const dateTo = dateToEl && dateToEl.value ? new Date(dateToEl.value + 'T23:59:59').getTime() : Infinity;
+    if(dateFrom > 0 || dateTo < Infinity) {
+        itemsToRender = itemsToRender.filter(item => {
+            const created = item.createdAt || 0;
+            return created >= dateFrom && created <= dateTo;
+        });
+    }
+    // Sort by risk level (red first, then yellow, then green, then untagged)
     const riskOrder = { red: 0, yellow: 1, green: 2 };
     itemsToRender.sort((a, b) => {
         const ra = a.riskLevel ? riskOrder[a.riskLevel] : 3;
@@ -3388,15 +3822,26 @@ function renderGallery() {
         return ra - rb;
     });
     if(fcSearchQuery) {
-        itemsToRender = REVIEW_BANK.filter(item => item.word.toLowerCase().includes(fcSearchQuery) || (item.notes && item.notes.toLowerCase().includes(fcSearchQuery)));
+        itemsToRender = itemsToRender.filter(item => item.word.toLowerCase().includes(fcSearchQuery) || (item.notes && item.notes.toLowerCase().includes(fcSearchQuery)));
     }
     
     grid.innerHTML = `
-        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; max-width: 1200px;">
-            <div style="font-size:0.8rem; opacity:0.6; padding-left:16px;">${itemsToRender.length} Cards Found</div>
-            <button class="btn btn-sm btn-ghost" style="border-color:var(--accent2); color:var(--accent2);" onclick="toggleGalleryReveal()">${galleryRevealed ? '\uD83D\uDD12 Hide' : '\uD83D\uDD13 Reveal'}</button>
-            <button class="btn btn-sm btn-ghost" style="border-color:var(--accent); color:var(--accent);" onclick="addNewCardFromGallery()">+ New Card</button>
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; max-width: 1200px; flex-wrap:wrap; gap:6px;">
+            <div style="font-size:0.8rem; opacity:0.6; padding-left:16px;">${itemsToRender.length} Cards</div>
+            <div class="gallery-risk-filter">
+                <button class="risk-filter-btn ${galleryRiskFilter==='all'?'active':''}" onclick="setGalleryRiskFilter('all')">All</button>
+                <button class="risk-filter-btn ${galleryRiskFilter==='red'?'active':''}" onclick="setGalleryRiskFilter('red')">🔴</button>
+                <button class="risk-filter-btn ${galleryRiskFilter==='yellow'?'active':''}" onclick="setGalleryRiskFilter('yellow')">🟡</button>
+                <button class="risk-filter-btn ${galleryRiskFilter==='green'?'active':''}" onclick="setGalleryRiskFilter('green')">🟢</button>
+            </div>
+            <div style="display:flex; gap:4px;">
+                <button class="btn btn-sm btn-ghost" style="border-color:var(--accent2); color:var(--accent2); font-size:0.55rem; padding:4px 8px;" onclick="toggleGalleryReveal()">${galleryRevealed ? '\uD83D\uDD12 Hide' : '\uD83D\uDD13 Reveal'}</button>
+                <button class="btn btn-sm btn-ghost" style="border-color:#a78bfa; color:#a78bfa; font-size:0.55rem; padding:4px 8px;" onclick="toggleGallerySelectMode()">\u2714 Select</button>
+                <button class="btn btn-sm btn-ghost" style="border-color:#ff5252; color:#ff5252; font-size:0.55rem; padding:4px 8px;" onclick="autoRiskStratifyAll()" title="Auto-assign risk from performance data">⚡ Risk Stratify</button>
+                <button class="btn btn-sm btn-ghost" style="border-color:var(--accent); color:var(--accent); font-size:0.55rem; padding:4px 8px;" onclick="addNewCardFromGallery()">+ New</button>
+            </div>
         </div>
+        ${gallerySelectMode ? '<div class="gallery-batch-bar" id="gallery-batch-bar"><span style="font-size:0.7rem; opacity:0.7;">'+gallerySelected.size+' selected</span><button class="btn btn-sm" style="background:#a78bfa; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="batchGenerateAI(\'selected\')">🤖 AI → Exam Notes</button><button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#a78bfa; color:#a78bfa;" onclick="batchGenerateAI(\'empty\')">🤖 All Empty</button><button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-color:#ff5252; color:#ff5252;" onclick="toggleGallerySelectMode()">Cancel</button></div>' : ''}
     `;
     
     const container = document.createElement('div');
@@ -3408,19 +3853,20 @@ function renderGallery() {
         card.className = 'fc-mini-card';
         if(item.reviewed) card.classList.add('reviewed');
         
-        // V81: Risk dot emoji prefix
-        const riskDot = item.riskLevel === 'red' ? '🔴 ' : item.riskLevel === 'yellow' ? '🟡 ' : item.riskLevel === 'green' ? '🟢 ' : '';
+        // V86: Risk background color on card instead of emoji dot
+        if(item.riskLevel) card.classList.add('risk-card-' + item.riskLevel);
         
         if (galleryRevealed) {
              card.classList.add('revealed');
              card.onclick = (e) => {
+                 if(gallerySelectMode) { toggleGalleryCardSelect(item.word, card); return; }
                  if(!e.target.classList.contains('reveal-action-btn') && !e.target.classList.contains('gallery-exam-badge') && !e.target.closest('.gallery-exam-expanded')) { openExpandedCard(item.word); }
              };
              
              let imgHtml = item.img ? `<img src="${item.img}" onerror="this.style.display='none'">` : '';
              
              card.innerHTML = `
-                <b>${riskDot}${item.word}</b>
+                <b>${item.word}</b>
                 <div class="rev-notes md-content">${renderMarkdown(item.notes)}</div>
                 ${imgHtml}
              `;
@@ -3432,16 +3878,7 @@ function renderGallery() {
                  examBadge.textContent = '📝 Exam Note';
                  examBadge.onclick = (e) => {
                      e.stopPropagation();
-                     let expanded = card.querySelector('.gallery-exam-expanded');
-                     if(expanded) { expanded.remove(); }
-                     else {
-                         const div = document.createElement('div');
-                         div.className = 'gallery-exam-expanded';
-                         div.innerHTML = renderMarkdown(item.examNote);
-                         // V81: Make exam note editable on click
-                         div.ondblclick = (ev) => { ev.stopPropagation(); editExamNote(item.word); };
-                         card.appendChild(div);
-                     }
+                     openGalleryExamPanel(item);
                  };
                  card.appendChild(examBadge);
              }
@@ -3453,10 +3890,9 @@ function renderGallery() {
              card.appendChild(actionBtn);
              
         } else {
-             card.onclick = (e) => showGlobalMenu(e, item.word, 'gallery');
-            // V81: Risk dot on compact cards
+             card.onclick = (e) => { if(gallerySelectMode) { toggleGalleryCardSelect(item.word, card); return; } showGlobalMenu(e, item.word, 'gallery'); };
             card.classList.remove('revealed');
-            card.innerHTML = `<b style="margin-bottom:8px;">${riskDot}${item.word}</b>
+            card.innerHTML = `<b style="margin-bottom:8px;">${item.word}</b>
                                <span style="font-size:0.7rem; opacity:0.7; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${item.notes || (item.img ? '[Image Attached]' : 'No notes')}</span>`;
             // V81: Exam note mini badge on compact cards
             if(item.examNote) {
@@ -3467,6 +3903,7 @@ function renderGallery() {
                 card.appendChild(miniBadge);
             }
         }
+                if(gallerySelectMode) { card.classList.add('selectable'); if(gallerySelected.has(item.word)) card.classList.add('selected'); }
         container.appendChild(card);
     });
     grid.appendChild(container);
@@ -3557,7 +3994,7 @@ function exportFlashcardsPDF() {
             .cornell-main .pc-notes strong { color: #222; }
             .cornell-main .pc-notes ul, .cornell-main .pc-notes ol { margin-left: 16px; margin-bottom: 6px; }
             .cornell-main .pc-notes li { margin-bottom: 3px; }
-            .cornell-main .pc-img { max-width: 100%; max-height: 200px; display: block; margin: 8px auto 0; object-fit: contain; border-radius: 4px; }
+            .cornell-main .pc-img { max-width: 100%; max-height: 420px; display: block; margin: 8px auto 0; object-fit: contain; border-radius: 4px; }
             .cornell-no-sidebar { flex: 1; padding: 14px 16px; }
             @page { margin: 1.2cm; }
         }
@@ -3643,7 +4080,7 @@ async function askConsultant(word) {
     const input = $('ai-followup-input');
     input.value = ''; input.disabled = true;
     
-    const initialPrompt = `You are an MRCS Part A exam coach. The candidate has 16 days to exam and asks about "${word}".
+    const initialPrompt = `You are an MRCS Part A exam coach referencing established surgical and medical evidence (Bailey & Love, Schwartz, NICE guidelines, RCSEng curriculum). The candidate has 16 days to exam and asks about "${word}".
 
 RESPOND IN THIS EXACT FORMAT — never exceed 12 lines total:
 
@@ -3741,12 +4178,24 @@ async function sendFollowUp() {
     }
 }
 
-// V79: Multi-selection buffer - accumulates multiple highlights
+// V82: Multi-selection buffer - fixed: clear on close, no duplication, no close on cursor stray
 let aiSelectionBuffer = [];
+let aiModalMouseDownTarget = null;
+
+function aiModalOverlayDown(e) { aiModalMouseDownTarget = e.target; }
+function aiModalOverlayUp(e) {
+    // Only close if both mousedown AND mouseup were on the overlay itself (not inside content)
+    if(aiModalMouseDownTarget === e.target && e.target.id === 'ai-modal') {
+        closeAIModal();
+    }
+    aiModalMouseDownTarget = null;
+}
 
 function appendAIToNote() {
     if(!aiCurrentWord) return;
-    let textToAdd = activeSelection || window.getSelection().toString().trim();
+    const sel = window.getSelection().toString().trim();
+    let textToAdd = sel || activeSelection;
+    
     if (!textToAdd) { 
         // No selection - if buffer has items, flush buffer; otherwise add full response
         if(aiSelectionBuffer.length > 0) {
@@ -3756,11 +4205,15 @@ function appendAIToNote() {
             textToAdd = lastAIResponseText.replace(/\*\*/g, ''); 
         }
     } else {
-        // Has selection - add to buffer and show count
-        aiSelectionBuffer.push(textToAdd);
+        // Has selection - check for duplicate before adding
+        if(!aiSelectionBuffer.includes(textToAdd)) {
+            aiSelectionBuffer.push(textToAdd);
+        }
+        // Clear the selection immediately to prevent re-adding
+        window.getSelection().removeAllRanges();
         activeSelection = "";
         const btn = $('btn-append-ai');
-        btn.textContent = '\u2705 ' + aiSelectionBuffer.length + ' snippet(s) queued \u2014 tap again to save all';
+        btn.textContent = '\u2705 ' + aiSelectionBuffer.length + ' snippet(s) queued \u2014 tap to save all';
         btn.style.color = '#ffab00'; btn.style.borderColor = '#ffab00';
         return; // Don't save yet, let them select more
     }
@@ -3784,7 +4237,18 @@ function appendAIToNote() {
     }
 }
 
-function closeAIModal() { $('ai-modal').classList.remove('active'); }
+function closeAIModal() {
+    $('ai-modal').classList.remove('active');
+    // V82: Reset snippet buffer on close
+    aiSelectionBuffer = [];
+    activeSelection = "";
+    window.getSelection().removeAllRanges();
+    const btn = $('btn-append-ai');
+    if(btn) {
+        btn.textContent = '\uD83D\uDCDD Add Selected Text to Note';
+        btn.style.color = 'var(--accent2)'; btn.style.borderColor = 'var(--accent2)';
+    }
+}
 
 function openSessionSummary(idx) {
     currentSessionIdx = idx;
@@ -3861,6 +4325,7 @@ function openSessionSummary(idx) {
     else $('ss-autopsy-card').style.display = 'block';
 
     const sPad = s.scratchpad || [];
+    const sTyped = s.scratchpadTyped || sPad.map(w => ({ word: typeof w === 'string' ? w : sanitizeWord(w), errorType: 'know' }));
     const poGrid = $('ss-postop-grid');
     poGrid.innerHTML = '';
     
@@ -3868,20 +4333,28 @@ function openSessionSummary(idx) {
         $('ss-postop-card').style.display = 'none';
     } else {
         $('ss-postop-card').style.display = 'flex'; 
-        sPad.forEach(word => {
+        sTyped.forEach(wd => {
+            const wordStr = sanitizeWord(wd.word || wd);
+            if(!wordStr || wordStr === '[object Object]') return;
             const tile = document.createElement('div');
             tile.className = 'review-tile';
-            tile.style.fontSize = '0.75rem';
-            tile.style.padding = '6px 10px';
-            const globalObj = REVIEW_BANK.find(b => b.word === word);
-            // V81: Risk dot prefix in postop
+            tile.style.fontSize = '0.7rem';
+            tile.style.padding = '5px 8px';
+            tile.style.pointerEvents = 'none'; // V84: whole card is clickable
+            const globalObj = REVIEW_BANK.find(b => b.word === wordStr);
             const riskDot = globalObj && globalObj.riskLevel === 'red' ? '🔴 ' : globalObj && globalObj.riskLevel === 'yellow' ? '🟡 ' : globalObj && globalObj.riskLevel === 'green' ? '🟢 ' : '';
             if (globalObj && globalObj.reviewed) tile.classList.add('reviewed');
-            tile.textContent = riskDot + word;
-            tile.onclick = (e) => showGlobalMenu(e, word, 'report');
+            const errType = (typeof wd === 'object' ? wd.errorType : null) || (globalObj ? globalObj.errorType : null) || 'know';
+            const errIcon = errType === 'know' ? '🧠' : errType === 'retrieval' ? '🔁' : '⚡';
+            tile.textContent = riskDot + errIcon + ' ' + wordStr;
             poGrid.appendChild(tile);
         });
     }
+    
+    // V84: Render error sparklines
+    renderErrorSparklines();
+    // V82: Render error trend
+    renderErrorTrendChart();
 
     let affirmation = "";
     const bRatio = tSecs > 0 ? (bSecs / tSecs) : 0;
@@ -3910,6 +4383,7 @@ function openSessionSummary(idx) {
     }
     
     $('ss-affirmation').textContent = affirmation;
+    renderErrorTrendChart();
     show('v-session-summary'); applyTheme();
 }
 
@@ -4334,7 +4808,7 @@ function generateSessionReport() {
     if(sp.length>0){
         ctx.fillStyle=isDark?'#ffffff06':'#00000006'; ctx.fillRect(24,nextY,w-48,28);
         ctx.font='600 7px "DM Sans"'; ctx.fillStyle=isDark?'#ffffff33':'#00000033'; ctx.textAlign='center'; ctx.fillText('WORDS FLAGGED',w/2,nextY+10);
-        let ws=sp.join(' \u00B7 '); ctx.font='600 9px "DM Sans"'; ctx.fillStyle=ac2+'88';
+        let ws=sp.map(w => sanitizeWord(w)).filter(w=>w).join(' \u00B7 '); ctx.font='600 9px "DM Sans"'; ctx.fillStyle=ac2+'88';
         while(ctx.measureText(ws).width>w-60&&ws.length>10){const a=ws.split(' \u00B7 ');a.pop();ws=a.join(' \u00B7 ')+' +more';}
         ctx.fillText(ws,w/2,nextY+22); nextY+=34;
     }
@@ -4361,6 +4835,413 @@ async function shareProgressCard() {
             downloadProgressCard(); // Fallback to download
         }
     } catch(e) { downloadProgressCard(); }
+}
+
+// V82: Gallery risk filter
+function setGalleryRiskFilter(level) {
+    galleryRiskFilter = level;
+    renderGallery();
+}
+
+// V82: Gallery select mode
+function toggleGallerySelectMode() {
+    gallerySelectMode = !gallerySelectMode;
+    if(!gallerySelectMode) gallerySelected.clear();
+    renderGallery();
+}
+function toggleGalleryCardSelect(word, card) {
+    if(gallerySelected.has(word)) { gallerySelected.delete(word); card.classList.remove('selected'); }
+    else { gallerySelected.add(word); card.classList.add('selected'); }
+    // Update batch bar count
+    const bar = $('gallery-batch-bar');
+    if(bar) bar.querySelector('span').textContent = gallerySelected.size + ' selected';
+}
+
+// V88: Gallery exam note right panel
+function openGalleryExamPanel(item) {
+    panelEditingWord = item.word;
+    const panel = $('gallery-exam-panel');
+    $('gallery-panel-word').textContent = item.word;
+    const risk = item.riskLevel || '';
+    $('gallery-panel-risk').innerHTML = risk ? '<span class="risk-badge risk-' + risk + '">' + risk.toUpperCase() + ' RISK</span>' : '';
+    $('gallery-panel-content').innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.3;">No exam notes yet.</span>';
+    // Reset edit state
+    $('gallery-panel-view').style.display = ''; $('gallery-panel-edit-area').style.display = 'none';
+    $('gallery-panel-toolbar').classList.remove('active');
+    $('btn-gallery-panel-edit').style.display = 'inline-flex'; $('btn-gallery-panel-save').style.display = 'none';
+    $('btn-gallery-panel-add').onclick = () => addExamNoteToFlashcard(item.word);
+    $('btn-gallery-panel-add').style.display = item.examNote ? 'inline-flex' : 'none';
+    panel.classList.add('open');
+    // V88: Glow active card
+    document.querySelectorAll('.fc-mini-card.active-working').forEach(c => c.classList.remove('active-working'));
+    const activeCard = [...document.querySelectorAll('.fc-mini-card')].find(c => { const b = c.querySelector('b'); return b && b.textContent.trim() === item.word; });
+    if(activeCard) { activeCard.classList.add('active-working'); activeCard.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+}
+function closeGalleryExamPanel() { 
+    $('gallery-exam-panel').classList.remove('open');
+    document.querySelectorAll('.fc-mini-card.active-working').forEach(c => c.classList.remove('active-working'));
+}
+
+// V86: Batch AI generation — stays in gallery, updates right panel
+async function batchGenerateAI(mode) {
+    const key = GEMINI_KEY || $('gemini-key').value.trim();
+    if(!key) { alert("Consultant Offline: Please paste your Gemini API Key in Settings to unlock the AI."); return; }
+    
+    let targets;
+    if(mode === 'selected') {
+        targets = REVIEW_BANK.filter(b => gallerySelected.has(b.word));
+    } else {
+        targets = REVIEW_BANK.filter(b => !b.examNote || b.examNote.trim() === '');
+    }
+    if(targets.length === 0) { alert("No cards to process."); return; }
+    if(!confirm(`Generate AI exam notes for ${targets.length} card(s)? This will use your Gemini API quota.`)) return;
+    
+    gallerySelectMode = false; gallerySelected.clear();
+    
+    // Show progress in gallery panel
+    const panel = $('gallery-exam-panel');
+    $('gallery-panel-word').textContent = 'BATCH AI';
+    $('gallery-panel-risk').innerHTML = '';
+    $('gallery-panel-content').innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:1.2rem;margin-bottom:8px;">⏳</div><div id="batch-panel-status" style="font-size:0.75rem;opacity:0.7;">Generating... 0/' + targets.length + '</div><div style="margin-top:8px;height:4px;background:rgba(128,128,128,0.15);border-radius:2px;overflow:hidden;"><div id="batch-panel-fill" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width 0.5s;border-radius:2px;"></div></div></div>';
+    $('btn-gallery-panel-add').style.display = 'none';
+    $('btn-gallery-panel-edit').style.display = 'none';
+    panel.classList.add('open');
+    
+    let lastItem = null;
+    for(let i = 0; i < targets.length; i++) {
+        const word = targets[i].word;
+        const errorType = targets[i].errorType || 'know';
+        const errorContext = errorType === 'know' ? 'Knowledge gap' : errorType === 'retrieval' ? 'Retrieval failure' : 'Reasoning error';
+        
+        const statusEl = $('batch-panel-status');
+        const fillEl = $('batch-panel-fill');
+        if(statusEl) statusEl.textContent = 'Generating... ' + (i+1) + '/' + targets.length + ' — ' + word;
+        if(fillEl) fillEl.style.width = Math.round(((i+1)/targets.length)*100) + '%';
+        
+        try {
+            const prompt = `You are an MRCS Part A exam coach. Generate a concise exam note for "${word}". Error type: ${errorContext}.
+
+RESPOND IN THIS EXACT FORMAT — never exceed 12 lines total:
+
+**CORE FACT** (2-3 sentences)
+Key testable facts. Bold the most examined detail.
+
+**EXAM TRAP** (1 sentence)
+The common wrong answer and why.
+
+**SBA LOGIC** (1-2 sentences)
+Question pattern and reasoning shortcut.
+
+**RISK FLAG:** [RED|YELLOW|GREEN]
+RED = high-yield surgical/peri-op/pathology. YELLOW = anatomy/physiology/specialty. GREEN = EM/post-op/skin.
+
+RULES: Max 12 lines. Bold key terms. Evidence-based only.`;
+            
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+            });
+            const data = await res.json();
+            if(data.candidates && data.candidates[0].content.parts[0].text) {
+                const text = data.candidates[0].content.parts[0].text;
+                const globalIdx = REVIEW_BANK.findIndex(b => b.word === word);
+                if(globalIdx > -1) {
+                    REVIEW_BANK[globalIdx].examNote = text;
+                    const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
+                    if(riskMatch) REVIEW_BANK[globalIdx].riskLevel = riskMatch[1].toLowerCase();
+                    lastItem = REVIEW_BANK[globalIdx];
+                }
+            }
+        } catch(e) {
+            console.error('Batch AI error for', word, e);
+        }
+        
+        persistData();
+        if(i < targets.length - 1) await new Promise(r => setTimeout(r, 800));
+    }
+    
+    pushToCloud();
+    
+    // Show last generated item in panel
+    if(lastItem) {
+        openGalleryExamPanel(lastItem);
+    } else {
+        $('gallery-panel-content').innerHTML = '<div style="text-align:center;color:#4ade80;padding:20px;">✅ Complete — ' + targets.length + ' notes generated</div>';
+    }
+    $('btn-gallery-panel-edit').style.display = '';
+    
+    renderGallery();
+}
+
+// V82: Post-Op Review functions
+function buildPostOpStrip(words) {
+    const strip = $('postop-strip-inner');
+    const surgicalEmojis = ['🔪','🩺','💉','🫀','🧠','🦴','🫁','👁️','🩻','⚕️','🏥','🔬','💊','🧬'];
+    // V84: Sanitize words and interleave with surgical emojis
+    const cleanWords = words.map(w => sanitizeWord(w)).filter(w => w && w !== '[object Object]');
+    let tickerItems = [];
+    cleanWords.forEach((w, i) => {
+        tickerItems.push(w.toUpperCase());
+        tickerItems.push(surgicalEmojis[i % surgicalEmojis.length]);
+    });
+    if(tickerItems.length === 0) return;
+    // Triplicate for seamless loop
+    const all = [...tickerItems, ...tickerItems, ...tickerItems];
+    strip.innerHTML = all.map(t => '<span class="strip-word">' + t + '</span>').join('');
+}
+
+function addPostOpTile(word, examNote, riskLevel) {
+    const mosaic = $('postop-mosaic');
+    const tile = document.createElement('div');
+    tile.className = 'postop-fact-tile';
+    tile.setAttribute('data-risk', riskLevel);
+    const riskEmoji = riskLevel === 'red' ? '🔴' : riskLevel === 'yellow' ? '🟡' : riskLevel === 'green' ? '🟢' : '';
+    
+    // Extract just the core fact for the tile display
+    let displayText = examNote.replace(/\*\*/g, '').substring(0, 200);
+    if(examNote.length > 200) displayText += '...';
+    
+    tile.innerHTML = '<div class="tile-word">' + word + '</div><div class="tile-risk">' + riskEmoji + '</div><div style="font-size:0.72rem; opacity:0.8; line-height:1.5;">' + displayText + '</div>';
+    tile.style.cursor = 'pointer';
+    tile.onclick = () => openExpandedCard(word);
+    mosaic.appendChild(tile);
+}
+
+function filterPostOp(level) {
+    postOpRiskFilter = level;
+    document.querySelectorAll('#postop-risk-filter .risk-filter-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    document.querySelectorAll('.postop-fact-tile').forEach(tile => {
+        const tileRisk = tile.getAttribute('data-risk');
+        tile.style.display = (level === 'all' || tileRisk === level) ? '' : 'none';
+    });
+}
+
+function closePostOpReview() {
+    show('v-session-summary');
+}
+
+function generateMissingPostOp() {
+    autoPostOpReview(postOpSessionWords.map(function(w) { return { word: w, errorType: 'know' }; }));
+}
+
+// V82: Auto-generate post-op review after timer session ends
+async function autoPostOpReview(sessionWords) {
+    if(!sessionWords || sessionWords.length === 0) return;
+    const key = GEMINI_KEY || $('gemini-key').value.trim();
+    if(!key) return; // silently skip if no API key
+    
+    postOpSessionWords = sessionWords;
+    postOpResults = [];
+    show('v-postop-review');
+    $('postop-subtitle').textContent = 'Session Debrief • ' + sessionWords.length + ' flashwords';
+    buildPostOpStrip(postOpSessionWords);
+    $('postop-mosaic').innerHTML = '';
+    $('postop-progress-wrap').style.display = 'block';
+    $('postop-status').textContent = 'Generating AI summaries... 0/' + sessionWords.length;
+    $('postop-progress-fill').style.width = '0%';
+    
+    for(let i = 0; i < sessionWords.length; i++) {
+        const wordData = sessionWords[i];
+        const word = typeof wordData === 'string' ? wordData : wordData.word;
+        const errorType = typeof wordData === 'object' ? (wordData.errorType || 'know') : 'know';
+        const errorContext = errorType === 'know' ? 'Knowledge gap' : errorType === 'retrieval' ? 'Retrieval failure' : 'Reasoning error';
+        const existing = REVIEW_BANK.find(b => b.word === word);
+        
+        // Skip if already has exam note
+        if(existing && existing.examNote && existing.examNote.trim()) {
+            postOpResults.push({ word, examNote: existing.examNote, riskLevel: existing.riskLevel || '' });
+            addPostOpTile(word, existing.examNote, existing.riskLevel || '');
+            $('postop-status').textContent = 'Generating AI summaries... ' + (i+1) + '/' + sessionWords.length;
+            $('postop-progress-fill').style.width = Math.round(((i+1)/sessionWords.length)*100) + '%';
+            continue;
+        }
+        
+        try {
+            const prompt = `You are an MRCS Part A exam coach referencing established surgical and medical evidence (Bailey & Love, Schwartz, NICE guidelines, RCSEng curriculum). Generate a concise exam note for "${word}". Error type: ${errorContext}.
+
+RESPOND IN THIS EXACT FORMAT — never exceed 12 lines total:
+
+**CORE FACT** (2-3 sentences)
+Key testable facts. Bold the most examined detail.
+
+**EXAM TRAP** (1 sentence)
+The common wrong answer and why.
+
+**SBA LOGIC** (1-2 sentences)
+Question pattern and reasoning shortcut.
+
+**RISK FLAG:** [RED|YELLOW|GREEN]
+
+RULES: Max 12 lines. Bold key terms. Evidence-based only.`;
+            
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+            });
+            const data = await res.json();
+            if(data.candidates && data.candidates[0].content.parts[0].text) {
+                const text = data.candidates[0].content.parts[0].text;
+                const globalIdx = REVIEW_BANK.findIndex(b => b.word === word);
+                if(globalIdx > -1) {
+                    REVIEW_BANK[globalIdx].examNote = text;
+                    const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
+                    if(riskMatch) REVIEW_BANK[globalIdx].riskLevel = riskMatch[1].toLowerCase();
+                }
+                const rl = REVIEW_BANK.find(b=>b.word===word)?.riskLevel || '';
+                postOpResults.push({ word, examNote: text, riskLevel: rl });
+                addPostOpTile(word, text, rl);
+            }
+        } catch(e) {
+            addPostOpTile(word, 'Error: ' + e.message, '');
+        }
+        
+        $('postop-status').textContent = 'Generating AI summaries... ' + (i+1) + '/' + sessionWords.length;
+        $('postop-progress-fill').style.width = Math.round(((i+1)/sessionWords.length)*100) + '%';
+        persistData();
+        // Small delay to avoid rate limiting
+        await new Promise(r => setTimeout(r, 800));
+    }
+    
+    pushToCloud();
+    $('postop-status').textContent = '✅ Complete — ' + sessionWords.length + ' exam notes generated';
+}
+
+// V82: Open post-op from surgeon's report
+function openPostOpFromReport() {
+    const s = sessions[currentSessionIdx];
+    if(!s) return;
+    const sTyped = s.scratchpadTyped || (s.scratchpad || []).map(w => ({ word: w, errorType: 'know' }));
+    if(sTyped.length === 0) { alert('No flashwords in this session.'); return; }
+    
+    postOpSessionWords = sTyped.map(s => typeof s === 'string' ? s : sanitizeWord(s)).filter(w => w && w !== '[object Object]');
+    postOpResults = [];
+    show('v-postop-review');
+    $('postop-subtitle').textContent = 'Session Post-Op • ' + postOpSessionWords.length + ' flashwords';
+    buildPostOpStrip(postOpSessionWords);
+    $('postop-mosaic').innerHTML = '';
+    
+    // Show existing exam notes for session words
+    let hasEmpty = false;
+    postOpSessionWords.forEach(word => {
+        const item = REVIEW_BANK.find(b => b.word === word);
+        if(item && item.examNote) {
+            addPostOpTile(word, item.examNote, item.riskLevel || '');
+        } else {
+            hasEmpty = true;
+            addPostOpTile(word, 'No exam note yet. Use batch AI to generate.', '');
+        }
+    });
+    
+    if(hasEmpty) {
+        $('postop-progress-wrap').style.display = 'block';
+        $('postop-status').innerHTML = '<button class="btn btn-sm" style="background:#a78bfa; color:#111;" onclick="generateMissingPostOp()">🤖 Generate Missing Exam Notes</button>';
+        $('postop-progress-fill').style.width = '0%';
+    } else {
+        $('postop-progress-wrap').style.display = 'none';
+    }
+}
+
+// V82: Session auto-save to localStorage
+function saveSessionState() {
+    if(!running) return;
+    sessionAutoSave = {
+        elapsed, totalMin, totalQs, cpCount,
+        sessionBreaks, totalBreakTime, breakTally: {...breakTally},
+        sessionScratchpad: [...sessionScratchpad],
+        errorCounts: {...errorCounts},
+        sessionStartDate, globalSessionStart,
+        qbank: document.querySelector('input[name="qbank"]:checked')?.value || 'pt',
+        phase: document.querySelector('input[name="phase"]:checked')?.value || '1st',
+        cpDone: [...cpDone],
+        timestamp: Date.now()
+    };
+    localStorage.setItem('mrcs-session-autosave', JSON.stringify(sessionAutoSave));
+}
+
+function checkSessionRestore() {
+    const saved = localStorage.getItem('mrcs-session-autosave');
+    if(!saved) return;
+    try {
+        const s = JSON.parse(saved);
+        // Only restore if less than 4 hours old
+        if(Date.now() - s.timestamp > 4 * 60 * 60 * 1000) {
+            localStorage.removeItem('mrcs-session-autosave');
+            return;
+        }
+        if(confirm('A previous session was interrupted. Resume?\n\nElapsed: ' + Math.round(s.elapsed/60) + 'm | Scratchpad: ' + s.sessionScratchpad.length + ' words')) {
+            // Restore state
+            totalMin = s.totalMin; totalQs = s.totalQs; cpCount = s.cpCount;
+            elapsed = s.elapsed; sessionBreaks = s.sessionBreaks;
+            totalBreakTime = s.totalBreakTime; breakTally = s.breakTally;
+            sessionScratchpad = s.sessionScratchpad;
+            errorCounts = s.errorCounts;
+            sessionStartDate = s.sessionStartDate;
+            globalSessionStart = s.globalSessionStart;
+            cpDone = s.cpDone;
+            
+            // Restore error display
+            ['know','retrieval','reasoning'].forEach(t => { if($('err-'+t+'-n')) $('err-'+t+'-n').textContent = errorCounts[t] || 0; });
+            
+            elapsedBeforePause = elapsed;
+            calcCPs(); show('v-timer'); buildLMs();
+            // Mark completed checkpoints
+            cpDone.forEach((done, i) => { if(done) { const lms = document.querySelectorAll('.lm'); if(lms[i]) { lms[i].classList.add('done'); lms[i].querySelector('.lm-status').textContent = '✓'; } } });
+            
+            $('clock').textContent = fmt(Math.max(0, totalMin * 60 - elapsed));
+            $('bar').style.width = Math.min(100, (elapsed / (totalMin * 60)) * 100) + '%';
+            redrawScratchpad();
+            
+            // Start running
+            running = true;
+            sessionStartTime = Date.now();
+            iv = setInterval(tick, 1000);
+            $('timer-badge').textContent = 'Resumed';
+            $('timer-badge').style.background = T().badgeBg;
+            $('timer-badge').style.color = T().badgeFg;
+            $('clock').classList.add('pulse');
+        }
+        localStorage.removeItem('mrcs-session-autosave');
+    } catch(e) {
+        localStorage.removeItem('mrcs-session-autosave');
+    }
+}
+
+// V82: Weak topic heatmap (error trends across last 10 sessions)
+function renderErrorTrendChart() {
+    const container = $('error-trend-container');
+    if(!container) return;
+    
+    const recent = sessions.slice(-10);
+    if(recent.length < 2) { container.innerHTML = '<div style="font-size:0.7rem; opacity:0.4; text-align:center;">Need 2+ sessions for trends</div>'; return; }
+    
+    const types = [
+        { key: 'know', label: 'Knowledge Gap', color: '#ff5252' },
+        { key: 'retrieval', label: 'Retrieval', color: '#ffab00' },
+        { key: 'reasoning', label: 'Reasoning', color: '#448aff' }
+    ];
+    
+    let maxVal = 1;
+    types.forEach(t => { recent.forEach(s => { const v = (s.errors && s.errors[t.key]) || 0; if(v > maxVal) maxVal = v; }); });
+    
+    let html = '<div class="error-trend-chart">';
+    types.forEach(t => {
+        html += '<div class="trend-row"><div class="trend-label" style="color:' + t.color + ';">' + t.label + '</div><div class="trend-bars">';
+        recent.forEach((s, i) => {
+            const val = (s.errors && s.errors[t.key]) || 0;
+            const h = Math.max(2, (val / maxVal) * 30);
+            html += '<div class="trend-bar" style="height:' + h + 'px; background:' + t.color + ';" data-val="' + val + '" title="Session ' + (i+1) + ': ' + val + '"></div>';
+        });
+        // Trend arrow
+        const first = recent.slice(0, Math.ceil(recent.length/2));
+        const second = recent.slice(Math.ceil(recent.length/2));
+        const avgFirst = first.reduce((sum, s) => sum + ((s.errors && s.errors[t.key]) || 0), 0) / first.length;
+        const avgSecond = second.reduce((sum, s) => sum + ((s.errors && s.errors[t.key]) || 0), 0) / second.length;
+        const trend = avgSecond > avgFirst + 0.5 ? '📈' : avgSecond < avgFirst - 0.5 ? '📉' : '➡️';
+        html += '</div><span style="font-size:0.9rem;">' + trend + '</span></div>';
+    });
+    html += '</div>';
+    container.innerHTML = html;
 }
 
 // V79: PWA manifest only (blob service workers don't work cross-origin on Netlify)
@@ -4411,6 +5292,279 @@ document.addEventListener('touchend', function(e) {
     edgeSwipeStartX = -1;
 }, { passive: true });
 
+// =================== V88: INLINE EDIT + SELECTION ADD ===================
+
+// V89: Stack card inline note editing — contenteditable, no layout change
+let stackEditingWord = '';
+let stackEditActive = false;
+function toggleStackEdit() {
+    const item = REVIEW_BANK.find(b => b.word === stackEditingWord);
+    if(!item) return;
+    const notesEl = $('fc-notes');
+    const imgEl = $('fc-img');
+    if(!stackEditActive) {
+        // Enter edit mode — make notes contenteditable in place
+        stackEditActive = true;
+        notesEl.contentEditable = 'true';
+        notesEl.style.outline = '2px dashed var(--accent2)';
+        notesEl.style.borderRadius = '8px';
+        notesEl.style.padding = '8px';
+        notesEl.style.minHeight = '80px';
+        notesEl.focus();
+        // Show image URL bar
+        let urlBar = $('fc-back-img-bar');
+        if(!urlBar) {
+            urlBar = document.createElement('div');
+            urlBar.id = 'fc-back-img-bar';
+            urlBar.innerHTML = '<input type="text" id="fc-back-img-url-inline" class="input-field" placeholder="Image URL" style="font-size:0.7rem; padding:4px 8px; margin-top:8px; border-radius:8px;" onclick="event.stopPropagation()">';
+            imgEl.parentNode.insertBefore(urlBar, imgEl);
+        }
+        urlBar.style.display = 'block';
+        $('fc-back-img-url-inline').value = (item.img && !item.img.startsWith('data:')) ? item.img : '';
+        // Change button text
+        const btns = document.querySelectorAll('#fc-actions-back .fc-edit-btn');
+        btns.forEach(b => { if(b.textContent.includes('Edit')) { b.textContent = '💾 Save'; b.style.borderColor = '#4ade80'; b.style.color = '#4ade80'; } });
+    } else {
+        // Save — extract text from contenteditable
+        stackEditActive = false;
+        // Get plain text with line breaks preserved
+        let html = notesEl.innerHTML;
+        // Convert contenteditable HTML back to markdown-ish plain text
+        let text = html.replace(/<div>/gi, '\n').replace(/<\/div>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+        item.notes = text.trim();
+        const imgUrl = $('fc-back-img-url-inline')?.value?.trim();
+        if(imgUrl) item.img = imgUrl;
+        // Also update fcQueue
+        const qItem = fcQueue.find(b => b.word === stackEditingWord);
+        if(qItem) { qItem.notes = item.notes; if(imgUrl) qItem.img = item.img; }
+        persistData(); pushToCloud();
+        notesEl.contentEditable = 'false';
+        notesEl.style.outline = ''; notesEl.style.padding = '';
+        notesEl.innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
+        if(item.img) { $('fc-img').src = item.img; $('fc-img').style.display = 'block'; }
+        const urlBar = $('fc-back-img-bar');
+        if(urlBar) urlBar.style.display = 'none';
+        // Reset button
+        const btns = document.querySelectorAll('#fc-actions-back .fc-edit-btn');
+        btns.forEach(b => { if(b.textContent.includes('Save')) { b.textContent = '✏️ Edit'; b.style.borderColor = 'var(--accent2)'; b.style.color = 'var(--accent2)'; } });
+    }
+}
+function saveStackEdit() { if(stackEditActive) toggleStackEdit(); }
+function cancelStackEdit() {
+    if(!stackEditActive) return;
+    stackEditActive = false;
+    const item = REVIEW_BANK.find(b => b.word === stackEditingWord);
+    const notesEl = $('fc-notes');
+    notesEl.contentEditable = 'false';
+    notesEl.style.outline = ''; notesEl.style.padding = '';
+    if(item) notesEl.innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
+    const urlBar = $('fc-back-img-bar');
+    if(urlBar) urlBar.style.display = 'none';
+    const btns = document.querySelectorAll('#fc-actions-back .fc-edit-btn');
+    btns.forEach(b => { if(b.textContent.includes('Save')) { b.textContent = '✏️ Edit'; b.style.borderColor = 'var(--accent2)'; b.style.color = 'var(--accent2)'; } });
+}
+function wrapStackText(before, after) {} // Not needed with contenteditable
+
+// V88: Inline edit for gallery panel
+let panelEditingWord = '';
+function togglePanelEdit() {
+    const viewEl = $('gallery-panel-view');
+    const editEl = $('gallery-panel-edit-area');
+    const toolbar = $('gallery-panel-toolbar');
+    const btnEdit = $('btn-gallery-panel-edit');
+    const btnSave = $('btn-gallery-panel-save');
+    if(editEl.style.display === 'none') {
+        const item = REVIEW_BANK.find(b => b.word === panelEditingWord);
+        $('gallery-panel-textarea').value = item ? (item.examNote || '') : '';
+        viewEl.style.display = 'none'; editEl.style.display = 'block'; toolbar.classList.add('active');
+        btnEdit.style.display = 'none'; btnSave.style.display = 'inline-flex';
+        $('gallery-panel-textarea').focus();
+    } else { savePanelEdit(); }
+}
+function savePanelEdit() {
+    const item = REVIEW_BANK.find(b => b.word === panelEditingWord);
+    if(item) { item.examNote = $('gallery-panel-textarea').value; persistData(); pushToCloud(); }
+    $('gallery-panel-view').style.display = ''; $('gallery-panel-edit-area').style.display = 'none';
+    $('gallery-panel-toolbar').classList.remove('active');
+    $('btn-gallery-panel-edit').style.display = 'inline-flex'; $('btn-gallery-panel-save').style.display = 'none';
+    if(item) $('gallery-panel-content').innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.3;">No exam notes.</span>';
+}
+function wrapPanelText(before, after) {
+    const ta = $('gallery-panel-textarea');
+    const s = ta.selectionStart, e = ta.selectionEnd, t = ta.value;
+    ta.value = t.substring(0,s) + before + t.substring(s,e) + after + t.substring(e);
+    ta.focus(); ta.selectionStart = s+before.length; ta.selectionEnd = s+before.length+(e-s);
+}
+
+// V88: Inline edit for stack sidebar
+let sidebarEditingWord = '';
+function toggleSidebarEdit() {
+    const viewEl = $('fc-exam-view');
+    const editEl = $('fc-exam-edit-area');
+    const toolbar = $('fc-sidebar-toolbar');
+    const btnEdit = $('btn-edit-exam-inline');
+    const btnSave = $('btn-save-exam-inline');
+    if(editEl.style.display === 'none') {
+        const item = REVIEW_BANK.find(b => b.word === sidebarEditingWord);
+        $('fc-exam-textarea').value = item ? (item.examNote || '') : '';
+        viewEl.style.display = 'none'; editEl.style.display = 'block'; toolbar.classList.add('active');
+        btnEdit.style.display = 'none'; btnSave.style.display = 'inline-flex';
+        $('fc-exam-textarea').focus();
+    } else { saveSidebarEdit(); }
+}
+function saveSidebarEdit() {
+    const item = REVIEW_BANK.find(b => b.word === sidebarEditingWord);
+    if(item) { item.examNote = $('fc-exam-textarea').value; persistData(); pushToCloud(); }
+    $('fc-exam-view').style.display = ''; $('fc-exam-edit-area').style.display = 'none';
+    $('fc-sidebar-toolbar').classList.remove('active');
+    $('btn-edit-exam-inline').style.display = 'inline-flex'; $('btn-save-exam-inline').style.display = 'none';
+    if(item) $('fc-exam-note').innerHTML = item.examNote ? '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(item.examNote) + '</div>' : '<span style="opacity:0.3;">No exam notes yet.</span>';
+}
+function wrapSidebarText(before, after) {
+    const ta = $('fc-exam-textarea');
+    const s = ta.selectionStart, e = ta.selectionEnd, t = ta.value;
+    ta.value = t.substring(0,s) + before + t.substring(s,e) + after + t.substring(e);
+    ta.focus(); ta.selectionStart = s+before.length; ta.selectionEnd = s+before.length+(e-s);
+}
+
+// V88: Add SELECTED text to flashcard notes (not entire exam note)
+function addExamNoteToFlashcard(word) {
+    const sel = activeSelection || window.getSelection().toString().trim();
+    if(!sel) { alert('Select the text you want to add first, then tap this button.'); return; }
+    const item = REVIEW_BANK.find(b => b.word === word);
+    if(!item) return;
+    const existing = item.notes || '';
+    item.notes = existing + (existing ? '\n\n' : '') + sel;
+    persistData(); pushToCloud(); refreshCurrentView();
+    haptic(20); activeSelection = '';
+}
+
+// V89: Risk stratify using Consultant AI — needs to see your performance data to comment
+async function autoRiskStratifyAll() {
+    const key = GEMINI_KEY || $('gemini-key').value.trim();
+    if(!key) { alert("Consultant Offline: Please paste your Gemini API Key in Settings to use AI risk stratification."); return; }
+    
+    const unrated = REVIEW_BANK.filter(b => !b.riskLevel || !(b.riskLevel && b.examNote));
+    if(unrated.length === 0) { alert('All cards already have risk levels.'); return; }
+    if(!confirm(`AI Risk Stratify ${unrated.length} cards using your Pastest/eMRCS performance data?\n\nThe Consultant AI will classify each term as RED/YELLOW/GREEN based on MRCS exam weighting.\n\nThis will use ${unrated.length} API calls.`)) return;
+    
+    // Show progress in gallery panel
+    const panel = $('gallery-exam-panel');
+    $('gallery-panel-word').textContent = '⚡ RISK STRATIFY';
+    $('gallery-panel-risk').innerHTML = '';
+    $('gallery-panel-content').innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:1.2rem;margin-bottom:8px;">⏳</div><div id="risk-strat-status" style="font-size:0.7rem;opacity:0.7;">Classifying... 0/' + unrated.length + '</div></div>';
+    $('btn-gallery-panel-add').style.display = 'none';
+    $('btn-gallery-panel-edit').style.display = 'none';
+    panel.classList.add('open');
+    
+    let updated = 0;
+    for(let i = 0; i < unrated.length; i++) {
+        const item = unrated[i];
+        const statusEl = $('risk-strat-status');
+        if(statusEl) statusEl.textContent = 'Classifying... ' + (i+1) + '/' + unrated.length + ' — ' + item.word;
+        
+        try {
+            const prompt = `You are an MRCS Part A exam classifier. Classify this topic for exam risk priority.
+
+Topic: "${item.word}"
+${item.notes ? 'Student notes: ' + item.notes.substring(0,200) : ''}
+${item.errorType ? 'Error type when encountered: ' + item.errorType : ''}
+
+Classification rules from Pastest/eMRCS performance data:
+RED (high-yield, most commonly tested): surgical technique, peri-operative care, pathology (CVS/respiratory/endocrine/digestive), management & legal, intraoperative care, burns, organ transplant, musculoskeletal pathology.
+YELLOW (moderate yield): anatomy, physiology, GI/colorectal/HPB, vascular, urology, orthopaedics.
+GREEN (lower yield but still tested): emergency medicine, post-op management, skin, hand disorders, breast.
+
+Reply with ONLY one word: RED, YELLOW, or GREEN.`;
+            
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+            });
+            const data = await res.json();
+            if(data.candidates && data.candidates[0].content.parts[0].text) {
+                const reply = data.candidates[0].content.parts[0].text.trim().toUpperCase();
+                const match = reply.match(/(RED|YELLOW|GREEN)/);
+                if(match) { item.riskLevel = match[1].toLowerCase(); updated++; }
+            }
+        } catch(e) { console.error('Risk stratify error for', item.word, e); }
+        
+        persistData();
+        if(i < unrated.length - 1) await new Promise(r => setTimeout(r, 500));
+    }
+    
+    pushToCloud();
+    // Update card colors in-place
+    document.querySelectorAll('.fc-mini-card').forEach(card => {
+        const titleEl = card.querySelector('b');
+        if(!titleEl) return;
+        const word = titleEl.textContent.trim();
+        const bankItem = REVIEW_BANK.find(b => b.word === word);
+        if(!bankItem || !bankItem.riskLevel) return;
+        card.classList.remove('risk-card-red','risk-card-yellow','risk-card-green');
+        card.classList.add('risk-card-' + bankItem.riskLevel);
+    });
+    
+    $('gallery-panel-content').innerHTML = '<div style="text-align:center;padding:20px;color:#4ade80;">✅ ' + updated + ' cards classified.<br>Card order updates on next visit.</div>';
+    $('btn-gallery-panel-edit').style.display = '';
+}
+
+function clearDateFilter() {
+    $('fc-date-from').value = '';
+    $('fc-date-to').value = '';
+    applyFlashcardSearch();
+}
+
+function sanitizeWord(w) {
+    if(typeof w === 'string') return w;
+    if(w && typeof w === 'object' && w.word) return w.word;
+    return '';
+}
+
+// V84: Error sparklines for surgeon's report
+function renderErrorSparklines() {
+    const container = $('ss-error-sparklines');
+    if(!container) return;
+    
+    // Get last 10 sessions with errors
+    const recent = sessions.slice(-10).map(s => s.errors || { know:0, retrieval:0, reasoning:0 });
+    if(recent.length === 0) { container.innerHTML = '<div style="opacity:0.4;font-size:0.7rem;text-align:center;">No session data yet.</div>'; return; }
+    
+    const types = [
+        { key: 'know', label: '🧠 Knowledge', color: '#ff5252' },
+        { key: 'retrieval', label: '🔁 Retrieval', color: '#ffab00' },
+        { key: 'reasoning', label: '⚡ Reasoning', color: '#448aff' }
+    ];
+    
+    let html = '';
+    types.forEach(type => {
+        const vals = recent.map(e => e[type.key] || 0);
+        const maxVal = Math.max(...vals, 1);
+        html += '<div class="trend-row">';
+        html += '<div class="trend-label" style="color:' + type.color + ';">' + type.label + '</div>';
+        html += '<div class="trend-bars">';
+        vals.forEach((v, i) => {
+            const h = Math.max(2, (v / maxVal) * 28);
+            html += '<div class="trend-bar" style="height:' + h + 'px; background:' + type.color + ';" data-val="' + v + '" title="Session ' + (i+1) + ': ' + v + '"></div>';
+        });
+        html += '</div>';
+        html += '<span style="font-size:0.65rem;font-weight:700;width:24px;text-align:right;color:' + type.color + ';">' + vals.reduce((a,b)=>a+b,0) + '</span>';
+        html += '</div>';
+    });
+    container.innerHTML = html;
+}
+
+// V84: Inline sparkline builder for tracker tags
+function buildInlineSparkline(word) {
+    // Find last 5 sessions containing this word to show error frequency
+    const item = REVIEW_BANK.find(b => b.word === word);
+    if(!item) return '';
+    const errType = item.errorType || 'know';
+    const color = errType === 'know' ? '#ff5252' : errType === 'retrieval' ? '#ffab00' : '#448aff';
+    const icon = errType === 'know' ? '🧠' : errType === 'retrieval' ? '🔁' : '⚡';
+    return '<span style="font-size:0.5rem;padding:1px 4px;border-radius:3px;background:' + color + '22;color:' + color + ';font-weight:700;margin-left:2px;">' + icon + '</span>';
+}
+
 function initApp() {
     $('cloud-key').value = CLOUD_KEY;
     $('cloud-bin').value = CLOUD_BIN;
@@ -4433,6 +5587,8 @@ function initApp() {
     $('btn-pause').onclick = togglePause;
     $('btn-abandon').onclick = abandonSession;
     $('btn-end').onclick = endSession;
+    // V82: Check for interrupted session
+    checkSessionRestore();
     $('btn-save').onclick = saveSessionResult;
     
     // Explicit Event Bindings
@@ -4475,7 +5631,7 @@ function initApp() {
     $('btn-action-cancel').onclick = () => $('action-modal').classList.remove('active');
     $('action-modal').onclick = () => $('action-modal').classList.remove('active');
     
-    logDebug("V81 App initialized successfully. All systems operational.");
+    logDebug("V89 App initialized successfully. All systems operational.");
 }
 
 initApp();
