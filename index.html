@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V96</title>
+<title>MRCS QBank Tracker Pro Max V98</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -188,12 +188,12 @@
     
     .fc-mini-card.revealed { 
         break-inside: avoid; page-break-inside: avoid; -webkit-column-break-inside: avoid;
-        width: 100%; margin-bottom: 16px; height: auto; min-height: 120px; 
-        justify-content: flex-start; padding: 20px; text-align: left; align-items: flex-start; 
+        width: 100%; margin-bottom: 12px; height: auto; min-height: 0; 
+        justify-content: flex-start; padding: 14px; text-align: left; align-items: flex-start; 
     }
-    .fc-mini-card.revealed b { font-size: 1.2rem; color: var(--accent2); margin-bottom: 8px; width: 100%; text-align: left; padding-right: 24px; }
-    .fc-mini-card.revealed .rev-notes { font-size: 0.9rem; line-height: 1.6; border-top: 1px solid rgba(128,128,128,0.2); padding-top: 12px; width: 100%; word-wrap: break-word; }
-    .fc-mini-card.revealed img { max-width: 100%; max-height: 300px; object-fit: contain; border-radius: 6px; margin-top: 12px; align-self: center; }
+    .fc-mini-card.revealed b { font-size: 1.05rem; color: var(--accent2); margin-bottom: 6px; width: 100%; text-align: left; padding-right: 24px; }
+    .fc-mini-card.revealed .rev-notes { font-size: 0.78rem; line-height: 1.5; border-top: 1px solid rgba(128,128,128,0.2); padding-top: 8px; width: 100%; word-wrap: break-word; }
+    .fc-mini-card.revealed img { max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 6px; margin-top: 8px; align-self: center; }
     
     .reveal-action-btn { position: absolute; top: 12px; right: 12px; font-size: 1.2rem; cursor: pointer; opacity: 0.5; transition: opacity 0.2s; padding: 0 8px; line-height: 1; }
     .reveal-action-btn:hover { opacity: 1; color: var(--accent2); }
@@ -213,7 +213,7 @@
     .modal-textarea { width: 100%; height: 300px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; padding: 12px; font-family: inherit; font-size: 0.95rem; resize: none; outline: none; }
     .modal-textarea:focus { border-color: var(--accent2); }
     
-    /* V96: All modal text colours use CSS variables set by applyTheme */
+    /* V98: All modal text colours use CSS variables set by applyTheme */
     .modal-content { color: var(--modal-fg, #fff) !important; }
     .modal-content .input-field { color: var(--modal-fg, #fff) !important; border-color: var(--modal-input-border, rgba(255,255,255,0.3)) !important; background: var(--modal-input-bg, rgba(255,255,255,0.08)) !important; }
     .modal-content .input-field:focus { border-color: var(--accent2) !important; background: var(--modal-input-bg-focus, rgba(255,255,255,0.15)) !important; }
@@ -302,7 +302,8 @@
         #app { padding-left: 10px; padding-right: 10px; padding-bottom: 44px; }
         .top-bar { padding-left: 10px; padding-right: 10px; }
         .th-dot { width: 18px; height: 18px; }
-        .fs-btn { font-size: 0.6rem; padding: 3px 5px; }
+        /* V98: Hide font size buttons + fullscreen + Aa cycle on mobile to declutter top bar */
+        .top-bar > div:first-child { display: none !important; }
         .clock { font-size: min(10vw, 3.5rem); letter-spacing: 2px; }
         .stat-val { font-size: 1.8rem; }
         .stat-lbl { font-size: 0.58rem; letter-spacing: 1px; }
@@ -391,16 +392,16 @@
         /* Tag badges */
         .tag-study, .tag-work, .tag-rest { font-size: 0.5rem; padding: 3px 5px; }
         
-        /* V96: Mobile stack view — sidebar moves below SRS buttons as a sticky note */
+        /* V98: Mobile stack view — sidebar moves below SRS buttons as a sticky note */
         #fc-stack-layout { flex-direction: column !important; align-items: stretch !important; }
         .fc-exam-sidebar { 
             width: 100% !important; max-width: 100% !important; max-height: 200px; 
             margin-top: 12px; position: relative !important; top: 0 !important;
             order: 99; /* push to bottom of flex */
         }
-        /* V96: Mobile gallery panel — full screen takeover */
+        /* V98: Mobile gallery panel — full screen takeover */
         .gallery-exam-panel { width: 100vw !important; max-width: 100vw !important; left: 0 !important; right: 0 !important; padding: 60px 18px 24px !important; }
-        /* V96: Expand modal full screen on mobile, single column, hide image */
+        /* V98: Expand modal full screen on mobile, single column, hide image */
         #expand-modal-content { width: 100vw !important; max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; padding: 60px 16px 20px !important; border-radius: 0 !important; border-left: none !important; border-right: none !important; }
         #expand-modal-content #expand-word { font-size: 1.6rem !important; }
         #expand-body-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
@@ -489,7 +490,7 @@
 
     
     
-    /* V96: Universal sticky note style — used for ALL exam note displays */
+    /* V98: Universal sticky note style — used for ALL exam note displays */
     .sticky-note { background: #fef9e7 !important; color: #2c2c2c !important; border: 1px solid #e6c54b !important; border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; line-height: 1.6; box-shadow: 2px 3px 8px rgba(0,0,0,0.15); }
     .sticky-note *, .sticky-note .md-content, .sticky-note .md-content * { color: #2c2c2c !important; }
     .sticky-note b, .sticky-note strong { color: #1a1a1a !important; font-weight: 900 !important; }
@@ -500,7 +501,7 @@
     .sticky-note textarea, .sticky-note input[type="text"] { color: #2c2c2c !important; background: #fdf5d6 !important; border: 1px solid #ddc66e !important; }
     .sticky-note [contenteditable="true"] { background: #fdf5d6 !important; outline: 2px dashed #c9a84c !important; padding: 6px !important; border-radius: 4px; }
 
-    /* V96: Removed legacy popup CSS — sidebar uses sticky note style */
+    /* V98: Removed legacy popup CSS — sidebar uses sticky note style */
     @media (max-width: 700px) {
         #fc-stack-layout { flex-direction: column !important; }
     }
@@ -594,7 +595,7 @@
     @media (max-width: 480px) { .scratch-3col { flex-direction: column; gap: 4px; } .scratch-3col .scratch-input { font-size: 0.8rem; } }
 
     /* V89: Stack + gallery sidebar — sticky note style, universal */
-    .fc-exam-sidebar { flex: 1; min-width: 280px; max-width: 33vw; padding: 18px 22px; overflow-y: auto; font-size: 0.78rem; line-height: 1.65; font-family: 'JetBrains Mono', monospace; background: #fef9e7; color: #2c2c2c; border-radius: 12px; border: 1px solid #e6c54b; flex-shrink: 0; position: sticky; top: 60px; align-self: flex-start; max-height: calc(100vh - 120px); }
+    .fc-exam-sidebar { flex: 0 1 auto; min-width: 280px; max-width: 33vw; padding: 18px 22px; overflow-y: auto; font-size: 0.78rem; line-height: 1.65; font-family: 'JetBrains Mono', monospace; background: #fef9e7; color: #2c2c2c; border-radius: 12px; border: 1px solid #e6c54b; flex-shrink: 0; position: sticky; top: 60px; align-self: flex-start; max-height: calc(100vh - 120px); height: auto; }
     .fc-exam-sidebar .exam-note-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; margin-bottom: 6px; font-weight: 700; font-family: 'DM Sans', sans-serif; color: #8b6914; }
     .fc-exam-sidebar .exam-note-content { white-space: pre-wrap; word-wrap: break-word; opacity: 0.9; color: #2c2c2c; }
     .fc-exam-sidebar, .fc-exam-sidebar *, .fc-exam-sidebar .md-content, .fc-exam-sidebar .md-content * { color: #2c2c2c !important; }
@@ -607,8 +608,8 @@
     .fc-exam-sidebar .sidebar-toolbar { display: none; flex-wrap: wrap; gap: 4px; margin-top: 8px; justify-content: flex-start; }
     .fc-exam-sidebar .sidebar-toolbar.active { display: flex; }
     @media (max-width: 700px) {
-        #fc-stack-layout { flex-direction: column !important; }
-        .fc-exam-sidebar { width: 100% !important; max-width: 100% !important; max-height: 180px; margin-top: 8px; position: relative; top: 0; }
+        #fc-stack-layout { flex-direction: column !important; padding: 0 !important; }
+        .fc-exam-sidebar { width: 100% !important; max-width: 100% !important; max-height: none !important; margin-top: 12px; position: relative !important; top: 0 !important; min-width: 0 !important; }
     }
 
     /* V84: Front card constrained to viewport, back scrollable */
@@ -705,7 +706,7 @@
         <button class="fs-btn" onclick="changeFs(1)">A+</button>
         <button class="fs-btn" onclick="cycleFont()">Aa</button>
     </div>
-    <!-- V96: Home + Export PDF buttons centred in unshakeable top bar -->
+    <!-- V98: Home + Export PDF buttons centred in unshakeable top bar -->
     <div id="topbar-actions" style="display:none; gap:8px; align-items:center; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">
         <button class="fs-btn" id="btn-topbar-export" onclick="exportFlashcardsPDF()" style="font-size:0.75rem; padding:6px 12px;">📄 PDF</button>
         <button class="fs-btn" id="btn-topbar-home" onclick="goToHome()" style="font-size:0.75rem; padding:6px 14px; background:var(--accent2); color:#111;">⌂ HOME</button>
@@ -1033,7 +1034,7 @@
 
     <div style="width: 100%; display: flex; justify-content: center; align-items:center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap;">
         <input type="text" id="fc-search-input" class="input-field" placeholder="🔍 Search notes or words..." style="padding: 8px; font-size: 0.8rem; max-width: 320px; border-radius: 20px; flex:1;" oninput="applyFlashcardSearch()">
-        <!-- V96: Stack edit toolbar — single button reveals all field edit functions -->
+        <!-- V98: Stack edit toolbar — single button reveals all field edit functions -->
         <div id="stack-edit-toolbar" style="display:flex; gap:4px; align-items:center;">
             <button class="btn btn-sm btn-ghost" id="btn-stack-edit-toggle" onclick="toggleStackFullEdit()" style="font-size:0.6rem; padding:5px 10px; border-style:dashed; border-color:var(--accent2); color:var(--accent2);">✏️ Edit</button>
             <div id="stack-edit-tools" style="display:none; gap:3px;">
@@ -1093,7 +1094,7 @@
                 </div>
                 <div id="fc-exam-risk"></div>
                 <div class="exam-note-content" id="fc-exam-note">No exam notes yet.</div>
-                <!-- V96: Stack refine bar for exam note only -->
+                <!-- V98: Stack refine bar for exam note only -->
                 <div class="row" style="margin-top:6px; gap:4px;">
                     <input type="text" id="stack-ai-refine-input" placeholder="🪄 Modify..." style="font-size:0.6rem; padding:5px 8px; flex:1; border-radius:6px; border:1px solid #c9a84c; background:#fdf5d6; color:#2c2c2c; font-family:'JetBrains Mono',monospace; outline:none; min-width:0;">
                     <button class="btn btn-sm" id="btn-stack-ai-refine" onclick="refineStackExamNote()" style="background:#00f2fe; color:#111; font-size:0.55rem; padding:5px 10px;">Send</button>
@@ -1251,7 +1252,7 @@
             <button class="btn btn-sm btn-ghost" onclick="execFormat('removeFormat')" style="padding:3px 8px;font-size:0.6rem;min-height:28px;opacity:0.7;" title="Clear formatting">✕ Clear</button>
         </div>
         
-        <!-- V96: Two-column layout — image left, fields stacked right -->
+        <!-- V98: Two-column layout — image left, fields stacked right -->
         <div id="expand-body-grid" style="display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap:16px; align-items:start;">
             <!-- LEFT: Image -->
             <div id="expand-img-col" style="display:flex; flex-direction:column; gap:8px; min-width:0;">
@@ -1268,7 +1269,7 @@
                         <button class="btn btn-sm btn-ghost" id="btn-expand-ai-answer" onclick="generateAnswerForExpand()" style="font-size:0.55rem; padding:3px 8px; border-color:#00f2fe; color:#00f2fe;">🤖 AI Answer</button>
                     </div>
                     <div id="expand-notes" contenteditable="false" style="font-size:0.95rem; line-height:1.6; padding:12px; word-wrap:break-word; border:1px solid rgba(128,128,128,0.15); border-radius:8px; outline:none; height:auto; overflow:visible; background:rgba(128,128,128,0.04);"></div>
-                    <!-- V96: Ask AI to refine answer bar -->
+                    <!-- V98: Ask AI to refine answer bar -->
                     <div class="row" style="margin-top:6px; gap:4px;">
                         <input type="text" id="expand-answer-refine-input" class="input-field" placeholder="🪄 Ask AI to refine the answer..." style="font-size:0.7rem; padding:6px 10px; flex:1; border-radius:6px; border-color:rgba(0,242,254,0.4);">
                         <button class="btn btn-sm" id="btn-expand-answer-refine" onclick="refineExpandAnswer()" style="background:#00f2fe; color:#111; font-size:0.65rem; padding:6px 12px;">Send</button>
@@ -1284,7 +1285,7 @@
                         <button class="btn btn-sm btn-ghost" id="btn-expand-ai-generate" onclick="generateExamNoteForExpand()" style="font-size:0.55rem; padding:3px 8px; border-color:#00f2fe; color:#00f2fe;">🤖 Generate AI Note</button>
                     </div>
                     <div id="expand-exam-note" class="sticky-note" contenteditable="false" style="outline:none; height:auto; overflow:visible; padding:14px;"></div>
-                    <!-- V96: Ask AI to refine bar -->
+                    <!-- V98: Ask AI to refine bar -->
                     <div class="row" style="margin-top:6px; gap:4px;">
                         <input type="text" id="expand-ai-refine-input" class="input-field" placeholder="🪄 Ask AI to refine the exam note..." style="font-size:0.7rem; padding:6px 10px; flex:1; border-radius:6px; border-color:rgba(0,242,254,0.4);">
                         <button class="btn btn-sm" id="btn-expand-ai-refine" onclick="refineExpandExamNote()" style="background:#00f2fe; color:#111; font-size:0.65rem; padding:6px 12px;">Send</button>
@@ -1332,7 +1333,7 @@
   <div id="v-postop-review" class="view" style="max-width: 1100px;">
     <div class="clock" style="font-size:2.5rem;margin-bottom:4px;">Post-Op Review</div>
     <div class="clock-label" id="postop-subtitle" style="margin-bottom:8px; color:var(--accent2); font-weight:700;">Session Debrief</div>
-    <!-- V96: Search bar -->
+    <!-- V98: Search bar -->
     <div style="width:100%; display:flex; justify-content:center; margin-bottom:12px;">
         <input type="text" id="postop-search-input" class="input-field" placeholder="🔍 Search post-op cards..." style="padding:8px 14px; font-size:0.8rem; max-width:400px; border-radius:20px; width:100%;" oninput="filterPostOpBySearch()">
     </div>
@@ -1386,7 +1387,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
     return false; 
 };
 function logDebug(msg) { const logsEl = document.getElementById('debug-logs'); if (logsEl) logsEl.innerHTML += `<div class="log-line log-boot">[BOOT] ${msg}</div>`; }
-logDebug("V96 Script execution started.");
+logDebug("V98 Script execution started.");
 
 // V56 Selection Cache - fixes Safari/mobile highlight disappearing on button click
 let activeSelection = "";
@@ -1540,7 +1541,7 @@ async function pullFromCloud(isManual = false) {
             if(data.sess) sessions = normalizeArray(data.sess);
             if(data.rev) REV_GOALS = deepParse(data.rev) || { pt: 1000, em: 500 };
             if(data.bank) REVIEW_BANK = normalizeArray(data.bank);
-            // V96: Sync fc focus time across devices — take max
+            // V98: Sync fc focus time across devices — take max
             if(typeof data.fcFocus === 'number') {
                 const localFC = parseInt(localStorage.getItem('mrcs-fc-focus') || '0');
                 const merged = Math.max(localFC, data.fcFocus);
@@ -1857,7 +1858,7 @@ function addNewCardFromGallery() {
         const trimmed = word.trim();
         REVIEW_BANK.push({ word: trimmed, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now() });
         persistData(); pushToCloud(); renderGallery();
-        // V96: Open expand modal with AI generate option
+        // V98: Open expand modal with AI generate option
         openExpandedCard(trimmed);
     }
 }
@@ -2212,7 +2213,7 @@ function updateMorningZone() {
         }
         $('morning-streak').textContent = '☀️ Morning streak: ' + getMorningStreak() + ' days';
     } else if(hour >= 23 || hour < 6) {
-        // V96: Sleep hygiene reminder from 11pm
+        // V98: Sleep hygiene reminder from 11pm
         zone.style.display = 'block';
         const sleepMessages = [
             '🌙 Wind down now. The brain consolidates memory in deep sleep.',
@@ -2237,7 +2238,7 @@ let mqCards = [], mqIdx = 0, mqDone = false;
 function initMicroQuiz() {
     const hour = new Date().getHours();
     const quizDoneToday = localStorage.getItem('mrcs-mq-' + displayTodayStr()) === 'done';
-    // V96: Active from 6am to 9am only
+    // V98: Active from 6am to 9am only
     if(hour < 6 || hour >= 9 || quizDoneToday) { mqDone = true; $('micro-quiz-gate').style.display = 'none'; return; }
     
     // Pick 5 random cards that have notes
@@ -2383,7 +2384,7 @@ function wrapExamNote(before, after) {
     ta.selectionEnd = start + before.length + selected.length;
 }
 
-// V96: Universal home button — closes FC session if active and goes to setup
+// V98: Universal home button — closes FC session if active and goes to setup
 function goToHome() {
     if(typeof closeFCSession === 'function' && fcSessionStart > 0) closeFCSession();
     show('v-setup'); applyTheme();
@@ -2392,7 +2393,7 @@ function goToHome() {
 function _showView(id) { 
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); 
     $(id).classList.add('active');
-    // V96: Topbar Home shown on most pages, hidden when timer running. PDF only on flashcards.
+    // V98: Topbar Home shown on most pages, hidden when timer running. PDF only on flashcards.
     const tba = $('topbar-actions');
     const homeBtn = $('btn-topbar-home');
     const pdfBtn = $('btn-topbar-export');
@@ -2489,7 +2490,7 @@ function applyTheme() {
   document.querySelectorAll('.dash-card').forEach(el => el.style.borderColor = t.cardBorder);
   document.querySelectorAll('.hist-row,.tracker-row').forEach(el => el.style.borderColor = t.histBorder);
   
-  // V96: Detect light theme by parsing bg hex brightness
+  // V98: Detect light theme by parsing bg hex brightness
   function isLightTheme(bg) {
       if(!bg || !bg.startsWith('#')) return false;
       const hex = bg.replace('#','');
@@ -2502,7 +2503,7 @@ function applyTheme() {
   const modalBg = lightTheme ? t.bg : '#111';
   const modalFg = lightTheme ? t.fg : '#fff';
   
-  // V96: Set CSS variables for context menu and modal text — handles BOTH light and dark themes
+  // V98: Set CSS variables for context menu and modal text — handles BOTH light and dark themes
   document.documentElement.style.setProperty('--ctx-fg', modalFg);
   document.documentElement.style.setProperty('--btn-ghost-fg', modalFg);
   document.documentElement.style.setProperty('--btn-ghost-border', lightTheme ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)');
@@ -2513,7 +2514,7 @@ function applyTheme() {
   document.documentElement.style.setProperty('--modal-placeholder', lightTheme ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)');
   document.documentElement.style.setProperty('--modal-clock-label', lightTheme ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)');
   
-  // V96: Helper — is colour string "near white" or "near black"?
+  // V98: Helper — is colour string "near white" or "near black"?
   function isNearWhite(c) {
       if(!c) return false;
       const s = c.toLowerCase().replace(/\s/g,'');
@@ -2530,7 +2531,7 @@ function applyTheme() {
       el.style.background = modalBg;
       el.style.borderColor = t.accent; 
       el.style.color = modalFg;
-      // V96: Force modal foreground on children — fix BOTH white-on-light AND dark-on-dark
+      // V98: Force modal foreground on children — fix BOTH white-on-light AND dark-on-dark
       el.querySelectorAll('*').forEach(child => {
           // Skip elements that have their own theming
           if(child.closest('.sticky-note')) return;
@@ -3471,10 +3472,10 @@ function showGlobalMenu(e, word, context) {
         menu.appendChild(el);
     };
     
-    // V96: In expand context, skip Edit Flashcard/Exam Note since the modal already does it
+    // V98: In expand context, skip Edit Flashcard/Exam Note since the modal already does it
     if(context !== 'expand') {
         createOpt('🤖 Ask Consultant', () => askConsultant(word));
-        // V96: Edit Flashcard now opens the unified expand modal everywhere
+        // V98: Edit Flashcard now opens the unified expand modal everywhere
         createOpt('✏️ Edit Flashcard', () => openExpandedCard(word));
     } else {
         createOpt('🤖 Ask Consultant', () => askConsultant(word));
@@ -3496,7 +3497,7 @@ function showGlobalMenu(e, word, context) {
     
     menu.style.left = x + 'px'; menu.style.top = y + 'px';
     
-    // V96: Close menu on next click anywhere outside the menu (capture phase to bypass stopPropagation)
+    // V98: Close menu on next click anywhere outside the menu (capture phase to bypass stopPropagation)
     setTimeout(() => {
         const closeFn = (ev) => {
             if(ev.target.closest('#global-context-menu')) return;
@@ -3535,7 +3536,7 @@ function markReviewedAndClose(word) {
         REVIEW_BANK[bIdx].reviewed = true;
         persistData(); pushToCloud(); refreshCurrentView();
     }
-    // V96: No longer auto-opens editor — was causing duplicate edit window when already in edit mode
+    // V98: No longer auto-opens editor — was causing duplicate edit window when already in edit mode
 }
 
 function toggleReviewedStatus(word) {
@@ -3736,7 +3737,7 @@ function closeFCSession() {
             // V79: Store FC focus time separately - don't pollute MCQ sessions
             const fcTime = parseInt(localStorage.getItem('mrcs-fc-focus') || '0');
             localStorage.setItem('mrcs-fc-focus', fcTime + mins);
-            // V96: Push to cloud so other devices see updated FC focus
+            // V98: Push to cloud so other devices see updated FC focus
             pushToCloud();
         }
         fcSessionStart = 0;
@@ -3766,7 +3767,7 @@ function renderFlashcard() {
     }
     $('fc-counter').textContent = `${fcCurrentIdx + 1} / ${fcQueue.length}`;
     
-    // V96: Update exam sidebar (sticky note, no inline edit buttons — top toolbar handles edit)
+    // V98: Update exam sidebar (sticky note, no inline edit buttons — top toolbar handles edit)
     sidebarEditingWord = item.word;
     const examNote = item.examNote || '';
     const risk = item.riskLevel || '';
@@ -3802,14 +3803,14 @@ function renderFlashcard() {
     $('fc-notes').style.outline = ''; $('fc-notes').style.padding = '';
     const oldUrlBar = $('fc-back-img-bar');
     if(oldUrlBar) oldUrlBar.style.display = 'none';
-    // V96: Hide exam sidebar — only show when flipped
+    // V98: Hide exam sidebar — only show when flipped
     const sidebar = $('fc-exam-sidebar');
     if(sidebar) sidebar.style.visibility = $('fc-card').classList.contains('flipped') ? 'visible' : 'hidden';
 }
 
 function flipCard(e) {
     if(e && e.target && (e.target.closest('.fc-edit-btn') || e.target.closest('.review-tile-menu') || e.target.closest('.exam-note-popup'))) return;
-    // V96: Block flipping while editing — let user click into the answer box without flipping
+    // V98: Block flipping while editing — let user click into the answer box without flipping
     if(stackFullEditActive) return;
     if(e && e.target && (e.target.closest('#fc-notes') || e.target.closest('#fc-exam-note') || e.target.closest('#fc-back-img-bar') || e.target.closest('.stack-edit-tools'))) {
         if(stackFullEditActive) return;
@@ -3833,13 +3834,13 @@ function flipCard(e) {
         $('srs-btn-group').style.opacity = '1';
         $('srs-btn-group').style.pointerEvents = 'auto';
         
-        // V96: Show exam sidebar only when flipped
+        // V98: Show exam sidebar only when flipped
         if(sidebar) sidebar.style.visibility = 'visible';
     } else {
         $('srs-btn-group').style.opacity = '0';
         $('srs-btn-group').style.pointerEvents = 'none';
         $('fc-nav-group').style.display = 'flex';
-        // V96: Hide exam sidebar when not flipped
+        // V98: Hide exam sidebar when not flipped
         if(sidebar) sidebar.style.visibility = 'hidden';
     }
 }
@@ -3907,7 +3908,7 @@ function toggleFlashcardView() {
         $('fc-gallery-state').style.display = 'flex';
         $('fc-heatmap-wrap').style.display = 'block';
         $('btn-fc-toggle').textContent = 'Stack';
-        // V96: Hide stack edit toolbar in gallery
+        // V98: Hide stack edit toolbar in gallery
         const set = $('stack-edit-toolbar');
         if(set) set.style.display = 'none';
         renderGallery(); renderFCHeatmap();
@@ -3947,7 +3948,7 @@ function openExpandedCard(word) {
         $('expand-no-img-placeholder').style.display = 'block';
     }
     
-    // V96: Render exam note in sticky-note styled div
+    // V98: Render exam note in sticky-note styled div
     const examEl = $('expand-exam-note');
     examEl.innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;font-style:italic;">No exam note yet.</span>';
     
@@ -3963,7 +3964,7 @@ function openExpandedCard(word) {
     $('btn-expand-edit').textContent = '✏️ Edit';
     
     $('expand-modal').classList.add('active');
-    // V96: Close the gallery exam panel since the expand modal already shows the exam note
+    // V98: Close the gallery exam panel since the expand modal already shows the exam note
     if($('gallery-exam-panel')) closeGalleryExamPanel();
 }
 
@@ -4069,7 +4070,7 @@ function htmlToPlain(html) {
         .trim();
 }
 
-// V96: Generate AI exam note for stack view
+// V98: Generate AI exam note for stack view
 async function generateExamNoteForStack() {
     if(!stackEditingWord) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -4121,7 +4122,7 @@ RULES: Max 12 lines. Bold key terms. Evidence-based only. No preamble or comment
     }
 }
 
-// V96: Refine stack exam note
+// V98: Refine stack exam note
 async function refineStackExamNote() {
     if(!stackEditingWord) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -4137,14 +4138,18 @@ async function refineStackExamNote() {
     const originalHTML = examEl.innerHTML;
     examEl.innerHTML = '<div style="opacity:0.6;text-align:center;padding:10px;">⏳ Refining...</div>';
     try {
-        const prompt = `You are an MRCS Part A exam coach. Below is an existing exam note for "${item.word}". Revise it according to the student's request. Start directly with the revised content — NO preamble.
+        const prompt = `You are an MRCS Part A exam coach. Below is an existing exam note for "${item.word}". Revise it according to the student's request.
 
 EXISTING EXAM NOTE:
 ${item.examNote}
 
 STUDENT REQUEST: ${userPrompt}
 
-Return the COMPLETE revised exam note in the same format (CORE FACT, EXAM TRAP, SBA LOGIC, RISK FLAG). Max 12 lines. Bold key terms. No preamble.`;
+INSTRUCTIONS:
+- Start directly with the revised content. NO preamble like "Here is...".
+- If the student asks you to ADD or MODIFY a section while keeping the rest, return the FULL revised note in the existing format (CORE FACT, EXAM TRAP, SBA LOGIC, RISK FLAG).
+- If the student asks you to REPLACE the content entirely with something specific (e.g. "give me an example question stem", "write me a mnemonic", "just the anatomy", "rewrite as a list"), return ONLY what they asked for. Do NOT force the CORE FACT/EXAM TRAP format. Drop the structure and give them exactly what they want.
+- Bold key terms. Max 15 lines. No commentary.`;
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
@@ -4170,7 +4175,7 @@ Return the COMPLETE revised exam note in the same format (CORE FACT, EXAM TRAP, 
     }
 }
 
-// V96: Strip common AI preambles like "Here is the revised exam note for X:" before saving
+// V98: Strip common AI preambles like "Here is the revised exam note for X:" before saving
 function cleanAIPreamble(text) {
     if(!text) return text;
     return text
@@ -4181,7 +4186,7 @@ function cleanAIPreamble(text) {
         .trim();
 }
 
-// V96: Generate AI flashcard answer
+// V98: Generate AI flashcard answer
 async function generateAnswerForExpand() {
     if(!expandEditingWord) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -4215,7 +4220,7 @@ async function generateAnswerForExpand() {
     }
 }
 
-// V96: Ask AI to refine the existing answer based on user prompt
+// V98: Ask AI to refine the existing answer based on user prompt
 async function refineExpandAnswer() {
     if(!expandEditingWord) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -4240,7 +4245,11 @@ ${currentNotes}
 
 STUDENT REQUEST: ${userPrompt}
 
-Return the COMPLETE revised answer. Keep it under 6 lines. Bold key terms.`;
+INSTRUCTIONS:
+- Start directly with the revised content. NO preamble like "Here is...".
+- If the request is a tweak or improvement, return the FULL revised answer keeping the prose format.
+- If the request is to REPLACE with something specific (e.g. "give me a mnemonic", "convert to a list", "just the dose", "example question stem"), return ONLY what they asked for.
+- Bold key terms. No commentary.`;
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
@@ -4265,7 +4274,7 @@ Return the COMPLETE revised answer. Keep it under 6 lines. Bold key terms.`;
     }
 }
 
-// V96: Generate AI exam note for the currently open expand modal card
+// V98: Generate AI exam note for the currently open expand modal card
 async function generateExamNoteForExpand() {
     if(!expandEditingWord) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -4323,7 +4332,7 @@ RULES: Max 12 lines. Bold key terms. Evidence-based only.`;
     }
 }
 
-// V96: Ask AI to refine the existing exam note based on user prompt
+// V98: Ask AI to refine the existing exam note based on user prompt
 async function refineExpandExamNote() {
     if(!expandEditingWord) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -4346,14 +4355,18 @@ async function refineExpandExamNote() {
     examEl.innerHTML = '<div style="opacity:0.6;text-align:center;padding:20px;">⏳ Refining...</div>';
     
     try {
-        const prompt = `You are an MRCS Part A exam coach. Below is an existing exam note for "${item.word}". The student wants you to revise it according to their request.
+        const prompt = `You are an MRCS Part A exam coach. Below is an existing exam note for "${item.word}". The student wants you to revise it.
 
 EXISTING EXAM NOTE:
 ${currentNote}
 
 STUDENT REQUEST: ${userPrompt}
 
-Return the COMPLETE revised exam note in the same format (CORE FACT, EXAM TRAP, SBA LOGIC, RISK FLAG). Apply the student's requested change. Max 12 lines. Bold key terms. Evidence-based only.`;
+INSTRUCTIONS:
+- Start directly with the revised content. NO preamble like "Here is...".
+- If the student asks you to ADD or MODIFY a section while keeping the rest, return the FULL revised note in the existing format (CORE FACT, EXAM TRAP, SBA LOGIC, RISK FLAG).
+- If the student asks you to REPLACE the content entirely with something specific (e.g. "give me an example question stem", "write me a mnemonic", "just the anatomy", "rewrite as a list"), return ONLY what they asked for. Do NOT force the CORE FACT/EXAM TRAP format. Drop the structure and give them exactly what they want.
+- Bold key terms. Max 15 lines. Evidence-based only. No commentary.`;
         
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -5177,7 +5190,7 @@ function playBeep(freq = 880, dur = 0.12) {
 function haptic(ms = 10) { try { navigator.vibrate(ms); } catch(e) {} }
 
 // =================== V79: KEYBOARD SHORTCUTS ===================
-// V96: Strip HTML from clipboard when pasting into contenteditable elements
+// V98: Strip HTML from clipboard when pasting into contenteditable elements
 document.addEventListener('paste', function(e) {
     if(!e.target.isContentEditable) return;
     e.preventDefault();
@@ -5190,7 +5203,7 @@ document.addEventListener('keydown', function(e) {
     if(!$('v-flashcards').classList.contains('active')) return;
     if(isGalleryView) return;
     if(document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-    // V96: Don't intercept keys when editing — contenteditable focused or stack edit active
+    // V98: Don't intercept keys when editing — contenteditable focused or stack edit active
     if(document.activeElement.isContentEditable) return;
     if(typeof stackFullEditActive !== 'undefined' && stackFullEditActive) return;
     if(typeof expandEditActive !== 'undefined' && expandEditActive) return;
@@ -5212,11 +5225,16 @@ let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
 
 document.addEventListener('touchstart', function(e) {
     if(!$('v-flashcards').classList.contains('active') || isGalleryView) return;
+    // V98: Skip if touch starts inside scrollable exam note or fc-notes — let native scroll happen
+    if(e.target.closest('#fc-exam-sidebar') || e.target.closest('#fc-notes') || e.target.closest('#fc-back-img-bar') || e.target.closest('#stack-edit-tools')) {
+        touchStartX = -1; return;
+    }
     const t = e.touches[0]; touchStartX = t.clientX; touchStartY = t.clientY; touchStartTime = Date.now();
 }, { passive: true });
 
 document.addEventListener('touchend', function(e) {
     if(!$('v-flashcards').classList.contains('active') || isGalleryView) return;
+    if(touchStartX < 0) return; // V98: skipped by touchstart guard
     const t = e.changedTouches[0];
     const dx = t.clientX - touchStartX; const dy = t.clientY - touchStartY;
     const dt = Date.now() - touchStartTime;
@@ -5225,15 +5243,12 @@ document.addEventListener('touchend', function(e) {
     const absDx = Math.abs(dx); const absDy = Math.abs(dy);
     if(absDx < 40 && absDy < 40) return; // too short
     
+    // V98: Only horizontal swipes — vertical scrolls page naturally, no auto-flip
     if(absDx > absDy) {
-        // Horizontal swipe
         if(dx > 0) prevCard(); else nextCard();
         haptic(8);
-    } else {
-        // Vertical swipe = flip
-        flipCard({});
-        haptic(12);
     }
+    // Vertical swipes do nothing — let user scroll the exam note / page
 }, { passive: true });
 
 // =================== V79: MARKDOWN RENDERER ===================
@@ -5494,7 +5509,7 @@ function openGalleryExamPanel(item) {
     $('btn-gallery-panel-add').onclick = () => addExamNoteToFlashcard(item.word);
     $('btn-gallery-panel-add').style.display = item.examNote ? 'inline-flex' : 'none';
     panel.classList.add('open');
-    // V96: Shrink gallery container so cards don't overlap with panel
+    // V98: Shrink gallery container so cards don't overlap with panel
     const galleryEl = document.getElementById('fc-gallery-state');
     if(galleryEl) galleryEl.style.paddingRight = '340px';
     // V88: Glow active card
@@ -5504,7 +5519,7 @@ function openGalleryExamPanel(item) {
 }
 function closeGalleryExamPanel() { 
     $('gallery-exam-panel').classList.remove('open');
-    // V96: Restore gallery container width
+    // V98: Restore gallery container width
     const galleryEl = document.getElementById('fc-gallery-state');
     if(galleryEl) galleryEl.style.paddingRight = '';
     document.querySelectorAll('.fc-mini-card.active-working').forEach(c => c.classList.remove('active-working'));
@@ -5625,7 +5640,7 @@ function addPostOpTile(word, examNote, riskLevel) {
     tile.setAttribute('data-risk', riskLevel);
     const riskEmoji = riskLevel === 'red' ? '🔴' : riskLevel === 'yellow' ? '🟡' : riskLevel === 'green' ? '🟢' : '';
     
-    // V96: If user has personal notes, show the FULL flashcard answer.
+    // V98: If user has personal notes, show the FULL flashcard answer.
     // Otherwise (AI-only generated), show only the CORE FACT section.
     const item = REVIEW_BANK.find(b => b.word === word);
     const hasPersonalNotes = item && item.notes && item.notes.trim().length > 0;
@@ -5664,7 +5679,7 @@ function filterPostOp(level) {
     });
 }
 
-// V96: Search filter for post-op page
+// V98: Search filter for post-op page
 function filterPostOpBySearch() {
     const q = (document.getElementById('postop-search-input')?.value || '').toLowerCase().trim();
     document.querySelectorAll('.postop-fact-tile').forEach(tile => {
@@ -5953,11 +5968,18 @@ document.addEventListener('touchend', function(e) {
 
 // =================== V88: INLINE EDIT + SELECTION ADD ===================
 
-// V96: Stack full edit — single toolbar at top, edits notes, image URL, exam note all in place
+// V98: Stack full edit — single toolbar at top, edits notes, image URL, exam note all in place
 let stackFullEditActive = false;
 function toggleStackFullEdit() {
     const item = REVIEW_BANK.find(b => b.word === stackEditingWord);
     if(!item) { alert('Flip the card to a flashcard first.'); return; }
+    // V98: On mobile, open the expand modal instead of inline edit (better UX)
+    if(window.innerWidth <= 480) {
+        openExpandedCard(item.word);
+        // Auto-enter edit mode in the expand modal
+        setTimeout(() => { if(!expandEditActive) toggleExpandEdit(); }, 100);
+        return;
+    }
     if(!stackFullEditActive) {
         // Make sure card is flipped so user can see what they're editing
         if(!$('fc-card').classList.contains('flipped')) flipCard();
@@ -5967,7 +5989,7 @@ function toggleStackFullEdit() {
         notesEl.contentEditable = 'true';
         notesEl.style.outline = '2px dashed var(--accent2)';
         notesEl.style.borderRadius = '6px';
-        // V96: Clear "No notes added yet." placeholder so user starts with blank field
+        // V98: Clear "No notes added yet." placeholder so user starts with blank field
         if(!item.notes || !item.notes.trim()) notesEl.innerHTML = '';
         // Exam note contenteditable
         const examEl = $('fc-exam-note');
@@ -5975,7 +5997,7 @@ function toggleStackFullEdit() {
             examEl.contentEditable = 'true';
             examEl.style.outline = '2px dashed #c9a84c';
             examEl.style.borderRadius = '6px';
-            // V96: Clear "No exam notes yet." placeholder
+            // V98: Clear "No exam notes yet." placeholder
             if(!item.examNote || !item.examNote.trim()) examEl.innerHTML = '';
         }
         // Show image URL bar above image
@@ -6357,7 +6379,7 @@ function initApp() {
     $('btn-append-ai').onclick = appendAIToNote;
     $('ai-followup-input').onkeypress = (e) => { if(e.key === 'Enter') sendFollowUp(); };
     $('btn-ss-back').onclick = showHistoryView;
-    // V96: Old btn-export-pdf removed — handled by topbar
+    // V98: Old btn-export-pdf removed — handled by topbar
     if($('btn-export-pdf')) $('btn-export-pdf').onclick = exportFlashcardsPDF;
     
     $('btn-srs-1').onclick = () => logSRS(1);
@@ -6387,7 +6409,7 @@ function initApp() {
     $('btn-action-cancel').onclick = () => $('action-modal').classList.remove('active');
     $('action-modal').onclick = () => $('action-modal').classList.remove('active');
     
-    logDebug("V96 App initialized successfully. All systems operational.");
+    logDebug("V98 App initialized successfully. All systems operational.");
 }
 
 initApp();
