@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V103</title>
+<title>MRCS QBank Tracker Pro Max V105</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -183,22 +183,29 @@
     
     /* V104: Desktop in-card cuboid — flipped card grows to fill viewport */
     @media (min-width: 1025px) {
+        /* V105: Hide vestigial right exam-note sidebar entirely on desktop — in-card modal owns the exam note */
+        #fc-exam-sidebar { display: none !important; }
+        /* V105: Centre the front face — no longer left 2/3 of split layout */
+        #fc-stack-layout { justify-content: center !important; }
+        #fc-card-col { flex: 0 1 auto !important; max-width: 900px; width: 100%; }
         .fc-card.in-card-modal.flipped {
-            max-width: min(95vw, 1300px);
-            width: min(95vw, 1300px);
-            min-height: 80vh;
-            max-height: 90vh;
+            max-width: min(96vw, 1500px);
+            width: min(96vw, 1500px);
+            min-height: 84vh;
+            max-height: 92vh;
         }
         .fc-card.in-card-modal.flipped .fc-back {
             display: flex;
             flex-direction: column;
-            max-height: 90vh;
+            max-height: 92vh;
             padding: 24px 28px 20px;
             overflow-y: auto;
         }
         .fc-card.in-card-modal.flipped .fc-back .incard-srs-anchor {
             margin-top: auto;
         }
+        /* V105: Expand image to fill more of the modal when present */
+        .fc-card.in-card-modal.flipped #incard-expand-wrapper img { max-height: 70vh !important; }
         /* Hide global stack-edit toolbar on desktop — dead code there */
         #stack-edit-toolbar { display: none !important; }
         /* Hide nav arrows when card is flipped on desktop — force SRS keys */
@@ -708,6 +715,8 @@
     .postop-fact-mosaic { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; margin: 16px 0; }
     .postop-fact-tile { flex: 1 1 280px; max-width: 380px; min-height: 100px; padding: 14px 16px; border-radius: 12px; border: 1.5px solid rgba(128,128,128,0.15); background: rgba(128,128,128,0.04); font-size: 0.78rem; line-height: 1.55; position: relative; transition: all 0.3s; cursor: default; }
     .postop-fact-tile:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .postop-fact-tile.selectable { cursor: pointer; }
+    .postop-fact-tile.selected-postop { outline: 3px solid #a78bfa; outline-offset: 2px; }
     .postop-fact-tile .tile-word { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: var(--accent2); margin-bottom: 6px; }
     .postop-fact-tile .tile-risk { position: absolute; top: 8px; right: 10px; font-size: 0.75rem; }
     .postop-generating { text-align: center; padding: 24px; font-size: 0.85rem; opacity: 0.7; font-style: italic; }
@@ -1507,6 +1516,17 @@
     </div>
     <!-- V104: Dynamic topic filter (populated from tile data-topic attrs) -->
     <div class="gallery-risk-filter" id="postop-topic-filter" style="justify-content:center; margin-bottom:12px; flex-wrap:wrap;"></div>
+    <!-- V105: Select / cleanup duplication bar -->
+    <div class="row" style="justify-content:center; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
+        <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#a78bfa; color:#a78bfa;" onclick="togglePostopSelectMode()">✔ Select</button>
+        <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#ffab00; color:#ffab00;" onclick="postopCleanupDuplication('all')" title="Strip duplicated Core Fact text and RISK FLAG remnants from every card on this page">🧹 Clean All Duplication</button>
+        <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#00f2fe; color:#00f2fe;" onclick="generateMissingPostOp()" title="Generate AI exam notes for any cards still missing them">🤖 Generate Missing AI Notes</button>
+    </div>
+    <div id="postop-select-bar" style="display:none; justify-content:center; gap:6px; margin-bottom:8px; flex-wrap:wrap;" class="row">
+        <span id="postop-select-count" style="font-size:0.7rem; opacity:0.7; align-self:center;">0 selected</span>
+        <button class="btn btn-sm" style="background:#ffab00; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="postopCleanupDuplication('selected')">🧹 Clean Selected</button>
+        <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-color:#ff5252; color:#ff5252;" onclick="togglePostopSelectMode()">Cancel</button>
+    </div>
     <div class="postop-fact-mosaic" id="postop-mosaic"></div>
     <div class="row" style="justify-content:center; gap:8px; margin-top:16px;">
         <button class="btn btn-sm btn-ghost" id="btn-postop-close" onclick="closePostOpReview()">Close Post-Op Review</button>
@@ -1552,7 +1572,7 @@ logDebug("V103 Script execution started.");
 let activeSelection = "";
 document.addEventListener("selectionchange", () => { const sel = window.getSelection().toString().trim(); if (sel) activeSelection = sel; });
 
-const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar','incard-expand-wrapper','incard-expand-word','incard-expand-notes','incard-expand-exam-note','incard-expand-img-url','incard-expand-format-toolbar','incard-expand-save-row','btn-incard-expand-edit','btn-incard-expand-action','postop-errtype-filter','postop-topic-filter']);
+const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar','incard-expand-wrapper','incard-expand-word','incard-expand-notes','incard-expand-exam-note','incard-expand-img-url','incard-expand-format-toolbar','incard-expand-save-row','btn-incard-expand-edit','btn-incard-expand-action','postop-errtype-filter','postop-topic-filter','postop-select-bar','postop-select-count']);
 const $ = id => { const el = document.getElementById(id); if (!el) { if(!_optionalIds.has(id)) logDebug(`WARNING: Element '${id}' not found.`); return document.createElement('div'); } return el; };
 const EXAM_DATE = new Date(2026, 3, 22);
 
@@ -2344,6 +2364,20 @@ function initLocalData() {
     try { tempBank = JSON.parse(rawBank); if(typeof tempBank === 'string') tempBank = JSON.parse(tempBank); } catch(e) {}
     REVIEW_BANK = Array.isArray(tempBank) ? tempBank : [];
     
+    // V105: One-time auto-sanitize on load — strip RISK FLAG remnants and "**Core Fact:** " prefix
+    // from existing v104-seeded cards. Marker is stored in localStorage so it only runs once.
+    if(!localStorage.getItem('mrcs-v105-sanitized')) {
+        let n = 0;
+        REVIEW_BANK.forEach(item => {
+            if(typeof sanitizeBankItem === 'function' && sanitizeBankItem(item)) n++;
+        });
+        if(n > 0) {
+            localStorage.setItem(SK_BANK, JSON.stringify(REVIEW_BANK));
+            console.log('[V105] Auto-sanitized', n, 'cards on load');
+        }
+        localStorage.setItem('mrcs-v105-sanitized', '1');
+    }
+    
     if(TRACKER_DATA.length === 0) TRACKER_DATA = buildDefaultArray();
     
     const rawRev = localStorage.getItem(SK_REV) || '{"pt": 1000, "em": 500}';
@@ -2536,7 +2570,8 @@ function renderErrorBreakdown() {
     });
     const total = errTotals.know + errTotals.retrieval + errTotals.reasoning;
     if(total === 0) return '';
-    return '<div class="dash-card" style="margin-top:12px;"><div class="dash-lbl" style="text-align:center;margin-bottom:8px;">ERROR TAXONOMY (' + total + ' total)</div>' +
+    // V105: Wrap in a stable-id container so it can be replaced (not duplicated) on every visit
+    return '<div id="error-taxonomy-block" class="dash-card" style="margin-top:12px;"><div class="dash-lbl" style="text-align:center;margin-bottom:8px;">ERROR TAXONOMY (' + total + ' total)</div>' +
         '<div class="row" style="justify-content:center;gap:16px;">' +
         '<div style="text-align:center;"><div class="stat-val" style="font-size:1.5rem;color:var(--accent);">' + errTotals.know + '</div><div class="stat-lbl">Knowledge</div></div>' +
         '<div style="text-align:center;"><div class="stat-val" style="font-size:1.5rem;color:var(--accent2);">' + errTotals.retrieval + '</div><div class="stat-lbl">Retrieval</div></div>' +
@@ -3562,7 +3597,9 @@ function showHistoryView() {
     
     $('h-count').textContent = mcqSessions.length;
     
-    // V79: Error taxonomy display
+    // V79/V105: Error taxonomy display — remove any prior block to prevent duplication on revisit
+    const oldErrBlock = document.getElementById('error-taxonomy-block');
+    if(oldErrBlock) oldErrBlock.remove();
     const errHtml = renderErrorBreakdown();
     const errTarget = $('hist-list');
     if(errHtml && errTarget) errTarget.insertAdjacentHTML('beforebegin', errHtml);
@@ -3836,7 +3873,19 @@ function toggleReviewedStatus(word) {
 function refreshCurrentView() {
     if($('v-bank').classList.contains('active')) buildGlobalReviewBank();
     else if($('v-session-summary').classList.contains('active')) openSessionSummary(currentSessionIdx);
-    else if($('v-flashcards').classList.contains('active')) applyFlashcardSearch(); 
+    else if($('v-flashcards').classList.contains('active')) {
+        // V105: cover both stack and gallery sub-views of v-flashcards
+        applyFlashcardSearch();
+        if(typeof isGalleryView !== 'undefined' && isGalleryView && typeof renderGallery === 'function') renderGallery();
+    }
+    else if($('v-postop-review').classList.contains('active')) {
+        // V105: refresh every postop tile from REVIEW_BANK
+        document.querySelectorAll('.postop-fact-tile').forEach(tile => {
+            const w = tile.getAttribute('data-word');
+            if(w) refreshPostOpTileContent(tile, w);
+        });
+        if(typeof buildPostOpTopicChips === 'function') buildPostOpTopicChips();
+    }
     else if($('v-timer').classList.contains('active')) redrawScratchpad();
 }
 
@@ -4382,8 +4431,8 @@ function injectInCardExpandContent(item) {
             <button class="btn btn-sm btn-ghost" onclick="execFormat('hiliteColor','#ffe066')" style="padding:3px 8px;font-size:0.65rem;background:#ffe066;color:#1a1a1a;font-weight:700;min-height:28px;border-color:#e6c54b;">🖍️ Hi</button>
             <button class="btn btn-sm btn-ghost" onclick="execFormat('removeFormat')" style="padding:3px 8px;font-size:0.6rem;min-height:28px;opacity:0.7;">✕ Clear</button>
         </div>
-        <div style="display:grid; grid-template-columns: ${hasImg ? 'minmax(0,1fr) minmax(0,1.2fr)' : '1fr'}; gap:16px; align-items:start; flex:1; min-height:0;">
-            ${hasImg ? `<div style="display:flex; flex-direction:column; gap:6px; min-width:0;"><img src="${imgSrc}" style="max-width:100%; width:100%; max-height:55vh; object-fit:contain; border-radius:8px;"></div>` : ''}
+        <div style="display:grid; grid-template-columns: ${hasImg ? 'minmax(0,1fr) minmax(0,1.1fr)' : '1fr'}; gap:20px; align-items:start; flex:1; min-height:0;">
+            ${hasImg ? `<div style="display:flex; flex-direction:column; gap:6px; min-width:0;"><img src="${imgSrc}" style="max-width:100%; width:100%; max-height:70vh; object-fit:contain; border-radius:8px;"></div>` : ''}
             <div style="display:flex; flex-direction:column; gap:10px; min-width:0;">
                 <div>
                     <div class="dash-lbl" style="color:var(--accent2); margin-bottom:4px;">FLASHCARD ANSWER</div>
@@ -4711,10 +4760,13 @@ async function generateExamNoteForStack() {
             const parsed = parseSurgeonResponse(data.candidates[0].content.parts[0].text);
             applySurgeonResult(item, parsed);
             persistData(); pushToCloud();
-            examEl.innerHTML = '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(parsed.displayNote) + '</div>';
-            // V104: Re-render notes panel inline if visible
+            // V105: Render the body (examBody) into the exam note panel; render the punchy answer into fc-notes
+            examEl.innerHTML = item.examNote ? '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(item.examNote) + '</div>' : '<span style="opacity:0.3;">No exam note.</span>';
+            $('fc-exam-risk').innerHTML = item.riskLevel ? '<span class="risk-badge risk-' + item.riskLevel + '" style="margin-bottom:6px;">' + item.riskLevel.toUpperCase() + ' RISK</span> ' : '';
             const notesEl = document.getElementById('fc-notes');
             if(notesEl && !stackFullEditActive) notesEl.innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
+            // V105: Cross-view sync — update front word risk dot and gallery
+            syncCardEverywhere(item.word);
         } else {
             examEl.innerHTML = '<span style="color:#ff5252;">AI generation failed.</span>';
         }
@@ -4778,7 +4830,7 @@ INSTRUCTIONS:
     }
 }
 
-// V104: Shared eMRCS topic taxonomy and surgeon prompt builder
+// V104/V105: Shared eMRCS topic taxonomy and surgeon prompt builder
 const EMRCS_TOPICS = [
     'Surgical Technique','Peri-operative Care','Pathology — CVS','Pathology — Respiratory',
     'Pathology — Endocrine','Pathology — Digestive','Management & Legal','Intraoperative Care',
@@ -4788,80 +4840,168 @@ const EMRCS_TOPICS = [
     'Urology','Orthopaedics','Emergency Medicine','Post-op Management','Skin','Hand Disorders','Breast'
 ];
 
+// V105: Internal risk classifier by topic — deterministic fallback if AI omits RISK line
+function riskFromTopic(topic) {
+    if(!topic) return '';
+    const t = topic.toLowerCase();
+    if(t.includes('surgical technique') || t.includes('peri-op') || t.includes('pathology') ||
+       t.includes('management') || t.includes('intraop') || t.includes('burn') ||
+       t.includes('transplant') || t.includes('musculoskeletal')) return 'red';
+    if(t.includes('anatomy') || t.includes('physiology') || t.includes('gi') || t.includes('hpb') ||
+       t.includes('vascular') || t.includes('urology') || t.includes('orthopaedic') || t.includes('colorectal')) return 'yellow';
+    if(t.includes('emergency') || t.includes('post-op') || t.includes('skin') || t.includes('hand') || t.includes('breast')) return 'green';
+    return '';
+}
+
+// V105: Surgeon prompt — punchy flashcard answer (fragments, not full sentences),
+// EXAM TRAP / SBA LOGIC / APPLIED ANATOMY live only in exam note, not duplicated into answer
 function buildSurgeonPrompt(word, errorContext) {
     return `You are a senior consultant surgeon and MRCS Part A exam coach.
 
 REFERENCE ANCHORS:
-- Anatomy topics: Last's Anatomy, Gray's Anatomy for Students, Moore's Clinically Oriented Anatomy, Snell's Clinical Anatomy.
-- Surgical & clinical: Bailey & Love, Schwartz, NICE guidelines, RCSEng MRCS Part A curriculum.
+- Anatomy: Last's, Gray's, Moore's, Snell's.
+- Surgical & clinical: Bailey & Love, Schwartz, NICE, RCSEng MRCS Part A curriculum.
 
 TOPIC: "${word}"
 ERROR CONTEXT: ${errorContext}
 
-CLASSIFY this topic into ONE eMRCS label from this exact list:
+CLASSIFY this topic into ONE label from this exact list:
 ${EMRCS_TOPICS.join(' | ')}
 
-INTERNALLY classify risk as RED / YELLOW / GREEN (used internally for color coding only — do not display the word "risk" to the student in the body of the note):
-- RED: surgical technique, peri-op care, pathology (CVS/respiratory/endocrine/digestive), management & legal, intraoperative care, burns, transplant, MSK pathology
+INTERNALLY classify risk as RED / YELLOW / GREEN (for colour coding only — DO NOT write the word "RISK FLAG" or "Risk:" or any risk language anywhere in the body of your answer):
+- RED: surgical technique, peri-op care, pathology (CVS/resp/endo/digestive), management & legal, intraop, burns, transplant, MSK pathology
 - YELLOW: anatomy, physiology, GI/colorectal, HPB, vascular, urology, orthopaedics
 - GREEN: emergency medicine, post-op management, skin, hand disorders, breast
 
-OUTPUT FORMAT — these two metadata lines MUST be the first two lines, exactly:
+OUTPUT FORMAT — the FIRST THREE lines MUST be exactly these three metadata lines in this order:
 **TOPIC:** <one label from the list>
 **RISK:** RED|YELLOW|GREEN
+**ANSWER:** <punchy flashcard answer for "${word}" — see rules below>
 
-Then the body. Maximum 14 lines TOTAL including the metadata lines. Bold key terms with **double asterisks**. Plain prose, no preamble.
+THEN leave ONE blank line, then the body sections.
 
-If the classified topic is an Anatomy — * topic, the body MUST include:
+=== **ANSWER:** RULES (THIS IS THE FLASHCARD ANSWER) ===
+- Maximum 35 words. Usually fewer.
+- NO full sentences. Use **fragments**, arrows, ":", commas, semicolons.
+- Bold the single most examined keyword with **double asterisks**.
+- Give the direct definition / pathway / relation / mechanism ONLY. No fluff, no preamble, no "This is…", no context-setting.
+- Anatomy: state the KEY RELATION or contents. Physiology: direction + mechanism. Pathology: buzzword → diagnosis. Surgery: the single key step.
+- Do NOT repeat the topic name back ("${word} is..."). Jump straight into the answer.
+- All on ONE line.
+
+=== BODY SECTIONS (for the exam note, NOT the answer) ===
+The body goes AFTER the metadata. Max 10 lines TOTAL in the body.
+
+If the classified topic is Anatomy — *:
 **APPLIED ANATOMY QUESTION**
-A tough indirect MRCS-style stem (1-2 lines) followed by a single-line answer with reasoning.
+A tough indirect MRCS-style stem (1-2 lines), then a single-line answer with reasoning.
 
-If the topic is NOT anatomy, you MAY include:
-**SBA LOGIC**
-1-2 lines on the question pattern and reasoning shortcut — but ONLY if it adds genuine value. Otherwise omit this section entirely.
-
-OPTIONAL for any topic:
+If the topic is NOT anatomy, include ONE of these if it adds value (skip if not):
 **EXAM TRAP**
-1 line on the common wrong answer — ONLY if high-value. Otherwise omit.
+1 line — the common wrong answer and why.
 
-ALWAYS include:
-**CORE FACT**
-2-3 sentences of the key testable facts, with bolded key terms.
+**SBA LOGIC**
+1-2 lines — question pattern / reasoning shortcut.
 
-Do NOT exceed 14 lines. Do NOT add a preamble. Start directly with the **TOPIC:** line.`;
+RULES:
+- Do NOT include a **CORE FACT** section — the answer line IS the core fact.
+- Do NOT write "RISK FLAG:" or any risk classification in the body.
+- Do NOT add a preamble. Start directly with **TOPIC:**.
+- Bold key terms with **double asterisks**.`;
 }
 
+// V105: Parse surgeon response — extract topic/risk/answer (for flashcard) and body (for exam note)
 function parseSurgeonResponse(text) {
-    if(!text) return { topic: '', risk: '', displayNote: '', coreFact: '' };
+    if(!text) return { topic: '', risk: '', answer: '', examBody: '' };
     let cleaned = cleanAIPreamble(text);
     let topic = '';
     let risk = '';
+    let answer = '';
     const topicMatch = cleaned.match(/^\s*\*\*TOPIC:\*\*\s*(.+?)\s*$/im);
     if(topicMatch) topic = topicMatch[1].trim();
     const riskMatch = cleaned.match(/^\s*\*\*RISK:\*\*\s*\[?(RED|YELLOW|GREEN)\]?\s*$/im);
     if(riskMatch) risk = riskMatch[1].toLowerCase();
-    // Strip the two metadata lines from displayNote
-    let displayNote = cleaned
-        .replace(/^\s*\*\*TOPIC:\*\*[^\n]*\n?/im, '')
-        .replace(/^\s*\*\*RISK:\*\*[^\n]*\n?/im, '')
+    const answerMatch = cleaned.match(/^\s*\*\*ANSWER:\*\*\s*(.+?)\s*$/im);
+    if(answerMatch) answer = answerMatch[1].trim();
+    
+    // Fallback: if model emitted **CORE FACT** (older prompt style), use its first paragraph as the answer
+    if(!answer) {
+        const cfMatch = cleaned.match(/\*\*CORE FACT\*\*\s*\n?([\s\S]*?)(?=\n\s*\*\*[A-Z]|$)/i);
+        if(cfMatch) {
+            let cf = cfMatch[1].trim().split(/\n/)[0].trim();
+            cf = cf.replace(/\s+/g, ' ').replace(/^(the |a |an )/i, '');
+            if(cf.length > 200) cf = cf.substring(0, 200).trim() + '…';
+            answer = cf;
+        }
+    }
+    
+    // Fallback risk from topic
+    if(!risk && topic) risk = riskFromTopic(topic);
+    
+    // Build the examBody — strip metadata lines AND any CORE FACT block AND any RISK FLAG lines
+    let examBody = cleaned
+        .replace(/^\s*\*\*TOPIC:\*\*[^\n]*\n?/gim, '')
+        .replace(/^\s*\*\*RISK:\*\*[^\n]*\n?/gim, '')
+        .replace(/^\s*\*\*ANSWER:\*\*[^\n]*\n?/gim, '')
+        .replace(/\*\*CORE FACT\*\*\s*\n?[\s\S]*?(?=\n\s*\*\*[A-Z]|$)/gi, '')
+        .replace(/^\s*\*\*RISK FLAG[^\n]*\n?/gim, '')
+        .replace(/^\s*RISK FLAG:[^\n]*\n?/gim, '')
+        .replace(/^\s*Risk:\s*(RED|YELLOW|GREEN)[^\n]*\n?/gim, '')
+        .replace(/\n{3,}/g, '\n\n')
         .trim();
-    // Extract Core Fact body
-    let coreFact = '';
-    const cfMatch = displayNote.match(/\*\*CORE FACT\*\*\s*\n?([\s\S]*?)(?=\n\s*\*\*[A-Z]|$)/i);
-    if(cfMatch) coreFact = cfMatch[1].trim();
-    return { topic, risk, displayNote, coreFact };
+    
+    return { topic, risk, answer, examBody };
 }
 
-// V104: Apply parsed surgeon result to a REVIEW_BANK item, with auto-prepend of Core Fact
+// V105: Apply parsed surgeon result to REVIEW_BANK item.
+// Answer (punchy) → item.notes (flashcard answer)
+// Body (trap / SBA / applied anatomy) → item.examNote
+// Risk and topic → tags
 function applySurgeonResult(item, parsed) {
     if(!item || !parsed) return;
-    if(parsed.displayNote) item.examNote = parsed.displayNote;
     if(parsed.risk) item.riskLevel = parsed.risk;
     if(parsed.topic) item.topic = parsed.topic;
-    // Auto-prepend Core Fact into flashcard answer ONLY if answer is empty — never overwrite
-    if(parsed.coreFact && (!item.notes || !item.notes.trim())) {
-        item.notes = '**Core Fact:** ' + parsed.coreFact;
+    if(parsed.examBody) {
+        item.examNote = parsed.examBody;
     }
+    // Flashcard answer: overwrite if no notes, or if existing notes are a v104 "**Core Fact:**" prefix seed
+    if(parsed.answer) {
+        const existing = (item.notes || '').trim();
+        const wasAISeeded = existing.startsWith('**Core Fact:**') || existing.startsWith('Core Fact:');
+        if(!existing || wasAISeeded) {
+            item.notes = parsed.answer;
+        }
+    }
+}
+
+// V105: Sanitize a REVIEW_BANK item in place — strip RISK FLAG remnants, Core Fact duplication from examNote
+function sanitizeBankItem(item) {
+    if(!item) return false;
+    let changed = false;
+    const origNote = item.examNote || '';
+    const origNotes = item.notes || '';
+    
+    if(origNote) {
+        let cleaned = origNote
+            .replace(/\*\*CORE FACT\*\*\s*\n?[\s\S]*?(?=\n\s*\*\*[A-Z]|$)/gi, '')
+            .replace(/^\s*\*\*RISK FLAG[^\n]*\n?/gim, '')
+            .replace(/^\s*RISK FLAG:[^\n]*\n?/gim, '')
+            .replace(/^\s*\*\*RISK:\*\*[^\n]*\n?/gim, '')
+            .replace(/^\s*Risk:\s*(RED|YELLOW|GREEN)[^\n]*\n?/gim, '')
+            .replace(/^\s*\*\*TOPIC:\*\*[^\n]*\n?/gim, '')
+            .replace(/^\s*\*\*ANSWER:\*\*[^\n]*\n?/gim, '')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+        if(cleaned !== origNote) { item.examNote = cleaned; changed = true; }
+    }
+    
+    // Strip "**Core Fact:** " v104 prefix from flashcard answer
+    if(origNotes) {
+        let cleanedNotes = origNotes.replace(/^\*\*Core Fact:\*\*\s*/i, '').replace(/^Core Fact:\s*/i, '').trim();
+        if(cleanedNotes !== origNotes) { item.notes = cleanedNotes; changed = true; }
+    }
+    
+    return changed;
 }
 
 // V103: Strip common AI preambles like "Here is the revised exam note for X:" before saving
@@ -4990,11 +5130,13 @@ async function generateExamNoteForExpand() {
             const parsed = parseSurgeonResponse(data.candidates[0].content.parts[0].text);
             applySurgeonResult(item, parsed);
             persistData(); pushToCloud();
-            examEl.innerHTML = renderMarkdown(parsed.displayNote);
+            // V105: Render examBody (trap/SBA/applied anatomy only) — no more core fact duplication
+            examEl.innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.4;font-style:italic;">No exam note.</span>';
             examEl.contentEditable = expandEditActive ? 'true' : 'false';
-            // V104: Re-render notes panel inline if visible
             const notesEl = document.getElementById('expand-notes');
             if(notesEl) notesEl.innerHTML = item.notes ? renderMarkdown(item.notes) : '<span style="opacity:0.4;font-style:italic;">No notes yet.</span>';
+            // V105: Cross-view sync
+            syncCardEverywhere(item.word);
         } else {
             examEl.innerHTML = '<span style="color:#ff5252;">AI generation failed. Try again.</span>';
         }
@@ -5129,13 +5271,15 @@ function renderGallery() {
         itemsToRender = itemsToRender.filter(item => item.word.toLowerCase().includes(fcSearchQuery) || (item.notes && item.notes.toLowerCase().includes(fcSearchQuery)));
     }
     
-    // V104: Build dynamic topic chip list from REVIEW_BANK
+    // V104/V105: Build dynamic topic chip list from REVIEW_BANK
+    // V105: Use data-topic attrs + delegated handler to avoid em-dash / quote escape bugs in inline onclick
+    function htmlEscape(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
     const allTopics = new Set();
     REVIEW_BANK.forEach(it => { if(it.topic) allTopics.add(it.topic); });
     const topicChipsHtml = allTopics.size > 0
-        ? '<div class="gallery-risk-filter" style="margin-bottom:6px; flex-wrap:wrap; justify-content:center;">' +
-          '<button class="risk-filter-btn ' + (galleryTopicFilter==='all'?'active':'') + '" onclick="setGalleryTopicFilter(\'all\')">All Topics</button>' +
-          Array.from(allTopics).sort().map(t => '<button class="risk-filter-btn ' + (galleryTopicFilter===t?'active':'') + '" onclick="setGalleryTopicFilter(' + JSON.stringify(t) + ')">' + t + '</button>').join('') +
+        ? '<div class="gallery-risk-filter gallery-topic-chips" style="margin-bottom:6px; flex-wrap:wrap; justify-content:center;">' +
+          '<button class="risk-filter-btn ' + (galleryTopicFilter==='all'?'active':'') + '" data-topic-chip="all">All Topics</button>' +
+          Array.from(allTopics).sort().map(t => '<button class="risk-filter-btn ' + (galleryTopicFilter===t?'active':'') + '" data-topic-chip="' + htmlEscape(t) + '">' + htmlEscape(t) + '</button>').join('') +
           '</div>'
         : '';
     
@@ -5148,10 +5292,12 @@ function renderGallery() {
                 <button class="risk-filter-btn ${galleryRiskFilter==='yellow'?'active':''}" onclick="setGalleryRiskFilter('yellow')">🟡</button>
                 <button class="risk-filter-btn ${galleryRiskFilter==='green'?'active':''}" onclick="setGalleryRiskFilter('green')">🟢</button>
             </div>
-            <div style="display:flex; gap:4px;">
+            <div style="display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end;">
                 <button class="btn btn-sm btn-ghost" style="border-color:var(--accent2); color:var(--accent2); font-size:0.55rem; padding:4px 8px;" onclick="toggleGalleryReveal()">${galleryRevealed ? '\uD83D\uDD12 Hide' : '\uD83D\uDD13 Reveal'}</button>
                 <button class="btn btn-sm btn-ghost" style="border-color:#a78bfa; color:#a78bfa; font-size:0.55rem; padding:4px 8px;" onclick="toggleGallerySelectMode()">\u2714 Select</button>
                 <button class="btn btn-sm btn-ghost" style="border-color:#ff5252; color:#ff5252; font-size:0.55rem; padding:4px 8px;" onclick="autoRiskStratifyAll()" title="Auto-assign risk from performance data">⚡ Risk Stratify</button>
+                <button class="btn btn-sm btn-ghost" style="border-color:#00f2fe; color:#00f2fe; font-size:0.55rem; padding:4px 8px;" onclick="reclassifyAllByTopic()" title="Re-classify every card into an eMRCS topic">🏷️ Re-classify Topics</button>
+                <button class="btn btn-sm btn-ghost" style="border-color:#ffab00; color:#ffab00; font-size:0.55rem; padding:4px 8px;" onclick="sanitizeAllBankCards()" title="Strip Core Fact duplication and RISK FLAG remnants from every card">🧹 Clean Dup</button>
                 <button class="btn btn-sm btn-ghost" style="border-color:var(--accent); color:var(--accent); font-size:0.55rem; padding:4px 8px;" onclick="addNewCardFromGallery()">+ New</button>
             </div>
         </div>
@@ -5176,6 +5322,17 @@ function renderGallery() {
     // V104: Restore date input values after re-render
     if(dateFromEl && dateFromEl.value) { const el = document.getElementById('fc-date-from'); if(el) el.value = dateFromEl.value; }
     if(dateToEl && dateToEl.value) { const el = document.getElementById('fc-date-to'); if(el) el.value = dateToEl.value; }
+    
+    // V105: Bind delegated topic-chip click handler (em-dash safe)
+    const topicChipContainer = grid.querySelector('.gallery-topic-chips');
+    if(topicChipContainer) {
+        topicChipContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-topic-chip]');
+            if(!btn) return;
+            const t = btn.getAttribute('data-topic-chip');
+            setGalleryTopicFilter(t);
+        });
+    }
     
     const container = document.createElement('div');
     if (galleryRevealed) container.className = 'mosaic-container';
@@ -5350,24 +5507,43 @@ function saveFlashcardEditor() {
 
 function exportFlashcardsPDF() {
     let exportSet = [...REVIEW_BANK];
-    // V81: Sort by risk
-    const riskOrd = { red: 0, yellow: 1, green: 2 };
-    exportSet.sort((a, b) => (a.riskLevel ? riskOrd[a.riskLevel] : 3) - (b.riskLevel ? riskOrd[b.riskLevel] : 3));
     if(isGalleryView && fcSearchQuery) {
         exportSet = REVIEW_BANK.filter(item => item.word.toLowerCase().includes(fcSearchQuery) || (item.notes && item.notes.toLowerCase().includes(fcSearchQuery)));
     }
     if(exportSet.length === 0) { alert("No cards to print."); return; }
+    
+    // V105: Group by eMRCS topic (alphabetical), with untagged at the end.
+    // Within each topic, sort by risk (red → yellow → green → untagged).
+    const riskOrd = { red: 0, yellow: 1, green: 2 };
+    const groups = {};
+    exportSet.forEach(item => {
+        const key = item.topic && item.topic.trim() ? item.topic : '— Untagged —';
+        if(!groups[key]) groups[key] = [];
+        groups[key].push(item);
+    });
+    Object.keys(groups).forEach(k => {
+        groups[k].sort((a, b) => (a.riskLevel ? riskOrd[a.riskLevel] : 3) - (b.riskLevel ? riskOrd[b.riskLevel] : 3));
+    });
+    // Order topic keys: alphabetical, untagged last
+    const sortedTopics = Object.keys(groups).sort((a, b) => {
+        if(a === '— Untagged —') return 1;
+        if(b === '— Untagged —') return -1;
+        return a.localeCompare(b);
+    });
 
     const printContainer = $('print-container');
     printContainer.innerHTML = '';
 
-    // V81: Cornell-format PDF layout
+    // V81/V105: Cornell-format PDF layout with topic headers
     const style = document.createElement('style');
     style.textContent = `
         @media print {
             .print-header { text-align: center; margin-bottom: 24px; font-family: 'Bebas Neue', sans-serif; page-break-after: avoid; }
             .print-header h1 { font-size: 2rem; margin-bottom: 4px; }
             .print-header p { font-size: 0.8rem; color: #888; }
+            .topic-header { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: #4527a0; border-bottom: 3px solid #4527a0; padding: 12px 0 6px; margin-top: 28px; margin-bottom: 14px; letter-spacing: 1px; page-break-after: avoid; break-after: avoid; }
+            .topic-header:first-of-type { margin-top: 0; }
+            .topic-header .count { font-size: 0.7rem; opacity: 0.6; margin-left: 8px; font-family: 'JetBrains Mono', monospace; }
             .cornell-card { display: flex; break-inside: avoid; page-break-inside: avoid; -webkit-column-break-inside: avoid;
                 border: 1px solid #ddd; border-radius: 8px; margin-bottom: 16px; background: #fff; overflow: hidden; }
             .cornell-card-stacked { display: flex; flex-direction: column; break-inside: avoid; page-break-inside: avoid; -webkit-column-break-inside: avoid;
@@ -5392,45 +5568,51 @@ function exportFlashcardsPDF() {
 
     const header = document.createElement('div');
     header.className = 'print-header';
-    header.innerHTML = '<h1>MRCS Review Deck</h1><p>' + displayTodayStr() + ' \u00B7 ' + exportSet.length + ' cards \u00B7 ' + daysToExam() + ' days to exam</p>';
+    header.innerHTML = '<h1>MRCS Review Deck</h1><p>' + displayTodayStr() + ' \u00B7 ' + exportSet.length + ' cards in ' + sortedTopics.length + ' topics \u00B7 ' + daysToExam() + ' days to exam</p>';
     printContainer.appendChild(header);
 
-    exportSet.forEach(item => {
-        // V104: Per-card layout decision — stacked when notes are short and no big content
-        const notesLen = (item.notes || '').length;
-        const hasImage = !!(item.img && item.img.trim() && !item.img.startsWith('data:'));
-        const useStacked = item.examNote && notesLen < 400 && !hasImage;
+    sortedTopics.forEach(topicKey => {
+        const items = groups[topicKey];
+        // Topic header
+        const th = document.createElement('div');
+        th.className = 'topic-header';
+        th.innerHTML = topicKey + '<span class="count">(' + items.length + ')</span>';
+        printContainer.appendChild(th);
         
-        const card = document.createElement('div');
-        card.className = useStacked ? 'cornell-card-stacked' : 'cornell-card';
-        
-        const riskDot = item.riskLevel === 'red' ? '🔴 ' : item.riskLevel === 'yellow' ? '🟡 ' : item.riskLevel === 'green' ? '🟢 ' : '';
-        let notesHtml = renderMarkdown(item.notes);
-        let imgHtml = hasImage ? '<img class="pc-img" src="' + item.img + '" onerror="this.style.display=\'none\'">' : '';
-        const riskBadge = item.riskLevel ? '<span style="display:inline-block;font-size:0.55rem;padding:1px 5px;border-radius:3px;margin-left:6px;background:' + (item.riskLevel==='red'?'#ffebee':item.riskLevel==='yellow'?'#fff8e1':'#e8f5e9') + ';color:' + (item.riskLevel==='red'?'#c62828':item.riskLevel==='yellow'?'#f57f17':'#2e7d32') + ';">' + item.riskLevel.toUpperCase() + '</span>' : '';
-        
-        // Main content column
-        const mainCol = document.createElement('div');
-        mainCol.className = 'cornell-main';
-        mainCol.innerHTML = '<div class="pc-title">' + riskDot + item.word + riskBadge + '</div><div class="pc-notes">' + notesHtml + '</div>' + imgHtml;
-        card.appendChild(mainCol);
+        items.forEach(item => {
+            const notesLen = (item.notes || '').length;
+            const hasImage = !!(item.img && item.img.trim() && !item.img.startsWith('data:'));
+            const useStacked = item.examNote && notesLen < 400 && !hasImage;
+            
+            const card = document.createElement('div');
+            card.className = useStacked ? 'cornell-card-stacked' : 'cornell-card';
+            
+            const riskDot = item.riskLevel === 'red' ? '🔴 ' : item.riskLevel === 'yellow' ? '🟡 ' : item.riskLevel === 'green' ? '🟢 ' : '';
+            let notesHtml = renderMarkdown(item.notes);
+            let imgHtml = hasImage ? '<img class="pc-img" src="' + item.img + '" onerror="this.style.display=\'none\'">' : '';
+            const riskBadge = item.riskLevel ? '<span style="display:inline-block;font-size:0.55rem;padding:1px 5px;border-radius:3px;margin-left:6px;background:' + (item.riskLevel==='red'?'#ffebee':item.riskLevel==='yellow'?'#fff8e1':'#e8f5e9') + ';color:' + (item.riskLevel==='red'?'#c62828':item.riskLevel==='yellow'?'#f57f17':'#2e7d32') + ';">' + item.riskLevel.toUpperCase() + '</span>' : '';
+            
+            const mainCol = document.createElement('div');
+            mainCol.className = 'cornell-main';
+            mainCol.innerHTML = '<div class="pc-title">' + riskDot + item.word + riskBadge + '</div><div class="pc-notes">' + notesHtml + '</div>' + imgHtml;
+            card.appendChild(mainCol);
 
-        // V104: Exam note — stacked beneath OR right sidebar based on layout decision
-        if(item.examNote) {
-            if(useStacked) {
-                const stack = document.createElement('div');
-                stack.className = 'cornell-stacked-exam';
-                stack.innerHTML = '<div class="sidebar-label">Exam Note</div>' + renderMarkdown(item.examNote);
-                card.appendChild(stack);
-            } else {
-                const sidebar = document.createElement('div');
-                sidebar.className = 'cornell-sidebar';
-                sidebar.innerHTML = '<div class="sidebar-label">Exam Note</div>' + renderMarkdown(item.examNote);
-                card.appendChild(sidebar);
+            if(item.examNote) {
+                if(useStacked) {
+                    const stack = document.createElement('div');
+                    stack.className = 'cornell-stacked-exam';
+                    stack.innerHTML = '<div class="sidebar-label">Exam Note</div>' + renderMarkdown(item.examNote);
+                    card.appendChild(stack);
+                } else {
+                    const sidebar = document.createElement('div');
+                    sidebar.className = 'cornell-sidebar';
+                    sidebar.innerHTML = '<div class="sidebar-label">Exam Note</div>' + renderMarkdown(item.examNote);
+                    card.appendChild(sidebar);
+                }
             }
-        }
-        
-        printContainer.appendChild(card);
+            
+            printContainer.appendChild(card);
+        });
     });
     
     setTimeout(() => { window.print(); }, 500);
@@ -6462,6 +6644,90 @@ document.addEventListener('keydown', (e) => {
 });
 
 // V86: Batch AI generation — stays in gallery, updates right panel
+// V105: Reclassify all bank cards into eMRCS topics — used by gallery toolbar
+async function reclassifyAllByTopic() {
+    const key = GEMINI_KEY || $('gemini-key').value.trim();
+    if(!key) { alert("Consultant Offline: paste your Gemini API Key in Settings."); return; }
+    
+    const targets = REVIEW_BANK.filter(b => b.word && b.word.trim());
+    if(targets.length === 0) { alert('No cards in bank.'); return; }
+    if(!confirm('Re-classify ALL ' + targets.length + ' cards by eMRCS topic? This batches the words to the AI in groups of 30 for efficiency.')) return;
+    
+    const panel = $('gallery-exam-panel');
+    if(panel) {
+        $('gallery-panel-word').textContent = '🏷️ RECLASSIFY';
+        $('gallery-panel-risk').innerHTML = '';
+        $('gallery-panel-content').innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:1.2rem;margin-bottom:8px;">⏳</div><div id="reclassify-status" style="font-size:0.7rem;opacity:0.7;">Classifying... 0/' + targets.length + '</div></div>';
+        $('btn-gallery-panel-add').style.display = 'none';
+        $('btn-gallery-panel-edit').style.display = 'none';
+        panel.classList.add('open');
+    }
+    
+    let done = 0;
+    const BATCH = 30;
+    for(let i = 0; i < targets.length; i += BATCH) {
+        const batch = targets.slice(i, i + BATCH);
+        const wordList = batch.map((t, idx) => (idx + 1) + '. ' + t.word).join('\n');
+        const prompt = `You are an MRCS Part A topic classifier. Classify each topic below into ONE label from this exact list:
+${EMRCS_TOPICS.join(' | ')}
+
+Also assign a risk level RED / YELLOW / GREEN where:
+- RED: surgical technique, peri-op care, pathology (CVS/resp/endo/digestive), management & legal, intraop, burns, transplant, MSK pathology
+- YELLOW: anatomy, physiology, GI/colorectal, HPB, vascular, urology, orthopaedics
+- GREEN: emergency medicine, post-op management, skin, hand disorders, breast
+
+INPUT:
+${wordList}
+
+OUTPUT — one line per input, EXACTLY this format (no preamble, no extra text):
+<number>|<topic label>|<risk>
+
+Example:
+1|Anatomy — Head & Neck|YELLOW
+2|Surgical Technique|RED`;
+        
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+            });
+            const data = await res.json();
+            const text = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0].text;
+            if(text) {
+                const lines = text.split('\n').map(l => l.trim()).filter(l => /^\d+\s*\|/.test(l));
+                lines.forEach(line => {
+                    const parts = line.split('|').map(s => s.trim());
+                    if(parts.length >= 3) {
+                        const num = parseInt(parts[0], 10);
+                        const topic = parts[1];
+                        const risk = parts[2].toUpperCase();
+                        const target = batch[num - 1];
+                        if(target && topic) {
+                            const item = REVIEW_BANK.find(b => b.word === target.word);
+                            if(item) {
+                                if(EMRCS_TOPICS.includes(topic)) item.topic = topic;
+                                if(['RED','YELLOW','GREEN'].includes(risk)) item.riskLevel = risk.toLowerCase();
+                                else if(!item.riskLevel) item.riskLevel = riskFromTopic(topic);
+                            }
+                        }
+                    }
+                });
+            }
+        } catch(e) {
+            console.error('Reclassify batch error', e);
+        }
+        done = Math.min(targets.length, i + BATCH);
+        const statusEl = $('reclassify-status');
+        if(statusEl) statusEl.textContent = 'Classifying... ' + done + '/' + targets.length;
+        persistData();
+    }
+    
+    pushToCloud();
+    if($('gallery-panel-content')) $('gallery-panel-content').innerHTML = '<div style="text-align:center;color:#4ade80;padding:20px;">✅ Re-classified ' + done + ' cards</div>';
+    renderGallery();
+    syncAllCardsEverywhere();
+}
+
 async function batchGenerateAI(mode) {
     const key = GEMINI_KEY || $('gemini-key').value.trim();
     if(!key) { alert("Consultant Offline: Please paste your Gemini API Key in Settings to unlock the AI."); return; }
@@ -6569,41 +6835,37 @@ function addPostOpTile(word, examNote, riskLevel) {
     return tile;
 }
 
-// V103: Re-render a post-op tile's content. Used by addPostOpTile AND by the expand modal save handler
+// V103/V105: Re-render a post-op tile's content. Used by addPostOpTile AND by the expand modal save handler
 // to keep tiles in sync when the user edits a flashcard.
+// V105: Tiles show item.notes (flashcard answer) which IS the core fact — no more extraction from examNote
 function refreshPostOpTileContent(tile, word, examNoteOverride, riskLevelOverride) {
     if(!tile) return;
     const item = REVIEW_BANK.find(b => b.word === word);
     const riskLevel = riskLevelOverride || (item && item.riskLevel) || '';
-    const examNote = examNoteOverride || (item && item.examNote) || '';
     const riskEmoji = riskLevel === 'red' ? '🔴' : riskLevel === 'yellow' ? '🟡' : riskLevel === 'green' ? '🟢' : '';
     
-    // V103: If user has personal notes, show the FULL flashcard answer.
-    // Otherwise (AI-only generated), show only the CORE FACT section.
-    const hasPersonalNotes = item && item.notes && item.notes.trim().length > 0;
-    
     let displayHtml = '';
-    if(hasPersonalNotes) {
-        displayHtml = '<div class="md-content" style="font-size:0.75rem; line-height:1.5;">' + renderMarkdown(item.notes) + '</div>';
-    } else if(examNote) {
-        // Extract just CORE FACT section from AI exam note
-        let coreFact = '';
-        const coreMatch = examNote.match(/\*\*CORE FACT\*\*[\s\S]*?(?=\*\*EXAM TRAP|\*\*SBA LOGIC|\*\*RISK FLAG|$)/i);
-        if(coreMatch) {
-            coreFact = coreMatch[0].replace(/\*\*CORE FACT\*\*/i, '').trim();
-        } else {
-            coreFact = examNote.replace(/\*\*/g, '').substring(0, 200);
-            if(examNote.length > 200) coreFact += '...';
-        }
-        displayHtml = '<div class="md-content" style="font-size:0.72rem; line-height:1.5;">' + renderMarkdown(coreFact) + '</div>';
+    if(item && item.notes && item.notes.trim()) {
+        // V105: The flashcard answer IS the core fact — show it directly
+        displayHtml = '<div class="md-content" style="font-size:0.78rem; line-height:1.5;">' + renderMarkdown(item.notes) + '</div>';
+    } else if(item && item.examNote && item.examNote.trim() && item.examNote !== '\u23F3 Pending generation...') {
+        // Fallback: show first ~150 chars of exam note if no flashcard answer yet
+        const preview = item.examNote.replace(/\*\*/g, '').substring(0, 150);
+        displayHtml = '<div class="md-content" style="font-size:0.72rem; line-height:1.5; opacity:0.8;">' + renderMarkdown(preview) + (item.examNote.length > 150 ? '…' : '') + '</div>';
     } else {
-        displayHtml = '<div style="font-size:0.72rem; line-height:1.5; opacity:0.5; font-style:italic;">No notes yet.</div>';
+        const placeholder = examNoteOverride && examNoteOverride.includes('Pending') ? '\u23F3 Pending...' : 'No notes yet.';
+        displayHtml = '<div style="font-size:0.72rem; line-height:1.5; opacity:0.5; font-style:italic;">' + placeholder + '</div>';
     }
     tile.innerHTML = '<div class="tile-word">' + word + '</div><div class="tile-risk">' + riskEmoji + '</div>' + displayHtml;
     // Update risk class
     tile.classList.remove('risk-card-red','risk-card-yellow','risk-card-green');
     if(riskLevel) tile.classList.add('risk-card-' + riskLevel);
     tile.setAttribute('data-risk', riskLevel || '');
+    // V105: keep topic + errtype attrs in sync
+    if(item) {
+        if(item.topic) tile.setAttribute('data-topic', item.topic);
+        if(item.errorType) tile.setAttribute('data-errtype', item.errorType);
+    }
 }
 
 // V103: Find a post-op tile by word and refresh its content
@@ -6612,7 +6874,7 @@ function refreshPostOpTileByWord(word) {
     if(tile) refreshPostOpTileContent(tile, word);
 }
 
-// V104: Compose risk + errtype + topic + search across all post-op tiles
+// V104/V105: Compose risk + errtype + topic + search across all post-op tiles
 function applyPostOpFilters() {
     const q = (document.getElementById('postop-search-input')?.value || '').toLowerCase().trim();
     document.querySelectorAll('.postop-fact-tile').forEach(tile => {
@@ -6626,6 +6888,113 @@ function applyPostOpFilters() {
         const searchOK = !q || text.includes(q);
         tile.style.display = (riskOK && errOK && topicOK && searchOK) ? '' : 'none';
     });
+}
+
+// V105: Cross-view sync — push the latest state of one card to every visible surface
+function syncCardEverywhere(word) {
+    if(!word) return;
+    const item = REVIEW_BANK.find(b => b.word === word);
+    if(!item) return;
+    // 1. Postop tile
+    const tile = document.querySelector('.postop-fact-tile[data-word="' + CSS.escape(word) + '"]');
+    if(tile) refreshPostOpTileContent(tile, word);
+    // 2. Stack view (if this card is currently shown on the front of the flipcard)
+    if($('v-flashcards') && $('v-flashcards').classList.contains('active')) {
+        const cur = fcQueue && fcQueue[fcCurrentIdx];
+        if(cur && cur.word === word) {
+            const riskDot = item.riskLevel === 'red' ? '🔴 ' : item.riskLevel === 'yellow' ? '🟡 ' : item.riskLevel === 'green' ? '🟢 ' : '';
+            if($('fc-word')) $('fc-word').textContent = riskDot + item.word;
+            if($('fc-notes')) $('fc-notes').innerHTML = '<div class="md-content">' + renderMarkdown(item.notes || '') + '</div>';
+            if($('fc-exam-note')) $('fc-exam-note').innerHTML = item.examNote ? '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(item.examNote) + '</div>' : '<span style="opacity:0.3;">No exam notes yet.</span>';
+            if($('fc-exam-risk')) $('fc-exam-risk').innerHTML = item.riskLevel ? '<span class="risk-badge risk-' + item.riskLevel + '" style="margin-bottom:6px;">' + item.riskLevel.toUpperCase() + ' RISK</span> ' : '';
+        }
+        // 3. Gallery — re-render if visible
+        if(typeof isGalleryView !== 'undefined' && isGalleryView && typeof renderGallery === 'function') renderGallery();
+    }
+}
+
+// V105: Push latest state of EVERY card across all surfaces (used after batch operations)
+function syncAllCardsEverywhere() {
+    document.querySelectorAll('.postop-fact-tile').forEach(tile => {
+        const w = tile.getAttribute('data-word');
+        if(w) refreshPostOpTileContent(tile, w);
+    });
+    if(typeof isGalleryView !== 'undefined' && isGalleryView && typeof renderGallery === 'function') renderGallery();
+    if($('v-flashcards') && $('v-flashcards').classList.contains('active') && fcQueue && fcQueue[fcCurrentIdx]) {
+        syncCardEverywhere(fcQueue[fcCurrentIdx].word);
+    }
+}
+
+// V105: Postop select mode — for delete duplication / batch ops
+let postopSelectMode = false;
+let postopSelected = new Set();
+
+function togglePostopSelectMode() {
+    postopSelectMode = !postopSelectMode;
+    if(!postopSelectMode) postopSelected.clear();
+    document.querySelectorAll('.postop-fact-tile').forEach(tile => {
+        if(postopSelectMode) {
+            tile.classList.add('selectable');
+            const w = tile.getAttribute('data-word');
+            tile.onclick = (e) => {
+                e.stopPropagation();
+                if(postopSelected.has(w)) { postopSelected.delete(w); tile.classList.remove('selected-postop'); }
+                else { postopSelected.add(w); tile.classList.add('selected-postop'); }
+                const cnt = document.getElementById('postop-select-count');
+                if(cnt) cnt.textContent = postopSelected.size + ' selected';
+            };
+        } else {
+            tile.classList.remove('selectable','selected-postop');
+            tile.onclick = () => openExpandedCard(tile.getAttribute('data-word'));
+        }
+    });
+    const bar = document.getElementById('postop-select-bar');
+    if(bar) bar.style.display = postopSelectMode ? 'flex' : 'none';
+    const cnt = document.getElementById('postop-select-count');
+    if(cnt) cnt.textContent = '0 selected';
+}
+
+// V105: Strip duplicated CORE FACT / RISK FLAG remnants from selected (or all) postop cards
+function postopCleanupDuplication(scope) {
+    const sessionWords = (postOpSessionWords || []).map(w => typeof w === 'string' ? w : (w && w.word) || '');
+    let targets;
+    if(scope === 'selected') {
+        if(postopSelected.size === 0) { alert('Nothing selected. Select cards first or choose "Clean All".'); return; }
+        targets = Array.from(postopSelected);
+    } else {
+        targets = sessionWords;
+    }
+    if(targets.length === 0) return;
+    if(!confirm('Clean ' + targets.length + ' card(s)? This removes duplicated Core Fact text and any "RISK FLAG" remnants from the exam note section. Flashcard answers are preserved.')) return;
+    
+    let cleanedCount = 0;
+    targets.forEach(word => {
+        const item = REVIEW_BANK.find(b => b.word === word);
+        if(item && sanitizeBankItem(item)) cleanedCount++;
+    });
+    persistData(); pushToCloud();
+    
+    // Refresh all postop tiles
+    document.querySelectorAll('.postop-fact-tile').forEach(tile => {
+        const w = tile.getAttribute('data-word');
+        if(w) refreshPostOpTileContent(tile, w);
+    });
+    
+    if(postopSelectMode) togglePostopSelectMode();
+    
+    syncAllCardsEverywhere();
+    
+    alert('Cleaned ' + cleanedCount + ' card(s).');
+}
+
+// V105: Sanitize EVERY card in REVIEW_BANK (used by gallery cleanup button)
+function sanitizeAllBankCards() {
+    if(!confirm('Strip CORE FACT duplication and RISK FLAG remnants from EVERY card in your bank? Flashcard answers are preserved.')) return;
+    let n = 0;
+    REVIEW_BANK.forEach(item => { if(sanitizeBankItem(item)) n++; });
+    persistData(); pushToCloud();
+    alert('Cleaned ' + n + ' card(s).');
+    syncAllCardsEverywhere();
 }
 
 function filterPostOp(level) {
@@ -6651,14 +7020,16 @@ function filterPostOpTopic(topic, btn) {
     applyPostOpFilters();
 }
 
-// V104: Build dynamic topic chip filter row from tile data-topic attrs
+// V104/V105: Build dynamic topic chip filter row from REVIEW_BANK (not DOM — persistent on return)
 function buildPostOpTopicChips() {
     const container = document.getElementById('postop-topic-filter');
     if(!container) return;
+    // V105: Pull topics from REVIEW_BANK for all session words, not from DOM
+    const sessionWords = (postOpSessionWords || []).map(w => typeof w === 'string' ? w : (w && w.word) || '');
     const topics = new Set();
-    document.querySelectorAll('.postop-fact-tile').forEach(tile => {
-        const t = tile.getAttribute('data-topic');
-        if(t) topics.add(t);
+    sessionWords.forEach(w => {
+        const item = REVIEW_BANK.find(b => b.word === w);
+        if(item && item.topic) topics.add(item.topic);
     });
     container.innerHTML = '';
     if(topics.size === 0) { container.style.display = 'none'; return; }
@@ -6700,12 +7071,12 @@ function generateMissingPostOp() {
     }));
 }
 
-// V82/V104: Auto-generate post-op review after timer session ends
-// V104: Pre-create placeholder tiles so cards never visually disappear
+// V82/V104/V105: Auto-generate post-op review after timer session ends
+// V105: PARALLEL batched generation (5 at a time) — was sequential 800ms each
 async function autoPostOpReview(sessionWords) {
     if(!sessionWords || sessionWords.length === 0) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
-    if(!key) return; // silently skip if no API key
+    if(!key) return;
     
     postOpSessionWords = sessionWords;
     postOpResults = [];
@@ -6717,7 +7088,7 @@ async function autoPostOpReview(sessionWords) {
     $('postop-status').textContent = 'Generating AI summaries... 0/' + sessionWords.length;
     $('postop-progress-fill').style.width = '0%';
     
-    // V104: Pre-create placeholder tiles for every word so nothing disappears
+    // Pre-create placeholder tiles
     const tilesByWord = {};
     for(let i = 0; i < sessionWords.length; i++) {
         const wordData = sessionWords[i];
@@ -6729,27 +7100,36 @@ async function autoPostOpReview(sessionWords) {
         tilesByWord[word] = tile;
     }
     
-    let failedCount = 0;
+    // Build the queue of words that need generation (skip already-generated)
+    const toGenerate = [];
     for(let i = 0; i < sessionWords.length; i++) {
         const wordData = sessionWords[i];
         const word = typeof wordData === 'string' ? wordData : wordData.word;
         const errorType = typeof wordData === 'object' ? (wordData.errorType || 'know') : 'know';
-        const errorContext = errorType === 'know' ? 'Knowledge gap' : errorType === 'retrieval' ? 'Retrieval failure' : 'Reasoning error';
         const existing = REVIEW_BANK.find(b => b.word === word);
-        const tile = tilesByWord[word];
-        
-        // Skip if already has exam note
-        if(existing && existing.examNote && existing.examNote.trim()) {
-            postOpResults.push({ word, examNote: existing.examNote, riskLevel: existing.riskLevel || '' });
+        if(existing && existing.examNote && existing.examNote.trim() && existing.notes && existing.notes.trim()) {
+            // Already complete — refresh the tile and skip
+            const tile = tilesByWord[word];
             if(tile) refreshPostOpTileContent(tile, word, existing.examNote, existing.riskLevel || '');
-            $('postop-status').textContent = 'Generating AI summaries... ' + (i+1) + '/' + sessionWords.length;
-            $('postop-progress-fill').style.width = Math.round(((i+1)/sessionWords.length)*100) + '%';
-            continue;
+            postOpResults.push({ word, examNote: existing.examNote, riskLevel: existing.riskLevel || '' });
+        } else {
+            toGenerate.push({ word, errorType });
         }
-        
+    }
+    
+    let completed = sessionWords.length - toGenerate.length;
+    let failedCount = 0;
+    const total = sessionWords.length;
+    $('postop-status').textContent = 'Generating AI summaries... ' + completed + '/' + total;
+    $('postop-progress-fill').style.width = Math.round((completed/total)*100) + '%';
+    
+    // Generate one card with full pipeline
+    async function generateOne(target) {
+        const { word, errorType } = target;
+        const errorContext = errorType === 'know' ? 'Knowledge gap' : errorType === 'retrieval' ? 'Retrieval failure' : 'Reasoning error';
+        const tile = tilesByWord[word];
         try {
             const prompt = buildSurgeonPrompt(word, errorContext);
-            
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
@@ -6761,19 +7141,20 @@ async function autoPostOpReview(sessionWords) {
                 if(globalIdx > -1) {
                     applySurgeonResult(REVIEW_BANK[globalIdx], parsed);
                 }
-                const rl = REVIEW_BANK.find(b=>b.word===word)?.riskLevel || '';
-                postOpResults.push({ word, examNote: parsed.displayNote, riskLevel: rl });
+                const bi = REVIEW_BANK.find(b => b.word === word);
+                const rl = (bi && bi.riskLevel) || '';
+                postOpResults.push({ word, examNote: (bi && bi.examNote) || '', riskLevel: rl });
                 if(tile) {
-                    refreshPostOpTileContent(tile, word, parsed.displayNote, rl);
-                    // Update topic attribute now that we have it
-                    const bi = REVIEW_BANK.find(b => b.word === word);
+                    refreshPostOpTileContent(tile, word, (bi && bi.examNote) || '', rl);
                     if(bi && bi.topic) tile.setAttribute('data-topic', bi.topic);
+                    if(bi && bi.errorType) tile.setAttribute('data-errtype', bi.errorType);
+                    tile.removeAttribute('data-failed');
                 }
             } else {
                 failedCount++;
                 if(tile) {
                     tile.setAttribute('data-failed','1');
-                    tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:#ff5252;padding:8px 0;">\u26A0\uFE0F AI generation failed \u2014 click Retry Failed below</div>';
+                    tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:#ff5252;padding:8px 0;">\u26A0\uFE0F AI generation failed</div>';
                 }
             }
         } catch(e) {
@@ -6783,11 +7164,20 @@ async function autoPostOpReview(sessionWords) {
                 tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:#ff5252;padding:8px 0;">\u26A0\uFE0F Error: ' + (e.message||'network') + '</div>';
             }
         }
-        
-        $('postop-status').textContent = 'Generating AI summaries... ' + (i+1) + '/' + sessionWords.length;
-        $('postop-progress-fill').style.width = Math.round(((i+1)/sessionWords.length)*100) + '%';
+        completed++;
+        $('postop-status').textContent = 'Generating AI summaries... ' + completed + '/' + total;
+        $('postop-progress-fill').style.width = Math.round((completed/total)*100) + '%';
+    }
+    
+    // V105: Run in parallel batches of 5 (Gemini Flash handles concurrent requests well)
+    const BATCH_SIZE = 5;
+    for(let i = 0; i < toGenerate.length; i += BATCH_SIZE) {
+        const batch = toGenerate.slice(i, i + BATCH_SIZE);
+        await Promise.all(batch.map(generateOne));
+        // Persist after each batch so progress survives reload
         persistData();
-        if(i < sessionWords.length - 1) await new Promise(r => setTimeout(r, 800));
+        // Rebuild topic chips after each batch as new topics come in
+        if(typeof buildPostOpTopicChips === 'function') buildPostOpTopicChips();
     }
     
     pushToCloud();
@@ -6796,8 +7186,9 @@ async function autoPostOpReview(sessionWords) {
     } else {
         $('postop-status').textContent = '\u2705 Complete \u2014 ' + sessionWords.length + ' exam notes generated';
     }
-    // V104: Build dynamic topic chip filter row from generated tiles
     if(typeof buildPostOpTopicChips === 'function') buildPostOpTopicChips();
+    // V105: Cross-view sync after batch completes — every gallery card needs its new colour
+    if(typeof renderGallery === 'function' && $('v-flashcards') && $('v-flashcards').classList.contains('active')) renderGallery();
 }
 
 // V104: Retry only failed post-op tiles
