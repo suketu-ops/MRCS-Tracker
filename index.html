@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V102</title>
+<title>MRCS QBank Tracker Pro Max V103</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -31,6 +31,26 @@
     .split-layout { display: flex; flex-direction: row; gap: 32px; width: 100%; align-items: flex-start; }
     .col { flex: 1; display: flex; flex-direction: column; gap: 16px; width: 100%; }
     @media(max-width: 800px) { .split-layout { flex-direction: column; gap: 16px; } }
+    
+    /* V103: iPad landscape (≤1366px landscape, ≥1024px wide) — 50-50 home columns */
+    @media (orientation: landscape) and (min-width: 1024px) and (max-width: 1366px) {
+        .split-layout > .col { flex: 1 1 50% !important; min-width: 0 !important; }
+        /* Tighter front-card max-height so PREV/NEXT nav buttons are visible above the fold */
+        .fc-card:not(.flipped) { max-height: calc(100vh - 320px) !important; min-height: 180px; }
+        /* Allow the active state wrapper to scroll if content overflows */
+        #fc-active-state { max-height: none; overflow: visible; }
+    }
+    
+    /* V103: iPad portrait (820–1024px wide, portrait) — apply mobile-like layout */
+    @media (orientation: portrait) and (min-width: 481px) and (max-width: 1024px) {
+        /* Stack flipped layout vertical like mobile */
+        #fc-stack-layout { flex-direction: column !important; padding: 0 12px !important; }
+        .fc-exam-sidebar { width: 100% !important; max-width: 100% !important; max-height: none !important; margin-top: 12px; position: relative !important; top: 0 !important; min-width: 0 !important; }
+        /* Hide font size buttons in top bar to declutter on tablet portrait */
+        .top-bar > div:first-child { display: none !important; }
+        /* Hide gallery exam panel on iPad portrait too — use cloud popup */
+        .gallery-exam-panel { display: none !important; }
+    }
     
     .clock { font-family: 'Bebas Neue', sans-serif; font-size: min(12vw, 4.5rem); line-height: 1; letter-spacing: 4px; text-align: center; transition: color 0.4s, font-size 0.4s, opacity 0.4s; }
     .clock-label { font-size: 0.75rem; letter-spacing: 3px; text-transform: uppercase; opacity: 0.5; margin-bottom: 2px; transition: opacity 0.4s; text-align: center; }
@@ -213,7 +233,7 @@
     .modal-textarea { width: 100%; height: 300px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; padding: 12px; font-family: inherit; font-size: 0.95rem; resize: none; outline: none; }
     .modal-textarea:focus { border-color: var(--accent2); }
     
-    /* V102: All modal text colours use CSS variables set by applyTheme */
+    /* V103: All modal text colours use CSS variables set by applyTheme */
     .modal-content { color: var(--modal-fg, #fff) !important; }
     .modal-content .input-field { color: var(--modal-fg, #fff) !important; border-color: var(--modal-input-border, rgba(255,255,255,0.3)) !important; background: var(--modal-input-bg, rgba(255,255,255,0.08)) !important; }
     .modal-content .input-field:focus { border-color: var(--accent2) !important; background: var(--modal-input-bg-focus, rgba(255,255,255,0.15)) !important; }
@@ -267,17 +287,22 @@
     .paste-preview { max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 8px; margin-top: 8px; }
 
     /* V79: Markdown rendered content */
-    .md-content { font-size: 0.95rem; line-height: 1.7; }
-    .md-content h1, .md-content h2, .md-content h3 { font-family: 'Bebas Neue', sans-serif; color: var(--accent2); margin: 16px 0 8px; }
+    /* V103: Canonical markdown render — applies everywhere (stack sidebar, gallery cloud, expand modal, post-op tile) */
+    .md-content { font-size: 0.95rem; line-height: 1.55; }
+    .md-content h1, .md-content h2, .md-content h3 { font-family: 'Bebas Neue', sans-serif; color: var(--accent2); margin: 12px 0 4px; line-height: 1.2; }
     .md-content h1 { font-size: 1.8rem; } .md-content h2 { font-size: 1.4rem; } .md-content h3 { font-size: 1.2rem; }
     .md-content strong, .md-content b { color: var(--accent2); }
     .md-content code { background: rgba(128,128,128,0.15); padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
     .md-content pre { background: rgba(128,128,128,0.1); padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; }
     .md-content pre code { background: none; padding: 0; }
-    .md-content ul, .md-content ol { margin-left: 20px; margin-bottom: 12px; }
-    .md-content li { margin-bottom: 6px; }
+    /* V103: Paragraph rendering — tight intra-paragraph, visible gap when source had blank line */
+    .md-content .md-p { margin: 0 0 0 0; line-height: 1.55; }
+    .md-content .md-p-break { margin-top: 8px; }
+    .md-content .md-p + .md-p:not(.md-p-break) { margin-top: 2px; }
+    .md-content .md-ul, .md-content .md-ol { margin: 4px 0 4px 20px; padding: 0; }
+    .md-content .md-li { margin: 0 0 2px 0; line-height: 1.5; }
     .md-content blockquote { border-left: 3px solid var(--accent); padding-left: 12px; opacity: 0.8; margin: 8px 0; }
-    .md-content hr { border: none; border-top: 1px solid rgba(128,128,128,0.3); margin: 16px 0; }
+    .md-content hr { border: none; border-top: 1px solid rgba(128,128,128,0.3); margin: 12px 0; }
     .md-content a { color: var(--accent2); text-decoration: underline; }
 
     /* ============================================= */
@@ -302,7 +327,7 @@
         #app { padding-left: 10px; padding-right: 10px; padding-bottom: 44px; }
         .top-bar { padding-left: 10px; padding-right: 10px; }
         .th-dot { width: 18px; height: 18px; }
-        /* V102: Hide font size buttons + fullscreen + Aa cycle on mobile to declutter top bar */
+        /* V103: Hide font size buttons + fullscreen + Aa cycle on mobile to declutter top bar */
         .top-bar > div:first-child { display: none !important; }
         .clock { font-size: min(10vw, 3.5rem); letter-spacing: 2px; }
         .stat-val { font-size: 1.8rem; }
@@ -392,16 +417,16 @@
         /* Tag badges */
         .tag-study, .tag-work, .tag-rest { font-size: 0.5rem; padding: 3px 5px; }
         
-        /* V102: Mobile stack view — sidebar moves below SRS buttons as a sticky note */
+        /* V103: Mobile stack view — sidebar moves below SRS buttons as a sticky note */
         #fc-stack-layout { flex-direction: column !important; align-items: stretch !important; }
         .fc-exam-sidebar { 
             width: 100% !important; max-width: 100% !important; max-height: 200px; 
             margin-top: 12px; position: relative !important; top: 0 !important;
             order: 99; /* push to bottom of flex */
         }
-        /* V102: Mobile gallery panel — full screen takeover */
+        /* V103: Mobile gallery panel — full screen takeover */
         .gallery-exam-panel { width: 100vw !important; max-width: 100vw !important; left: 0 !important; right: 0 !important; padding: 60px 18px 24px !important; }
-        /* V102: Expand modal full screen on mobile, single column, hide image */
+        /* V103: Expand modal full screen on mobile, single column, hide image */
         #expand-modal-content { width: 100vw !important; max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; padding: 60px 16px 20px !important; border-radius: 0 !important; border-left: none !important; border-right: none !important; }
         #expand-modal-content #expand-word { font-size: 1.6rem !important; }
         #expand-body-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
@@ -490,7 +515,7 @@
 
     
     
-    /* V102: Universal sticky note style — used for ALL exam note displays */
+    /* V103: Universal sticky note style — used for ALL exam note displays */
     .sticky-note { background: #fef9e7 !important; color: #2c2c2c !important; border: 1px solid #e6c54b !important; border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; line-height: 1.6; box-shadow: 2px 3px 8px rgba(0,0,0,0.15); }
     .sticky-note *, .sticky-note .md-content, .sticky-note .md-content * { color: #2c2c2c !important; }
     .sticky-note b, .sticky-note strong { color: #1a1a1a !important; font-weight: 900 !important; }
@@ -501,7 +526,7 @@
     .sticky-note textarea, .sticky-note input[type="text"] { color: #2c2c2c !important; background: #fdf5d6 !important; border: 1px solid #ddc66e !important; }
     .sticky-note [contenteditable="true"] { background: #fdf5d6 !important; outline: 2px dashed #c9a84c !important; padding: 6px !important; border-radius: 4px; }
 
-    /* V102: Removed legacy popup CSS — sidebar uses sticky note style */
+    /* V103: Removed legacy popup CSS — sidebar uses sticky note style */
     @media (max-width: 700px) {
         #fc-stack-layout { flex-direction: column !important; }
     }
@@ -528,12 +553,12 @@
     @media (max-width: 700px) {
         .gallery-exam-panel { width: 85vw; }
     }
-    /* V102: On desktop the right-flank panel is replaced by floating cloud popups */
+    /* V103: On desktop the right-flank panel is replaced by floating cloud popups */
     @media (min-width: 701px) {
         .gallery-exam-panel { display: none !important; }
     }
 
-    /* V102: Floating cloud popup — emanates from a clicked gallery card */
+    /* V103: Floating cloud popup — emanates from a clicked gallery card */
     .gallery-cloud-popup {
         position: fixed;
         z-index: 9001;
@@ -553,18 +578,17 @@
         animation: cloudPop 0.18s ease-out;
         pointer-events: auto;
     }
-    /* V102: Tight intra-paragraph lines, but visible gap between paragraphs */
-    .gallery-cloud-popup .md-content p { margin: 0 0 7px 0 !important; line-height: 1.25 !important; }
-    .gallery-cloud-popup .md-content p:last-child { margin-bottom: 0 !important; }
-    .gallery-cloud-popup .md-content ul, .gallery-cloud-popup .md-content ol { margin: 0 0 7px 18px !important; padding: 0 !important; }
-    .gallery-cloud-popup .md-content li { margin: 0 0 2px 0 !important; line-height: 1.25 !important; }
+    /* V103: Cloud popup uses canonical .md-content rules — just override font size */
+    .gallery-cloud-popup .md-content { font-size: 0.66rem; line-height: 1.4; }
+    .gallery-cloud-popup .md-content .md-p-break { margin-top: 6px; }
+    .gallery-cloud-popup .md-content .md-li { line-height: 1.4; }
     .gallery-cloud-popup *, .gallery-cloud-popup .md-content, .gallery-cloud-popup .md-content * { color: #2c2c2c !important; }
     .gallery-cloud-popup b, .gallery-cloud-popup strong { color: #1a1a1a !important; font-weight: 900; }
     .gallery-cloud-popup .cloud-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: 1px; color: #5a4510 !important; margin-bottom: 6px; padding-right: 24px; }
     .gallery-cloud-popup .cloud-close { position: absolute; top: 4px; right: 6px; cursor: pointer; font-size: 1rem; opacity: 0.5; padding: 2px 8px; line-height: 1; color: #5a4510 !important; }
     .gallery-cloud-popup .cloud-close:hover { opacity: 1; }
     
-    /* V102: Connected stem from popup back to source card */
+    /* V103: Connected stem from popup back to source card */
     .gallery-cloud-stem {
         position: fixed;
         z-index: 9000;
@@ -576,7 +600,7 @@
     }
     @keyframes stemFade { 0% { opacity: 0; } 100% { opacity: 1; } }
     
-    /* V102: Page fade overlay — dims everything except active card and popup */
+    /* V103: Page fade overlay — dims everything except active card and popup */
     .gallery-cloud-backdrop {
         position: fixed;
         inset: 0;
@@ -587,7 +611,7 @@
     }
     @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
     
-    /* V102: Source card glow — kept visible without backdrop */
+    /* V103: Source card glow — kept visible without backdrop */
     .fc-mini-card.cloud-source {
         z-index: 100 !important;
         position: relative;
@@ -600,7 +624,7 @@
         100% { opacity: 1; transform: scale(1); }
     }
 
-    /* V102: Hyperlink-style card title in gallery — clicking the title opens expand modal */
+    /* V103: Hyperlink-style card title in gallery — clicking the title opens expand modal */
     .fc-mini-card .card-title-link {
         cursor: pointer;
         text-decoration: none;
@@ -789,7 +813,7 @@
         <button class="fs-btn" onclick="changeFs(1)">A+</button>
         <button class="fs-btn" onclick="cycleFont()">Aa</button>
     </div>
-    <!-- V102: Home + Export PDF buttons centred in unshakeable top bar -->
+    <!-- V103: Home + Export PDF buttons centred in unshakeable top bar -->
     <div id="topbar-actions" style="display:none; gap:8px; align-items:center; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">
         <button class="fs-btn" id="btn-topbar-export" onclick="exportFlashcardsPDF()" style="font-size:0.75rem; padding:6px 12px;">📄 PDF</button>
         <button class="fs-btn" id="btn-topbar-home" onclick="goToHome()" style="font-size:0.75rem; padding:6px 14px; background:var(--accent2); color:#111;">⌂ HOME</button>
@@ -1117,7 +1141,7 @@
 
     <div style="width: 100%; display: flex; justify-content: center; align-items:center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap;">
         <input type="text" id="fc-search-input" class="input-field" placeholder="🔍 Search notes or words..." style="padding: 8px; font-size: 0.8rem; max-width: 320px; border-radius: 20px; flex:1;" oninput="applyFlashcardSearch()">
-        <!-- V102: Stack edit toolbar — single button reveals all field edit functions -->
+        <!-- V103: Stack edit toolbar — single button reveals all field edit functions -->
         <div id="stack-edit-toolbar" style="display:flex; gap:4px; align-items:center;">
             <button class="btn btn-sm btn-ghost" id="btn-stack-edit-toggle" onclick="toggleStackFullEdit()" style="font-size:0.6rem; padding:5px 10px; border-style:dashed; border-color:var(--accent2); color:var(--accent2);">✏️ Edit</button>
             <div id="stack-edit-tools" style="display:none; gap:3px;">
@@ -1177,7 +1201,7 @@
                 </div>
                 <div id="fc-exam-risk"></div>
                 <div class="exam-note-content" id="fc-exam-note">No exam notes yet.</div>
-                <!-- V102: Stack refine bar for exam note only -->
+                <!-- V103: Stack refine bar for exam note only -->
                 <div class="row" style="margin-top:6px; gap:4px;">
                     <input type="text" id="stack-ai-refine-input" placeholder="🪄 Modify..." style="font-size:0.6rem; padding:5px 8px; flex:1; border-radius:6px; border:1px solid #c9a84c; background:#fdf5d6; color:#2c2c2c; font-family:'JetBrains Mono',monospace; outline:none; min-width:0;">
                     <button class="btn btn-sm" id="btn-stack-ai-refine" onclick="refineStackExamNote()" style="background:#00f2fe; color:#111; font-size:0.55rem; padding:5px 10px;">Send</button>
@@ -1235,6 +1259,26 @@
                 <div class="ratio-break" id="ss-break-bar" style="width:0%;"></div>
             </div>
             <div class="tooltip" id="ss-tooltip">--</div>
+        </div>
+
+        <div class="dash-card ss-full" id="ss-exam-mode-card" style="background:linear-gradient(135deg, rgba(255,200,0,0.18), rgba(255,170,40,0.10)); border:2px solid rgba(255,180,0,0.5); position:relative; overflow:hidden;">
+            <div style="position:absolute; top:-20px; right:-20px; font-size:5rem; opacity:0.18; pointer-events:none;">🌞</div>
+            <div class="dash-lbl" style="color:#e69500; margin-bottom:8px; text-transform:uppercase; letter-spacing:1.5px;">Was this an exam-mode session?</div>
+            <div style="font-size:0.78rem; line-height:1.5; margin-bottom:12px; opacity:0.85;" id="ss-exam-mode-blurb">
+                Simulating real exam conditions during study reduces distraction-load and trains your brain to retrieve under the same cognitive state you'll be in on exam day. Your psych analysis flagged this — distraction-free mornings are your strength.
+            </div>
+            <div class="row" style="gap:14px; flex-wrap:wrap; align-items:center;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem;">
+                    <input type="checkbox" id="ss-exam-daytime" style="width:18px; height:18px; cursor:pointer;">
+                    <span>☀️ <b>6am–12pm session</b></span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem;">
+                    <input type="checkbox" id="ss-exam-nomusic" style="width:18px; height:18px; cursor:pointer;">
+                    <span>🎧 <b>No music / silent</b></span>
+                </label>
+                <span id="ss-exam-mode-status" style="font-size:0.75rem; opacity:0.7; font-style:italic;"></span>
+            </div>
+            <div id="ss-exam-mode-feedback" style="margin-top:10px; font-size:0.78rem; line-height:1.45; padding:10px 12px; background:rgba(255,255,255,0.15); border-radius:8px; display:none;"></div>
         </div>
 
         <div class="dash-card" id="ss-autopsy-card" style="text-align:center;">
@@ -1335,7 +1379,7 @@
             <button class="btn btn-sm btn-ghost" onclick="execFormat('removeFormat')" style="padding:3px 8px;font-size:0.6rem;min-height:28px;opacity:0.7;" title="Clear formatting">✕ Clear</button>
         </div>
         
-        <!-- V102: Two-column layout — image left, fields stacked right -->
+        <!-- V103: Two-column layout — image left, fields stacked right -->
         <div id="expand-body-grid" style="display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap:16px; align-items:start;">
             <!-- LEFT: Image -->
             <div id="expand-img-col" style="display:flex; flex-direction:column; gap:8px; min-width:0;">
@@ -1352,7 +1396,7 @@
                         <button class="btn btn-sm btn-ghost" id="btn-expand-ai-answer" onclick="generateAnswerForExpand()" style="font-size:0.55rem; padding:3px 8px; border-color:#00f2fe; color:#00f2fe;">🤖 AI Answer</button>
                     </div>
                     <div id="expand-notes" contenteditable="false" style="font-size:0.95rem; line-height:1.6; padding:12px; word-wrap:break-word; border:1px solid rgba(128,128,128,0.15); border-radius:8px; outline:none; height:auto; overflow:visible; background:rgba(128,128,128,0.04);"></div>
-                    <!-- V102: Ask AI to refine answer bar -->
+                    <!-- V103: Ask AI to refine answer bar -->
                     <div class="row" style="margin-top:6px; gap:4px;">
                         <input type="text" id="expand-answer-refine-input" class="input-field" placeholder="🪄 Ask AI to refine the answer..." style="font-size:0.7rem; padding:6px 10px; flex:1; border-radius:6px; border-color:rgba(0,242,254,0.4);">
                         <button class="btn btn-sm" id="btn-expand-answer-refine" onclick="refineExpandAnswer()" style="background:#00f2fe; color:#111; font-size:0.65rem; padding:6px 12px;">Send</button>
@@ -1368,7 +1412,7 @@
                         <button class="btn btn-sm btn-ghost" id="btn-expand-ai-generate" onclick="generateExamNoteForExpand()" style="font-size:0.55rem; padding:3px 8px; border-color:#00f2fe; color:#00f2fe;">🤖 Generate AI Note</button>
                     </div>
                     <div id="expand-exam-note" class="sticky-note" contenteditable="false" style="outline:none; height:auto; overflow:visible; padding:14px;"></div>
-                    <!-- V102: Ask AI to refine bar -->
+                    <!-- V103: Ask AI to refine bar -->
                     <div class="row" style="margin-top:6px; gap:4px;">
                         <input type="text" id="expand-ai-refine-input" class="input-field" placeholder="🪄 Ask AI to refine the exam note..." style="font-size:0.7rem; padding:6px 10px; flex:1; border-radius:6px; border-color:rgba(0,242,254,0.4);">
                         <button class="btn btn-sm" id="btn-expand-ai-refine" onclick="refineExpandExamNote()" style="background:#00f2fe; color:#111; font-size:0.65rem; padding:6px 12px;">Send</button>
@@ -1416,7 +1460,7 @@
   <div id="v-postop-review" class="view" style="max-width: 1100px;">
     <div class="clock" style="font-size:2.5rem;margin-bottom:4px;">Post-Op Review</div>
     <div class="clock-label" id="postop-subtitle" style="margin-bottom:8px; color:var(--accent2); font-weight:700;">Session Debrief</div>
-    <!-- V102: Search bar -->
+    <!-- V103: Search bar -->
     <div style="width:100%; display:flex; justify-content:center; margin-bottom:12px;">
         <input type="text" id="postop-search-input" class="input-field" placeholder="🔍 Search post-op cards..." style="padding:8px 14px; font-size:0.8rem; max-width:400px; border-radius:20px; width:100%;" oninput="filterPostOpBySearch()">
     </div>
@@ -1470,7 +1514,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
     return false; 
 };
 function logDebug(msg) { const logsEl = document.getElementById('debug-logs'); if (logsEl) logsEl.innerHTML += `<div class="log-line log-boot">[BOOT] ${msg}</div>`; }
-logDebug("V102 Script execution started.");
+logDebug("V103 Script execution started.");
 
 // V56 Selection Cache - fixes Safari/mobile highlight disappearing on button click
 let activeSelection = "";
@@ -1588,7 +1632,15 @@ async function pushToCloud() {
     if(!CLOUD_KEY || !CLOUD_BIN) return;
     setSyncStatus('Syncing to cloud...', T().accent2);
     
-    const payload = { trk: TRACKER_DATA, sess: sessions, rev: REV_GOALS, bank: REVIEW_BANK, fcFocus: parseInt(localStorage.getItem('mrcs-fc-focus') || '0') };
+    // V103: Sync per-day FC focus map across devices
+    const payload = { 
+        trk: TRACKER_DATA, 
+        sess: sessions, 
+        rev: REV_GOALS, 
+        bank: REVIEW_BANK, 
+        fcFocusMap: getFCFocusMap(),
+        examModeMap: getExamModeMap()
+    };
     try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN}`, {
             method: 'PUT',
@@ -1624,11 +1676,28 @@ async function pullFromCloud(isManual = false) {
             if(data.sess) sessions = normalizeArray(data.sess);
             if(data.rev) REV_GOALS = deepParse(data.rev) || { pt: 1000, em: 500 };
             if(data.bank) REVIEW_BANK = normalizeArray(data.bank);
-            // V102: Sync fc focus time across devices — take max
-            if(typeof data.fcFocus === 'number') {
-                const localFC = parseInt(localStorage.getItem('mrcs-fc-focus') || '0');
-                const merged = Math.max(localFC, data.fcFocus);
-                localStorage.setItem('mrcs-fc-focus', merged);
+            // V103: Sync per-day FC focus map across devices — merge taking max per day
+            if(data.fcFocusMap && typeof data.fcFocusMap === 'object') {
+                const localMap = getFCFocusMap();
+                const merged = { ...localMap };
+                for(const k in data.fcFocusMap) {
+                    merged[k] = Math.max(merged[k] || 0, data.fcFocusMap[k] || 0);
+                }
+                setFCFocusMap(merged);
+            } else if(typeof data.fcFocus === 'number') {
+                // Backward compat: legacy single-int storage → seed today's bucket
+                const localMap = getFCFocusMap();
+                const today = logTodayStr();
+                if(!localMap[today] || localMap[today] < data.fcFocus) {
+                    localMap[today] = data.fcFocus;
+                    setFCFocusMap(localMap);
+                }
+            }
+            // V103: Sync exam-mode session flags across devices
+            if(data.examModeMap && typeof data.examModeMap === 'object') {
+                const localExam = getExamModeMap();
+                const mergedExam = { ...localExam, ...data.examModeMap };
+                setExamModeMap(mergedExam);
             }
             persistData(); autoAdjust();
             setSyncStatus('Cloud Loaded \u2713 (' + (sessions.length) + ' sessions, ' + (REVIEW_BANK.length) + ' cards)', T().alertOk);
@@ -1941,7 +2010,7 @@ function addNewCardFromGallery() {
         const trimmed = word.trim();
         REVIEW_BANK.push({ word: trimmed, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now() });
         persistData(); pushToCloud(); renderGallery();
-        // V102: Open expand modal with AI generate option
+        // V103: Open expand modal with AI generate option
         openExpandedCard(trimmed);
     }
 }
@@ -2026,8 +2095,9 @@ function cycleFont() {
 }
 
 function getAdjustedDate(d = new Date()) {
+    // V103: Day rollover at 6am — sessions before 6am log to previous day, sessions from 6am onwards log to current day
     const adj = new Date(d);
-    adj.setHours(adj.getHours() - 7);
+    adj.setHours(adj.getHours() - 6);
     return adj;
 }
 
@@ -2296,7 +2366,7 @@ function updateMorningZone() {
         }
         $('morning-streak').textContent = '☀️ Morning streak: ' + getMorningStreak() + ' days';
     } else if(hour >= 23 || hour < 6) {
-        // V102: Sleep hygiene reminder from 11pm
+        // V103: Sleep hygiene reminder from 11pm
         zone.style.display = 'block';
         const sleepMessages = [
             '🌙 Wind down now. The brain consolidates memory in deep sleep.',
@@ -2321,7 +2391,7 @@ let mqCards = [], mqIdx = 0, mqDone = false;
 function initMicroQuiz() {
     const hour = new Date().getHours();
     const quizDoneToday = localStorage.getItem('mrcs-mq-' + displayTodayStr()) === 'done';
-    // V102: Active from 6am to 9am only
+    // V103: Active from 6am to 9am only
     if(hour < 6 || hour >= 9 || quizDoneToday) { mqDone = true; $('micro-quiz-gate').style.display = 'none'; return; }
     
     // Pick 5 random cards that have notes
@@ -2467,7 +2537,7 @@ function wrapExamNote(before, after) {
     ta.selectionEnd = start + before.length + selected.length;
 }
 
-// V102: Universal home button — closes FC session if active and goes to setup
+// V103: Universal home button — closes FC session if active and goes to setup
 function goToHome() {
     if(typeof closeFCSession === 'function' && fcSessionStart > 0) closeFCSession();
     show('v-setup'); applyTheme();
@@ -2476,7 +2546,7 @@ function goToHome() {
 function _showView(id) { 
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); 
     $(id).classList.add('active');
-    // V102: Topbar Home shown on most pages, hidden when timer running. PDF only on flashcards.
+    // V103: Topbar Home shown on most pages, hidden when timer running. PDF only on flashcards.
     const tba = $('topbar-actions');
     const homeBtn = $('btn-topbar-home');
     const pdfBtn = $('btn-topbar-export');
@@ -2573,7 +2643,7 @@ function applyTheme() {
   document.querySelectorAll('.dash-card').forEach(el => el.style.borderColor = t.cardBorder);
   document.querySelectorAll('.hist-row,.tracker-row').forEach(el => el.style.borderColor = t.histBorder);
   
-  // V102: Detect light theme by parsing bg hex brightness
+  // V103: Detect light theme by parsing bg hex brightness
   function isLightTheme(bg) {
       if(!bg || !bg.startsWith('#')) return false;
       const hex = bg.replace('#','');
@@ -2586,7 +2656,7 @@ function applyTheme() {
   const modalBg = lightTheme ? t.bg : '#111';
   const modalFg = lightTheme ? t.fg : '#fff';
   
-  // V102: Set CSS variables for context menu and modal text — handles BOTH light and dark themes
+  // V103: Set CSS variables for context menu and modal text — handles BOTH light and dark themes
   document.documentElement.style.setProperty('--ctx-fg', modalFg);
   document.documentElement.style.setProperty('--btn-ghost-fg', modalFg);
   document.documentElement.style.setProperty('--btn-ghost-border', lightTheme ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)');
@@ -2597,7 +2667,7 @@ function applyTheme() {
   document.documentElement.style.setProperty('--modal-placeholder', lightTheme ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)');
   document.documentElement.style.setProperty('--modal-clock-label', lightTheme ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)');
   
-  // V102: Helper — is colour string "near white" or "near black"?
+  // V103: Helper — is colour string "near white" or "near black"?
   function isNearWhite(c) {
       if(!c) return false;
       const s = c.toLowerCase().replace(/\s/g,'');
@@ -2614,7 +2684,7 @@ function applyTheme() {
       el.style.background = modalBg;
       el.style.borderColor = t.accent; 
       el.style.color = modalFg;
-      // V102: Force modal foreground on children — fix BOTH white-on-light AND dark-on-dark
+      // V103: Force modal foreground on children — fix BOTH white-on-light AND dark-on-dark
       el.querySelectorAll('*').forEach(child => {
           // Skip elements that have their own theming
           if(child.closest('.sticky-note')) return;
@@ -2867,6 +2937,9 @@ function buildHomeLayout() {
   
   // V79: PT countdown
   renderPTCountdown();
+  
+  // V103: Exam mode tracker line
+  renderExamModeTrackerLine();
   
   // V79: Morning features
   updateMorningZone();
@@ -3555,10 +3628,10 @@ function showGlobalMenu(e, word, context) {
         menu.appendChild(el);
     };
     
-    // V102: In expand context, skip Edit Flashcard/Exam Note since the modal already does it
+    // V103: In expand context, skip Edit Flashcard/Exam Note since the modal already does it
     if(context !== 'expand') {
         createOpt('🤖 Ask Consultant', () => askConsultant(word));
-        // V102: Edit Flashcard now opens the unified expand modal everywhere
+        // V103: Edit Flashcard now opens the unified expand modal everywhere
         createOpt('✏️ Edit Flashcard', () => openExpandedCard(word));
     } else {
         createOpt('🤖 Ask Consultant', () => askConsultant(word));
@@ -3580,7 +3653,7 @@ function showGlobalMenu(e, word, context) {
     
     menu.style.left = x + 'px'; menu.style.top = y + 'px';
     
-    // V102: Close menu on next click anywhere outside the menu (capture phase to bypass stopPropagation)
+    // V103: Close menu on next click anywhere outside the menu (capture phase to bypass stopPropagation)
     setTimeout(() => {
         const closeFn = (ev) => {
             if(ev.target.closest('#global-context-menu')) return;
@@ -3619,7 +3692,7 @@ function markReviewedAndClose(word) {
         REVIEW_BANK[bIdx].reviewed = true;
         persistData(); pushToCloud(); refreshCurrentView();
     }
-    // V102: No longer auto-opens editor — was causing duplicate edit window when already in edit mode
+    // V103: No longer auto-opens editor — was causing duplicate edit window when already in edit mode
 }
 
 function toggleReviewedStatus(word) {
@@ -3806,28 +3879,221 @@ function applyFlashcardSearch() {
 
 // V79: Flashcard focus time tracking (separate from MCQ sessions)
 let fcSessionStart = 0;
+// V103: Idle detection — pause focus accumulation after 2 min of no interaction
+let fcLastInteraction = 0;
+const FC_IDLE_TIMEOUT_MS = 120000; // 2 minutes
+const FC_TICK_INTERVAL_MS = 30000; // accumulate every 30s
+let fcTickHandle = null;
+let fcCloudPushTimer = null;
+
+// V103: Per-day FC focus map { "07/04/26": minutes, ... }
+function getFCFocusMap() {
+    try { return JSON.parse(localStorage.getItem('mrcs-fc-focus-map') || '{}'); }
+    catch { return {}; }
+}
+function setFCFocusMap(map) {
+    localStorage.setItem('mrcs-fc-focus-map', JSON.stringify(map));
+}
+function addFCFocusMinutes(mins) {
+    if(mins <= 0) return;
+    const map = getFCFocusMap();
+    const today = logTodayStr();
+    map[today] = (map[today] || 0) + mins;
+    setFCFocusMap(map);
+}
+function getTodayFCFocus() {
+    const map = getFCFocusMap();
+    return map[logTodayStr()] || 0;
+}
+function getTotalFCFocus() {
+    const map = getFCFocusMap();
+    return Object.values(map).reduce((a,b) => a+b, 0);
+}
+
+function _markFCInteraction() {
+    fcLastInteraction = Date.now();
+}
 
 function openFlashcards() {
     $('fc-search-input').value = ""; applyFlashcardSearch();
     show('v-flashcards'); applyTheme();
     fcSessionStart = Date.now();
+    fcLastInteraction = Date.now();
+    // V103: Start the tick-based accumulator with idle detection
+    if(fcTickHandle) clearInterval(fcTickHandle);
+    fcTickHandle = setInterval(() => {
+        const now = Date.now();
+        // Skip tick if user has been idle (no interaction in last 2 minutes)
+        if(now - fcLastInteraction > FC_IDLE_TIMEOUT_MS) return;
+        // Add 0.5 minute per tick (30s real time)
+        addFCFocusMinutes(0.5);
+        // Debounced cloud push every 30s of active time
+        if(fcCloudPushTimer) clearTimeout(fcCloudPushTimer);
+        fcCloudPushTimer = setTimeout(() => { try { pushToCloud(); } catch(e) {} }, 5000);
+    }, FC_TICK_INTERVAL_MS);
+    // Bind interaction listeners to refresh idle timer
+    ['click','keydown','touchstart','mousemove'].forEach(ev => {
+        document.addEventListener(ev, _markFCInteraction, { passive: true });
+    });
 }
 
 function closeFCSession() {
     if(fcSessionStart > 0) {
-        const mins = Math.round((Date.now() - fcSessionStart) / 60000);
-        if(mins >= 1) {
-            // V79: Store FC focus time separately - don't pollute MCQ sessions
-            const fcTime = parseInt(localStorage.getItem('mrcs-fc-focus') || '0');
-            localStorage.setItem('mrcs-fc-focus', fcTime + mins);
-            // V102: Push to cloud so other devices see updated FC focus
-            pushToCloud();
-        }
+        // V103: Final flush — add any partial minutes from last tick to now (capped at 1 min so we don't add stale time)
+        const partial = (Date.now() - fcLastInteraction) < FC_IDLE_TIMEOUT_MS ? 0.5 : 0;
+        if(partial > 0) addFCFocusMinutes(partial);
+        // Push to cloud immediately
+        try { pushToCloud(); } catch(e) {}
         fcSessionStart = 0;
     }
+    if(fcTickHandle) { clearInterval(fcTickHandle); fcTickHandle = null; }
+    if(fcCloudPushTimer) { clearTimeout(fcCloudPushTimer); fcCloudPushTimer = null; }
+    ['click','keydown','touchstart','mousemove'].forEach(ev => {
+        document.removeEventListener(ev, _markFCInteraction, { passive: true });
+    });
 }
 
-function getFCFocusTotal() { return parseInt(localStorage.getItem('mrcs-fc-focus') || '0'); }
+// V103: Backward compatibility — getFCFocusTotal returns today's focus minutes (used in home tracker)
+function getFCFocusTotal() { return Math.round(getTodayFCFocus()); }
+
+// V103: Exam-mode session flags { sessionId: { daytime: bool, noMusic: bool, score: number } }
+function getExamModeMap() {
+    try { return JSON.parse(localStorage.getItem('mrcs-exam-mode-map') || '{}'); }
+    catch { return {}; }
+}
+function setExamModeMap(map) {
+    localStorage.setItem('mrcs-exam-mode-map', JSON.stringify(map));
+}
+function setExamModeFlags(sessionId, flags) {
+    const map = getExamModeMap();
+    map[sessionId] = { ...map[sessionId], ...flags };
+    setExamModeMap(map);
+}
+function isExamModeSession(sessionId) {
+    const map = getExamModeMap();
+    const s = map[sessionId];
+    return !!(s && s.daytime && s.noMusic);
+}
+// V103: Stats — counts and average scores for exam-mode vs regular sessions in last 14 days
+function getExamModeStats() {
+    const map = getExamModeMap();
+    const cutoff = Date.now() - 14 * 86400000;
+    let examCount = 0, regularCount = 0;
+    let examScoreSum = 0, examScoreN = 0;
+    let regularScoreSum = 0, regularScoreN = 0;
+    sessions.forEach(s => {
+        const ts = new Date(s.iso || s.date || 0).getTime();
+        if(!ts || ts < cutoff) return;
+        const sid = s.iso || s.id;
+        const flags = map[sid];
+        const isExam = flags && flags.daytime && flags.noMusic;
+        const score = parseFloat(s.score);
+        if(isExam) {
+            examCount++;
+            if(!isNaN(score)) { examScoreSum += score; examScoreN++; }
+        } else {
+            regularCount++;
+            if(!isNaN(score)) { regularScoreSum += score; regularScoreN++; }
+        }
+    });
+    return {
+        examCount, regularCount,
+        examAvg: examScoreN ? Math.round(examScoreSum / examScoreN) : null,
+        regularAvg: regularScoreN ? Math.round(regularScoreSum / regularScoreN) : null,
+        totalSessions: examCount + regularCount
+    };
+}
+
+// V103: Home page exam-mode tracker line — appears below stats area
+function renderExamModeTrackerLine() {
+    let el = $('home-exam-mode-line');
+    if(!el) {
+        el = document.createElement('div');
+        el.id = 'home-exam-mode-line';
+        el.style.cssText = 'margin-top:10px; padding:10px 14px; border-radius:12px; background:linear-gradient(135deg, rgba(255,200,0,0.12), rgba(255,170,40,0.06)); border:1.5px solid rgba(255,180,0,0.35); font-size:0.72rem; line-height:1.5; position:relative; overflow:hidden;';
+        const stats = $('top-stats-area');
+        if(stats && stats.parentNode) stats.parentNode.insertBefore(el, stats.nextSibling);
+    }
+    const stats = getExamModeStats();
+    if(stats.totalSessions === 0) {
+        el.style.display = 'none';
+        return;
+    }
+    el.style.display = 'block';
+    let body = '';
+    if(stats.examCount === 0) {
+        body = `<b style="color:#e69500;">🌞 0 exam-mode sessions in last 14 days.</b><br><span style="opacity:0.8;">Try a 6am–12pm session without music. Your psych analysis says distraction-free mornings = your strongest learning window.</span>`;
+    } else if(stats.examAvg !== null && stats.regularAvg !== null && stats.examCount >= 2) {
+        const diff = stats.examAvg - stats.regularAvg;
+        const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '=';
+        const colour = diff > 3 ? '#2ecc71' : diff < -3 ? '#ff5252' : '#e69500';
+        body = `<b style="color:${colour};">🌞 ${stats.examCount} exam-mode / ${stats.regularCount} regular sessions (14d)</b><br><span style="opacity:0.85;">Exam-mode avg: <b>${stats.examAvg}%</b> ${arrow} regular: <b>${stats.regularAvg}%</b> (${diff > 0 ? '+' : ''}${diff}%)</span>`;
+    } else {
+        body = `<b style="color:#e69500;">🌞 ${stats.examCount} exam-mode session${stats.examCount > 1 ? 's' : ''} logged.</b> Build the habit — 3+ this week.`;
+    }
+    el.innerHTML = body;
+}
+
+// V103: Initialize the exam-mode toggle card on the session summary view
+function initExamModeToggles(session) {
+    const sid = session.iso || session.id;
+    if(!sid) return;
+    const dt = $('ss-exam-daytime');
+    const nm = $('ss-exam-nomusic');
+    const status = $('ss-exam-mode-status');
+    const feedback = $('ss-exam-mode-feedback');
+    if(!dt || !nm) return;
+    
+    // Auto-detect daytime: session start hour was 6am-12pm
+    let autoDaytime = false;
+    try {
+        const startTime = new Date(session.iso || session.date || 0);
+        const h = startTime.getHours();
+        autoDaytime = (h >= 6 && h < 12);
+    } catch {}
+    
+    const stored = getExamModeMap()[sid] || {};
+    dt.checked = stored.daytime !== undefined ? stored.daytime : autoDaytime;
+    nm.checked = !!stored.noMusic;
+    
+    const updateStatus = () => {
+        const isExam = dt.checked && nm.checked;
+        if(isExam) {
+            status.textContent = '✓ Logged as exam-mode';
+            status.style.color = '#2ecc71';
+        } else {
+            status.textContent = '';
+        }
+        // Show comparison feedback if we have stats
+        const stats = getExamModeStats();
+        if(stats.examCount >= 2 && stats.examAvg !== null && stats.regularAvg !== null) {
+            const diff = stats.examAvg - stats.regularAvg;
+            let msg = `<b>📊 Last 14 days:</b> ${stats.examCount} exam-mode sessions vs ${stats.regularCount} regular. `;
+            if(diff > 3) {
+                msg += `<b style="color:#2ecc71;">Exam-mode avg: ${stats.examAvg}% vs regular ${stats.regularAvg}% — you score ${diff}% higher under exam conditions.</b> Keep doing this. Your psych analysis is right.`;
+            } else if(diff < -3) {
+                msg += `Exam-mode avg: ${stats.examAvg}% vs regular ${stats.regularAvg}%. Worth reflecting — sometimes anxiety in simulated conditions tanks scores. Persist; the discomfort is the training.`;
+            } else {
+                msg += `Exam-mode avg: ${stats.examAvg}% vs regular ${stats.regularAvg}%. Roughly matched — keep building the exam-mode habit so it becomes second nature.`;
+            }
+            feedback.innerHTML = msg;
+            feedback.style.display = 'block';
+        } else if(stats.examCount === 1) {
+            feedback.innerHTML = `<b>📊 First exam-mode session logged.</b> Build the habit — aim for 3+ this week.`;
+            feedback.style.display = 'block';
+        } else {
+            feedback.style.display = 'none';
+        }
+    };
+    
+    dt.onchange = () => { setExamModeFlags(sid, { daytime: dt.checked }); updateStatus(); pushToCloud(); };
+    nm.onchange = () => { setExamModeFlags(sid, { noMusic: nm.checked }); updateStatus(); pushToCloud(); };
+    // Persist auto-detected daytime if not already stored
+    if(stored.daytime === undefined) {
+        setExamModeFlags(sid, { daytime: autoDaytime });
+    }
+    updateStatus();
+}
 
 function renderFlashcard() {
     $('fc-card').classList.remove('flipped'); 
@@ -3850,7 +4116,7 @@ function renderFlashcard() {
     }
     $('fc-counter').textContent = `${fcCurrentIdx + 1} / ${fcQueue.length}`;
     
-    // V102: Update exam sidebar (sticky note, no inline edit buttons — top toolbar handles edit)
+    // V103: Update exam sidebar (sticky note, no inline edit buttons — top toolbar handles edit)
     sidebarEditingWord = item.word;
     const examNote = item.examNote || '';
     const risk = item.riskLevel || '';
@@ -3886,14 +4152,14 @@ function renderFlashcard() {
     $('fc-notes').style.outline = ''; $('fc-notes').style.padding = '';
     const oldUrlBar = $('fc-back-img-bar');
     if(oldUrlBar) oldUrlBar.style.display = 'none';
-    // V102: Hide exam sidebar — only show when flipped
+    // V103: Hide exam sidebar — only show when flipped
     const sidebar = $('fc-exam-sidebar');
     if(sidebar) sidebar.style.visibility = $('fc-card').classList.contains('flipped') ? 'visible' : 'hidden';
 }
 
 function flipCard(e) {
     if(e && e.target && (e.target.closest('.fc-edit-btn') || e.target.closest('.review-tile-menu') || e.target.closest('.exam-note-popup'))) return;
-    // V102: Block flipping while editing — let user click into the answer box without flipping
+    // V103: Block flipping while editing — let user click into the answer box without flipping
     if(stackFullEditActive) return;
     if(e && e.target && (e.target.closest('#fc-notes') || e.target.closest('#fc-exam-note') || e.target.closest('#fc-back-img-bar') || e.target.closest('.stack-edit-tools'))) {
         if(stackFullEditActive) return;
@@ -3917,13 +4183,13 @@ function flipCard(e) {
         $('srs-btn-group').style.opacity = '1';
         $('srs-btn-group').style.pointerEvents = 'auto';
         
-        // V102: Show exam sidebar only when flipped
+        // V103: Show exam sidebar only when flipped
         if(sidebar) sidebar.style.visibility = 'visible';
     } else {
         $('srs-btn-group').style.opacity = '0';
         $('srs-btn-group').style.pointerEvents = 'none';
         $('fc-nav-group').style.display = 'flex';
-        // V102: Hide exam sidebar when not flipped
+        // V103: Hide exam sidebar when not flipped
         if(sidebar) sidebar.style.visibility = 'hidden';
     }
 }
@@ -3991,7 +4257,7 @@ function toggleFlashcardView() {
         $('fc-gallery-state').style.display = 'flex';
         $('fc-heatmap-wrap').style.display = 'block';
         $('btn-fc-toggle').textContent = 'Stack';
-        // V102: Hide stack edit toolbar in gallery
+        // V103: Hide stack edit toolbar in gallery
         const set = $('stack-edit-toolbar');
         if(set) set.style.display = 'none';
         renderGallery(); renderFCHeatmap();
@@ -4031,7 +4297,7 @@ function openExpandedCard(word) {
         $('expand-no-img-placeholder').style.display = 'block';
     }
     
-    // V102: Render exam note in sticky-note styled div
+    // V103: Render exam note in sticky-note styled div
     const examEl = $('expand-exam-note');
     examEl.innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;font-style:italic;">No exam note yet.</span>';
     
@@ -4047,7 +4313,7 @@ function openExpandedCard(word) {
     $('btn-expand-edit').textContent = '✏️ Edit';
     
     $('expand-modal').classList.add('active');
-    // V102: Close the gallery exam panel and any floating cloud popup
+    // V103: Close the gallery exam panel and any floating cloud popup
     if($('gallery-exam-panel')) closeGalleryExamPanel();
     if(typeof hideGalleryCloudPopup === 'function') hideGalleryCloudPopup();
 }
@@ -4097,6 +4363,9 @@ function saveExpandAllEdits() {
     if(imgUrl) item.img = imgUrl;
     persistData(); pushToCloud();
     
+    // V103: Auto-update matching post-op tile if it exists
+    if(typeof refreshPostOpTileByWord === 'function') refreshPostOpTileByWord(item.word);
+    
     // Re-render in view mode
     $('expand-notes').innerHTML = renderMarkdown(item.notes);
     $('expand-exam-note').innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;font-style:italic;">No exam note yet.</span>';
@@ -4139,22 +4408,29 @@ function execFormat(cmd, val) {
 }
 
 function htmlToPlain(html) {
-    // Convert HTML back to markdown-ish plain text
+    // V103: Convert HTML back to markdown-ish plain text — preserve paragraph spacing
     return html
         .replace(/<strong>/gi, '**').replace(/<\/strong>/gi, '**')
         .replace(/<b>/gi, '**').replace(/<\/b>/gi, '**')
         .replace(/<em>/gi, '*').replace(/<\/em>/gi, '*')
         .replace(/<i>/gi, '*').replace(/<\/i>/gi, '*')
         .replace(/<u>/gi, '__').replace(/<\/u>/gi, '__')
-        .replace(/<div>/gi, '\n').replace(/<\/div>/gi, '')
+        // Block-level closes become double newline (paragraph break)
+        .replace(/<\/p>/gi, '\n\n')
+        .replace(/<\/div>/gi, '\n')
+        .replace(/<\/h[1-6]>/gi, '\n\n')
+        .replace(/<\/li>/gi, '\n')
         .replace(/<br\s*\/?>/gi, '\n')
+        // Strip remaining tags
         .replace(/<[^>]+>/g, '')
         .replace(/&nbsp;/g, ' ')
         .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        // Collapse 3+ newlines to 2 (= one blank line)
+        .replace(/\n{3,}/g, '\n\n')
         .trim();
 }
 
-// V102: Generate AI exam note for stack view
+// V103: Generate AI exam note for stack view
 async function generateExamNoteForStack() {
     if(!stackEditingWord) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -4206,7 +4482,7 @@ RULES: Max 12 lines. Bold key terms. Evidence-based only. No preamble or comment
     }
 }
 
-// V102: Refine stack exam note
+// V103: Refine stack exam note
 async function refineStackExamNote() {
     if(!stackEditingWord) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -4259,7 +4535,7 @@ INSTRUCTIONS:
     }
 }
 
-// V102: Strip common AI preambles like "Here is the revised exam note for X:" before saving
+// V103: Strip common AI preambles like "Here is the revised exam note for X:" before saving
 function cleanAIPreamble(text) {
     if(!text) return text;
     return text
@@ -4270,7 +4546,7 @@ function cleanAIPreamble(text) {
         .trim();
 }
 
-// V102: Generate AI flashcard answer
+// V103: Generate AI flashcard answer
 async function generateAnswerForExpand() {
     if(!expandEditingWord) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -4304,7 +4580,7 @@ async function generateAnswerForExpand() {
     }
 }
 
-// V102: Ask AI to refine the existing answer based on user prompt
+// V103: Ask AI to refine the existing answer based on user prompt
 async function refineExpandAnswer() {
     if(!expandEditingWord) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -4358,7 +4634,7 @@ INSTRUCTIONS:
     }
 }
 
-// V102: Generate AI exam note for the currently open expand modal card
+// V103: Generate AI exam note for the currently open expand modal card
 async function generateExamNoteForExpand() {
     if(!expandEditingWord) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -4416,7 +4692,7 @@ RULES: Max 12 lines. Bold key terms. Evidence-based only.`;
     }
 }
 
-// V102: Ask AI to refine the existing exam note based on user prompt
+// V103: Ask AI to refine the existing exam note based on user prompt
 async function refineExpandExamNote() {
     if(!expandEditingWord) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -4565,7 +4841,7 @@ function renderGallery() {
         
         if (galleryRevealed) {
              card.classList.add('revealed');
-             // V102: Single click on card body → floating cloud popup (desktop) / fullscreen image (mobile)
+             // V103: Single click on card body → floating cloud popup (desktop) / fullscreen image (mobile)
              card.onclick = (e) => {
                  if(gallerySelectMode) { toggleGalleryCardSelect(item.word, card); return; }
                  // Skip if clicking action btn or title link (they handle themselves)
@@ -4592,7 +4868,7 @@ function renderGallery() {
              
              let imgHtml = item.img ? `<img src="${item.img}" onerror="this.style.display='none'">` : '';
              
-             // V102: Card title is now a hyperlink that opens the expand modal
+             // V103: Card title is now a hyperlink that opens the expand modal
              card.innerHTML = `
                 <b class="card-title-link" title="Open full editor">${item.word}</b>
                 <div class="rev-notes md-content">${renderMarkdown(item.notes)}</div>
@@ -4615,7 +4891,7 @@ function renderGallery() {
              card.appendChild(actionBtn);
              
         } else {
-             // V102: Compact (un-revealed) gallery card — only name + action button
+             // V103: Compact (un-revealed) gallery card — only name + action button
              // Click behaviour:
              //   - Click on title (.card-title-link) → expand modal (handled by title onclick)
              //   - Mobile: click body → fullscreen image if image exists, else nothing
@@ -4635,7 +4911,7 @@ function renderGallery() {
                  }
              };
             card.classList.remove('revealed');
-            // V102: Compact card content — name only, no answer text
+            // V103: Compact card content — name only, no answer text
             card.innerHTML = `<b class="card-title-link" style="margin-bottom:0;" title="Open full editor">${item.word}</b>`;
             // Bind title link
             const titleEl = card.querySelector('.card-title-link');
@@ -5017,6 +5293,9 @@ function openSessionSummary(idx) {
     const ds = dObj.toLocaleDateString('en-GB',{weekday:'short', day:'numeric',month:'long', year:'numeric'});
     $('ss-date-subtitle').textContent = `${ds} • ${s.phase || '1ST'} ${s.qbank || 'PT'}`;
 
+    // V103: Initialize exam mode toggles for this session
+    initExamModeToggles(s);
+
     const score = Number(s.score) || 0;
     const scCol = score >= 70 ? T().alertOk : score >= 50 ? T().accent2 : '#ff5252';
     
@@ -5325,7 +5604,7 @@ function playBeep(freq = 880, dur = 0.12) {
 function haptic(ms = 10) { try { navigator.vibrate(ms); } catch(e) {} }
 
 // =================== V79: KEYBOARD SHORTCUTS ===================
-// V102: Strip HTML from clipboard when pasting into contenteditable elements
+// V103: Strip HTML from clipboard when pasting into contenteditable elements
 document.addEventListener('paste', function(e) {
     if(!e.target.isContentEditable) return;
     e.preventDefault();
@@ -5338,7 +5617,7 @@ document.addEventListener('keydown', function(e) {
     if(!$('v-flashcards').classList.contains('active')) return;
     if(isGalleryView) return;
     if(document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-    // V102: Don't intercept keys when editing — contenteditable focused or stack edit active
+    // V103: Don't intercept keys when editing — contenteditable focused or stack edit active
     if(document.activeElement.isContentEditable) return;
     if(typeof stackFullEditActive !== 'undefined' && stackFullEditActive) return;
     if(typeof expandEditActive !== 'undefined' && expandEditActive) return;
@@ -5360,7 +5639,7 @@ let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
 
 document.addEventListener('touchstart', function(e) {
     if(!$('v-flashcards').classList.contains('active') || isGalleryView) return;
-    // V102: Skip if touch starts inside scrollable exam note or fc-notes — let native scroll happen
+    // V103: Skip if touch starts inside scrollable exam note or fc-notes — let native scroll happen
     if(e.target.closest('#fc-exam-sidebar') || e.target.closest('#fc-notes') || e.target.closest('#fc-back-img-bar') || e.target.closest('#stack-edit-tools')) {
         touchStartX = -1; return;
     }
@@ -5369,7 +5648,7 @@ document.addEventListener('touchstart', function(e) {
 
 document.addEventListener('touchend', function(e) {
     if(!$('v-flashcards').classList.contains('active') || isGalleryView) return;
-    if(touchStartX < 0) return; // V102: skipped by touchstart guard
+    if(touchStartX < 0) return; // V103: skipped by touchstart guard
     const t = e.changedTouches[0];
     const dx = t.clientX - touchStartX; const dy = t.clientY - touchStartY;
     const dt = Date.now() - touchStartTime;
@@ -5378,7 +5657,7 @@ document.addEventListener('touchend', function(e) {
     const absDx = Math.abs(dx); const absDy = Math.abs(dy);
     if(absDx < 40 && absDy < 40) return; // too short
     
-    // V102: Only horizontal swipes — vertical scrolls page naturally, no auto-flip
+    // V103: Only horizontal swipes — vertical scrolls page naturally, no auto-flip
     if(absDx > absDy) {
         if(dx > 0) prevCard(); else nextCard();
         haptic(8);
@@ -5402,29 +5681,34 @@ function renderMarkdown(text) {
         .replace(/^---$/gm, '<hr>')                                            // hr
         .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
 
-    // Process bullet lists
+    // V103: Walk lines, tracking when an empty line precedes a paragraph (= paragraph break)
     const lines = html.split('\n');
     let out = []; let inUl = false; let inOl = false;
+    let prevBlank = false;
     for(let i = 0; i < lines.length; i++) {
         let line = lines[i].trim();
+        if(!line) { prevBlank = true; continue; }
         if(line.match(/^[\-\*] /)) {
-            if(!inUl) { out.push('<ul>'); inUl = true; }
-            out.push('<li>' + line.substring(2) + '</li>');
+            if(!inUl) { out.push('<ul class="md-ul">'); inUl = true; }
+            out.push('<li class="md-li">' + line.substring(2) + '</li>');
+            prevBlank = false;
         } else if(line.match(/^\d+\. /)) {
-            if(!inOl) { out.push('<ol>'); inOl = true; }
-            out.push('<li>' + line.replace(/^\d+\. /, '') + '</li>');
+            if(!inOl) { out.push('<ol class="md-ol">'); inOl = true; }
+            out.push('<li class="md-li">' + line.replace(/^\d+\. /, '') + '</li>');
+            prevBlank = false;
         } else {
             if(inUl) { out.push('</ul>'); inUl = false; }
             if(inOl) { out.push('</ol>'); inOl = false; }
-            // V102: Skip empty lines entirely — markdown's job is content, not whitespace padding
-            if(!line) continue;
             if(!line.startsWith('<h') && !line.startsWith('<blockquote') && !line.startsWith('<hr') && !line.startsWith('<pre')) {
-                out.push('<p style="margin:0 0 4px 0;">' + line + '</p>');
+                // Mark paragraph as following a blank line so CSS can space it
+                const cls = (out.length > 0 && prevBlank) ? 'md-p md-p-break' : 'md-p';
+                out.push('<p class="' + cls + '">' + line + '</p>');
             } else { out.push(line); }
+            prevBlank = false;
         }
     }
     if(inUl) out.push('</ul>'); if(inOl) out.push('</ol>');
-    return out.join('').replace(/(<br>\s*)+$/g, '');
+    return out.join('');
 }
 
 // =================== V79: CLIPBOARD IMAGE PASTE ===================
@@ -5643,7 +5927,7 @@ function openGalleryExamPanel(item) {
     $('btn-gallery-panel-add').onclick = () => addExamNoteToFlashcard(item.word);
     $('btn-gallery-panel-add').style.display = item.examNote ? 'inline-flex' : 'none';
     panel.classList.add('open');
-    // V102: Glow active card
+    // V103: Glow active card
     document.querySelectorAll('.fc-mini-card.active-working').forEach(c => c.classList.remove('active-working'));
     const activeCard = [...document.querySelectorAll('.fc-mini-card')].find(c => { const b = c.querySelector('b'); return b && b.textContent.trim() === item.word; });
     if(activeCard) { activeCard.classList.add('active-working'); activeCard.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
@@ -5653,7 +5937,7 @@ function closeGalleryExamPanel() {
     document.querySelectorAll('.fc-mini-card.active-working').forEach(c => c.classList.remove('active-working'));
 }
 
-// V102: Fullscreen image viewer for mobile gallery taps
+// V103: Fullscreen image viewer for mobile gallery taps
 function showFullscreenImage(imgSrc) {
     // Remove any existing fullscreen overlay
     const existing = document.getElementById('fullscreen-img-overlay');
@@ -5666,7 +5950,7 @@ function showFullscreenImage(imgSrc) {
     document.body.appendChild(overlay);
 }
 
-// V102: Floating cloud popup that emanates from a gallery card showing the exam note inline
+// V103: Floating cloud popup that emanates from a gallery card showing the exam note inline
 let _activeCloudPopup = null;
 let _activeCloudBackdrop = null;
 let _activeCloudStem = null;
@@ -5688,13 +5972,13 @@ function showGalleryCloudPopup(cardEl, item) {
     }
     hideGalleryCloudPopup();
     
-    // V102: No backdrop — both source card and popup stay at full brightness
+    // V103: No backdrop — both source card and popup stay at full brightness
     
-    // V102: Glow the source card
+    // V103: Glow the source card
     cardEl.classList.add('cloud-source');
     _activeCloudSource = cardEl;
     
-    // V102: Build the popup
+    // V103: Build the popup
     const popup = document.createElement('div');
     popup.className = 'gallery-cloud-popup';
     popup.dataset.word = item.word;
@@ -5752,7 +6036,7 @@ function showGalleryCloudPopup(cardEl, item) {
     
     _activeCloudPopup = popup;
     
-    // V102: Build the connecting stem from card edge to popup edge
+    // V103: Build the connecting stem from card edge to popup edge
     const stem = document.createElement('div');
     stem.className = 'gallery-cloud-stem';
     const stemThickness = 6;
@@ -5785,7 +6069,7 @@ function showGalleryCloudPopup(cardEl, item) {
     _activeCloudStem = stem;
 }
 
-// V102: Close cloud popup ONLY on click outside or escape — NOT on scroll/resize/hover
+// V103: Close cloud popup ONLY on click outside or escape — NOT on scroll/resize/hover
 document.addEventListener('click', (e) => {
     if(!_activeCloudPopup) return;
     if(e.target.closest('.gallery-cloud-popup')) return;
@@ -5908,36 +6192,56 @@ function addPostOpTile(word, examNote, riskLevel) {
     const mosaic = $('postop-mosaic');
     const tile = document.createElement('div');
     tile.className = 'postop-fact-tile sticky-note';
-    tile.setAttribute('data-risk', riskLevel);
+    if(riskLevel) tile.classList.add('risk-card-' + riskLevel);
+    tile.setAttribute('data-risk', riskLevel || '');
+    tile.setAttribute('data-word', word);
+    refreshPostOpTileContent(tile, word, examNote, riskLevel);
+    tile.style.cursor = 'pointer';
+    tile.onclick = () => openExpandedCard(word);
+    mosaic.appendChild(tile);
+}
+
+// V103: Re-render a post-op tile's content. Used by addPostOpTile AND by the expand modal save handler
+// to keep tiles in sync when the user edits a flashcard.
+function refreshPostOpTileContent(tile, word, examNoteOverride, riskLevelOverride) {
+    if(!tile) return;
+    const item = REVIEW_BANK.find(b => b.word === word);
+    const riskLevel = riskLevelOverride || (item && item.riskLevel) || '';
+    const examNote = examNoteOverride || (item && item.examNote) || '';
     const riskEmoji = riskLevel === 'red' ? '🔴' : riskLevel === 'yellow' ? '🟡' : riskLevel === 'green' ? '🟢' : '';
     
-    // V102: If user has personal notes, show the FULL flashcard answer.
+    // V103: If user has personal notes, show the FULL flashcard answer.
     // Otherwise (AI-only generated), show only the CORE FACT section.
-    const item = REVIEW_BANK.find(b => b.word === word);
     const hasPersonalNotes = item && item.notes && item.notes.trim().length > 0;
     
     let displayHtml = '';
     if(hasPersonalNotes) {
-        // Show full flashcard answer
-        displayHtml = '<div style="font-size:0.75rem; line-height:1.5;">' + renderMarkdown(item.notes) + '</div>';
-    } else {
+        displayHtml = '<div class="md-content" style="font-size:0.75rem; line-height:1.5;">' + renderMarkdown(item.notes) + '</div>';
+    } else if(examNote) {
         // Extract just CORE FACT section from AI exam note
         let coreFact = '';
         const coreMatch = examNote.match(/\*\*CORE FACT\*\*[\s\S]*?(?=\*\*EXAM TRAP|\*\*SBA LOGIC|\*\*RISK FLAG|$)/i);
         if(coreMatch) {
             coreFact = coreMatch[0].replace(/\*\*CORE FACT\*\*/i, '').trim();
         } else {
-            // Fallback: first 200 chars
             coreFact = examNote.replace(/\*\*/g, '').substring(0, 200);
             if(examNote.length > 200) coreFact += '...';
         }
-        displayHtml = '<div style="font-size:0.72rem; line-height:1.5;">' + renderMarkdown(coreFact) + '</div>';
+        displayHtml = '<div class="md-content" style="font-size:0.72rem; line-height:1.5;">' + renderMarkdown(coreFact) + '</div>';
+    } else {
+        displayHtml = '<div style="font-size:0.72rem; line-height:1.5; opacity:0.5; font-style:italic;">No notes yet.</div>';
     }
-    
-    tile.innerHTML = '<div class="tile-word" style="color:#5a4510 !important;">' + word + '</div><div class="tile-risk">' + riskEmoji + '</div>' + displayHtml;
-    tile.style.cursor = 'pointer';
-    tile.onclick = () => openExpandedCard(word);
-    mosaic.appendChild(tile);
+    tile.innerHTML = '<div class="tile-word">' + word + '</div><div class="tile-risk">' + riskEmoji + '</div>' + displayHtml;
+    // Update risk class
+    tile.classList.remove('risk-card-red','risk-card-yellow','risk-card-green');
+    if(riskLevel) tile.classList.add('risk-card-' + riskLevel);
+    tile.setAttribute('data-risk', riskLevel || '');
+}
+
+// V103: Find a post-op tile by word and refresh its content
+function refreshPostOpTileByWord(word) {
+    const tile = document.querySelector('.postop-fact-tile[data-word="' + CSS.escape(word) + '"]');
+    if(tile) refreshPostOpTileContent(tile, word);
 }
 
 function filterPostOp(level) {
@@ -5950,7 +6254,7 @@ function filterPostOp(level) {
     });
 }
 
-// V102: Search filter for post-op page
+// V103: Search filter for post-op page
 function filterPostOpBySearch() {
     const q = (document.getElementById('postop-search-input')?.value || '').toLowerCase().trim();
     document.querySelectorAll('.postop-fact-tile').forEach(tile => {
@@ -6239,15 +6543,16 @@ document.addEventListener('touchend', function(e) {
 
 // =================== V88: INLINE EDIT + SELECTION ADD ===================
 
-// V102: Stack full edit — single toolbar at top, edits notes, image URL, exam note all in place
+// V103: Stack full edit — single toolbar at top, edits notes, image URL, exam note all in place
 let stackFullEditActive = false;
 function toggleStackFullEdit() {
     const item = REVIEW_BANK.find(b => b.word === stackEditingWord);
     if(!item) { alert('Flip the card to a flashcard first.'); return; }
-    // V102: On mobile, open the expand modal instead of inline edit (better UX)
-    if(window.innerWidth <= 480) {
+    // V103: On mobile or iPad portrait, open the expand modal instead of inline edit
+    const isMobile = window.innerWidth <= 480;
+    const isTabletPortrait = window.innerWidth <= 1024 && window.innerHeight > window.innerWidth;
+    if(isMobile || isTabletPortrait) {
         openExpandedCard(item.word);
-        // Auto-enter edit mode in the expand modal
         setTimeout(() => { if(!expandEditActive) toggleExpandEdit(); }, 100);
         return;
     }
@@ -6260,7 +6565,7 @@ function toggleStackFullEdit() {
         notesEl.contentEditable = 'true';
         notesEl.style.outline = '2px dashed var(--accent2)';
         notesEl.style.borderRadius = '6px';
-        // V102: Clear "No notes added yet." placeholder so user starts with blank field
+        // V103: Clear "No notes added yet." placeholder so user starts with blank field
         if(!item.notes || !item.notes.trim()) notesEl.innerHTML = '';
         // Exam note contenteditable
         const examEl = $('fc-exam-note');
@@ -6268,7 +6573,7 @@ function toggleStackFullEdit() {
             examEl.contentEditable = 'true';
             examEl.style.outline = '2px dashed #c9a84c';
             examEl.style.borderRadius = '6px';
-            // V102: Clear "No exam notes yet." placeholder
+            // V103: Clear "No exam notes yet." placeholder
             if(!item.examNote || !item.examNote.trim()) examEl.innerHTML = '';
         }
         // Show image URL bar above image
@@ -6650,7 +6955,7 @@ function initApp() {
     $('btn-append-ai').onclick = appendAIToNote;
     $('ai-followup-input').onkeypress = (e) => { if(e.key === 'Enter') sendFollowUp(); };
     $('btn-ss-back').onclick = showHistoryView;
-    // V102: Old btn-export-pdf removed — handled by topbar
+    // V103: Old btn-export-pdf removed — handled by topbar
     if($('btn-export-pdf')) $('btn-export-pdf').onclick = exportFlashcardsPDF;
     
     $('btn-srs-1').onclick = () => logSRS(1);
@@ -6680,7 +6985,7 @@ function initApp() {
     $('btn-action-cancel').onclick = () => $('action-modal').classList.remove('active');
     $('action-modal').onclick = () => $('action-modal').classList.remove('active');
     
-    logDebug("V102 App initialized successfully. All systems operational.");
+    logDebug("V103 App initialized successfully. All systems operational.");
 }
 
 initApp();
