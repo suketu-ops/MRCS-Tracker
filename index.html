@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V105</title>
+<title>MRCS QBank Tracker Pro Max V106</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -188,11 +188,19 @@
         /* V105: Centre the front face — no longer left 2/3 of split layout */
         #fc-stack-layout { justify-content: center !important; }
         #fc-card-col { flex: 0 1 auto !important; max-width: 900px; width: 100%; }
+        /* V106: When the card is flipped in-modal, lift the parent column cap so the
+           wider card can centre in the viewport instead of overflowing its 900px column. */
+        #fc-card-col:has(.fc-card.in-card-modal.flipped) {
+            max-width: min(96vw, 1500px) !important;
+            width: min(96vw, 1500px) !important;
+        }
         .fc-card.in-card-modal.flipped {
             max-width: min(96vw, 1500px);
             width: min(96vw, 1500px);
             min-height: 84vh;
             max-height: 92vh;
+            margin-left: auto !important;
+            margin-right: auto !important;
         }
         .fc-card.in-card-modal.flipped .fc-back {
             display: flex;
@@ -204,8 +212,8 @@
         .fc-card.in-card-modal.flipped .fc-back .incard-srs-anchor {
             margin-top: auto;
         }
-        /* V105: Expand image to fill more of the modal when present */
-        .fc-card.in-card-modal.flipped #incard-expand-wrapper img { max-height: 70vh !important; }
+        /* V106: Expand image to fill more of the modal when present (was 70vh) */
+        .fc-card.in-card-modal.flipped #incard-expand-wrapper img { max-height: 78vh !important; }
         /* Hide global stack-edit toolbar on desktop — dead code there */
         #stack-edit-toolbar { display: none !important; }
         /* Hide nav arrows when card is flipped on desktop — force SRS keys */
@@ -2588,6 +2596,7 @@ function saveAsExamNote() {
     
     // Save the full AI response as exam note
     REVIEW_BANK[globalIdx].examNote = lastAIResponseText;
+    REVIEW_BANK[globalIdx].examNoteSource = 'ai'; // V106
     
     // Auto-extract risk flag from response
     const riskMatch = lastAIResponseText.match(/RISK FLAG.*?(RED|YELLOW|GREEN)/i);
@@ -2634,6 +2643,7 @@ function editExamNote(word) {
     setTimeout(() => ta.focus(), 100);
     $('btn-action-confirm').onclick = () => {
         item.examNote = $('action-input').value;
+        item.examNoteSource = 'user'; // V106
         persistData(); pushToCloud(); refreshCurrentView();
         $('action-modal').classList.remove('active');
         ta.style.height = '';
@@ -4519,12 +4529,18 @@ function handleExamPopupOutsideClick(e) {
 
 function prevCard() {
     if (fcQueue.length === 0) return;
+    // V106: Hard guard — never advance while card is flipped, even if a stale handler calls us
+    const _card = document.getElementById('fc-card');
+    if(_card && _card.classList.contains('flipped')) { showFlipLockToast(); return; }
     fcCurrentIdx = (fcCurrentIdx - 1 + fcQueue.length) % fcQueue.length;
     renderFlashcard();
 }
 
 function nextCard() {
     if (fcQueue.length === 0) return;
+    // V106: Hard guard — never advance while card is flipped, even if a stale handler calls us
+    const _card = document.getElementById('fc-card');
+    if(_card && _card.classList.contains('flipped')) { showFlipLockToast(); return; }
     fcCurrentIdx = (fcCurrentIdx + 1) % fcQueue.length;
     renderFlashcard();
 }
@@ -4650,8 +4666,8 @@ function saveExpandAllEdits(prefix) {
         if(qItem) qItem.word = newWord;
         expandEditingWord = newWord;
     }
-    if(notesEl) item.notes = htmlToPlain(notesEl.innerHTML);
-    if(examEl) item.examNote = htmlToPlain(examEl.innerHTML);
+    if(notesEl) { item.notes = htmlToPlain(notesEl.innerHTML); item.notesSource = 'user'; /* V106 */ }
+    if(examEl) { item.examNote = htmlToPlain(examEl.innerHTML); item.examNoteSource = 'user'; /* V106 */ }
     const imgUrl = imgUrlEl ? imgUrlEl.value.trim() : '';
     if(imgUrl) item.img = imgUrl;
     persistData(); pushToCloud();
@@ -4813,6 +4829,7 @@ INSTRUCTIONS:
         if(data.candidates && data.candidates[0].content.parts[0].text) {
             const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
             item.examNote = text;
+            item.examNoteSource = 'ai'; // V106
             const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
             if(riskMatch) item.riskLevel = riskMatch[1].toLowerCase();
             persistData(); pushToCloud();
@@ -4953,23 +4970,33 @@ function parseSurgeonResponse(text) {
     return { topic, risk, answer, examBody };
 }
 
-// V105: Apply parsed surgeon result to REVIEW_BANK item.
+// V106: Apply parsed surgeon result to REVIEW_BANK item.
 // Answer (punchy) → item.notes (flashcard answer)
 // Body (trap / SBA / applied anatomy) → item.examNote
 // Risk and topic → tags
+// V106: Always refresh AI-sourced notes; preserve user-typed notes.
+//       Tracks provenance via item.notesSource ('ai' | 'user').
 function applySurgeonResult(item, parsed) {
     if(!item || !parsed) return;
     if(parsed.risk) item.riskLevel = parsed.risk;
     if(parsed.topic) item.topic = parsed.topic;
     if(parsed.examBody) {
         item.examNote = parsed.examBody;
+        item.examNoteSource = 'ai';
     }
-    // Flashcard answer: overwrite if no notes, or if existing notes are a v104 "**Core Fact:**" prefix seed
+    // V106: Flashcard answer overwrite rule:
+    //   - empty            → write
+    //   - notesSource=ai   → write (refresh stale AI content)
+    //   - legacy v104 seed → write (one-time migration)
+    //   - notesSource=user → SKIP (preserve user-typed notes)
+    //   - missing source   → treat as legacy AI (postop was the only path for old data)
     if(parsed.answer) {
         const existing = (item.notes || '').trim();
-        const wasAISeeded = existing.startsWith('**Core Fact:**') || existing.startsWith('Core Fact:');
-        if(!existing || wasAISeeded) {
+        const wasV104Seed = existing.startsWith('**Core Fact:**') || existing.startsWith('Core Fact:');
+        const isUserAuthored = item.notesSource === 'user';
+        if(!existing || wasV104Seed || !isUserAuthored) {
             item.notes = parsed.answer;
+            item.notesSource = 'ai';
         }
     }
 }
@@ -5036,6 +5063,7 @@ async function generateAnswerForExpand() {
         if(data.candidates && data.candidates[0].content.parts[0].text) {
             const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
             item.notes = text;
+            item.notesSource = 'ai'; // V106
             persistData(); pushToCloud();
             notesEl.innerHTML = renderMarkdown(text);
             notesEl.contentEditable = expandEditActive ? 'true' : 'false';
@@ -5087,6 +5115,7 @@ INSTRUCTIONS:
         if(data.candidates && data.candidates[0].content.parts[0].text) {
             const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
             item.notes = text;
+            item.notesSource = 'ai'; // V106
             persistData(); pushToCloud();
             notesEl.innerHTML = renderMarkdown(text);
             notesEl.contentEditable = expandEditActive ? 'true' : 'false';
@@ -5191,6 +5220,7 @@ INSTRUCTIONS:
         if(data.candidates && data.candidates[0].content.parts[0].text) {
             const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
             item.examNote = text;
+            item.examNoteSource = 'ai'; // V106
             const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
             if(riskMatch) item.riskLevel = riskMatch[1].toLowerCase();
             persistData(); pushToCloud();
@@ -5491,6 +5521,7 @@ function saveFlashcardEditor() {
     const globalIdx = REVIEW_BANK.findIndex(b => b.word === wordToUpdate);
     if (globalIdx > -1) {
         REVIEW_BANK[globalIdx].notes = newNotes;
+        REVIEW_BANK[globalIdx].notesSource = 'user'; // V106
         REVIEW_BANK[globalIdx].img = newImg;
         persistData(); pushToCloud();
     }
@@ -6149,6 +6180,30 @@ function playBeep(freq = 880, dur = 0.12) {
 }
 function haptic(ms = 10) { try { navigator.vibrate(ms); } catch(e) {} }
 
+// V106: Transient toast shown when navigation is blocked because the card is flipped.
+// Forces the user to grade with SRS keys (1-4) before the next card.
+let _flipLockToastTimer = null;
+function showFlipLockToast() {
+    let t = document.getElementById('flip-lock-toast');
+    if(!t) {
+        t = document.createElement('div');
+        t.id = 'flip-lock-toast';
+        t.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:rgba(20,0,40,0.96);color:#ffab00;border:2px solid #ffab00;border-radius:14px;padding:12px 22px;font-family:JetBrains Mono,monospace;font-size:0.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,0.5);opacity:0;transition:opacity 0.25s,transform 0.25s;pointer-events:none;text-align:center;max-width:90vw;';
+        document.body.appendChild(t);
+    }
+    t.innerHTML = '\u26A0\uFE0F Grade this card first <span style="opacity:0.75;font-weight:400;display:block;margin-top:3px;font-size:0.68rem;">Press 1 (Again) \u2022 2 (Hard) \u2022 3 (Good) \u2022 4 (Easy)</span>';
+    requestAnimationFrame(() => {
+        t.style.opacity = '1';
+        t.style.transform = 'translateX(-50%) translateY(0)';
+    });
+    haptic(20);
+    if(_flipLockToastTimer) clearTimeout(_flipLockToastTimer);
+    _flipLockToastTimer = setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 2200);
+}
+
 // =================== V79: KEYBOARD SHORTCUTS ===================
 // V103: Strip HTML from clipboard when pasting into contenteditable elements
 document.addEventListener('paste', function(e) {
@@ -6172,8 +6227,9 @@ document.addEventListener('keydown', function(e) {
     const isFlipped = card.classList.contains('flipped');
     
     if(e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); flipCard({}); }
-    else if(e.code === 'ArrowLeft') { e.preventDefault(); prevCard(); }
-    else if(e.code === 'ArrowRight') { e.preventDefault(); nextCard(); }
+    // V106: Block prev/next navigation while card is flipped — user must grade with 1-4 first
+    else if(e.code === 'ArrowLeft') { e.preventDefault(); if(isFlipped) { showFlipLockToast(); } else { prevCard(); } }
+    else if(e.code === 'ArrowRight') { e.preventDefault(); if(isFlipped) { showFlipLockToast(); } else { nextCard(); } }
     else if(isFlipped && e.key === '1') { e.preventDefault(); logSRS(1); }
     else if(isFlipped && e.key === '2') { e.preventDefault(); logSRS(2); }
     else if(isFlipped && e.key === '3') { e.preventDefault(); logSRS(3); }
@@ -6205,6 +6261,12 @@ document.addEventListener('touchend', function(e) {
     
     // V103: Only horizontal swipes — vertical scrolls page naturally, no auto-flip
     if(absDx > absDy) {
+        // V106: Block prev/next swipe while flipped — must grade first
+        const _isFlipped = $('fc-card') && $('fc-card').classList.contains('flipped');
+        if(_isFlipped) {
+            showFlipLockToast();
+            return;
+        }
         if(dx > 0) prevCard(); else nextCard();
         haptic(8);
     }
@@ -7187,8 +7249,16 @@ async function autoPostOpReview(sessionWords) {
         $('postop-status').textContent = '\u2705 Complete \u2014 ' + sessionWords.length + ' exam notes generated';
     }
     if(typeof buildPostOpTopicChips === 'function') buildPostOpTopicChips();
-    // V105: Cross-view sync after batch completes — every gallery card needs its new colour
-    if(typeof renderGallery === 'function' && $('v-flashcards') && $('v-flashcards').classList.contains('active')) renderGallery();
+    // V106: Cross-view sync after batch completes — refresh BOTH gallery and stack if visible.
+    // The unified repo (REVIEW_BANK) was just mutated in place, so any open view needs to re-render.
+    if($('v-flashcards') && $('v-flashcards').classList.contains('active')) {
+        if(typeof isGalleryView !== 'undefined' && isGalleryView && typeof renderGallery === 'function') {
+            renderGallery();
+        } else if(typeof applyFlashcardSearch === 'function') {
+            // Rebuild fcQueue from REVIEW_BANK so newly-generated answers/notes appear
+            applyFlashcardSearch();
+        }
+    }
 }
 
 // V104: Retry only failed post-op tiles
@@ -7451,8 +7521,9 @@ function saveStackFullEdit() {
     const item = REVIEW_BANK.find(b => b.word === stackEditingWord);
     if(!item) return;
     item.notes = htmlToPlain($('fc-notes').innerHTML);
+    item.notesSource = 'user'; // V106
     const examEl = $('fc-exam-note');
-    if(examEl) item.examNote = htmlToPlain(examEl.innerHTML);
+    if(examEl) { item.examNote = htmlToPlain(examEl.innerHTML); item.examNoteSource = 'user'; /* V106 */ }
     const imgEl = document.getElementById('fc-back-img-url-inline');
     if(imgEl && imgEl.value && imgEl.value.trim()) item.img = imgEl.value.trim();
     // Update fcQueue too
@@ -7535,6 +7606,7 @@ function toggleStackEdit() {
         // Convert contenteditable HTML back to markdown-ish plain text
         let text = html.replace(/<div>/gi, '\n').replace(/<\/div>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
         item.notes = text.trim();
+        item.notesSource = 'user'; // V106
         const imgUrl = $('fc-back-img-url-inline')?.value?.trim();
         if(imgUrl) item.img = imgUrl;
         // Also update fcQueue
@@ -7586,7 +7658,7 @@ function togglePanelEdit() {
 }
 function savePanelEdit() {
     const item = REVIEW_BANK.find(b => b.word === panelEditingWord);
-    if(item) { item.examNote = $('gallery-panel-textarea').value; persistData(); pushToCloud(); }
+    if(item) { item.examNote = $('gallery-panel-textarea').value; item.examNoteSource = 'user'; /* V106 */ persistData(); pushToCloud(); }
     $('gallery-panel-view').style.display = ''; $('gallery-panel-edit-area').style.display = 'none';
     $('gallery-panel-toolbar').classList.remove('active');
     $('btn-gallery-panel-edit').style.display = 'inline-flex'; $('btn-gallery-panel-save').style.display = 'none';
@@ -7617,7 +7689,7 @@ function toggleSidebarEdit() {
 }
 function saveSidebarEdit() {
     const item = REVIEW_BANK.find(b => b.word === sidebarEditingWord);
-    if(item) { item.examNote = $('fc-exam-textarea').value; persistData(); pushToCloud(); }
+    if(item) { item.examNote = $('fc-exam-textarea').value; item.examNoteSource = 'user'; /* V106 */ persistData(); pushToCloud(); }
     $('fc-exam-view').style.display = ''; $('fc-exam-edit-area').style.display = 'none';
     $('fc-sidebar-toolbar').classList.remove('active');
     $('btn-edit-exam-inline').style.display = 'inline-flex'; $('btn-save-exam-inline').style.display = 'none';
