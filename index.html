@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V106</title>
+<title>MRCS QBank Tracker Pro Max V107</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -367,7 +367,9 @@
 
     /* --- Small phones (≤480px) --- */
     @media (max-width: 480px) {
-        #app { padding-left: 10px; padding-right: 10px; padding-bottom: 44px; }
+        #app { padding-left: 10px; padding-right: 10px; padding-bottom: 120px; /* V107: extra space so gallery cards aren't cut off at bottom */ }
+        /* V107: ensure flashcard gallery itself has scroll-bottom breathing room */
+        #fc-gallery-state { padding-bottom: 80px !important; }
         .top-bar { padding-left: 10px; padding-right: 10px; }
         .th-dot { width: 18px; height: 18px; }
         /* V103: Hide font size buttons + fullscreen + Aa cycle on mobile to declutter top bar */
@@ -479,7 +481,8 @@
 
     /* --- Medium phones (481-640px) --- */
     @media (min-width: 481px) and (max-width: 640px) {
-        #app { padding: 75px 14px 20px; }
+        #app { padding: 75px 14px 110px; /* V107: extra bottom for gallery scroll */ }
+        #fc-gallery-state { padding-bottom: 80px !important; }
         .stat-val { font-size: 2rem; }
         .clock { font-size: min(11vw, 4rem); }
         .fc-card { min-height: 280px; }
@@ -690,10 +693,63 @@
     .gallery-exam-expanded { margin-top: 8px; padding: 8px 10px; background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.15); border-radius: 8px; font-size: 0.65rem; line-height: 1.5; font-family: 'JetBrains Mono', monospace; white-space: pre-wrap; word-wrap: break-word; max-height: 200px; overflow-y: auto; text-align: left; }
 
     /* V82: Gallery risk filter */
-    .gallery-risk-filter { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .gallery-risk-filter { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; }
     .risk-filter-btn { font-size: 0.65rem; padding: 4px 10px; border-radius: 8px; border: 1.5px solid rgba(128,128,128,0.3); background: transparent; color: inherit; cursor: pointer; font-weight: 700; letter-spacing: 0.5px; transition: all 0.2s; opacity: 0.6; }
     .risk-filter-btn.active { opacity: 1; border-color: var(--accent); background: rgba(128,128,128,0.1); }
     .risk-filter-btn:hover { opacity: 1; }
+
+    /* V107: Collapsible gallery filters wrapper. Open by default on desktop, collapsed on mobile. */
+    .gallery-filters-collapsible {
+        max-height: 600px;
+        overflow: hidden;
+        transition: max-height 0.35s ease, opacity 0.25s, margin 0.25s;
+        opacity: 1;
+    }
+    .gallery-filters-collapsible:not(.open) {
+        max-height: 0 !important;
+        opacity: 0;
+        margin-bottom: 0 !important;
+        pointer-events: none;
+    }
+
+    /* V107: Desktop tool dropdown menu */
+    .gallery-tool-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        min-width: 220px;
+        background: rgba(20, 0, 40, 0.98);
+        border: 1.5px solid var(--accent2);
+        border-radius: 12px;
+        padding: 6px;
+        z-index: 100;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.55);
+        backdrop-filter: blur(8px);
+    }
+    .gallery-tool-item {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        border: none;
+        color: #eee;
+        font-size: 0.78rem;
+        padding: 10px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        transition: background 0.15s;
+    }
+    .gallery-tool-item:hover { background: rgba(255, 171, 0, 0.15); color: var(--accent2); }
+    .gallery-tool-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 8px; }
+
+    /* V107: Mobile — show the filter toggle button, hide it on desktop */
+    @media (max-width: 700px) {
+        .gallery-filters-toggle { display: inline-flex !important; }
+        .gallery-tool-menu { right: auto; left: 50%; transform: translateX(-50%); min-width: 200px; }
+    }
 
     /* V86: Risk-colored card backgrounds instead of emoji dots */
     .fc-mini-card.risk-card-red { background: rgba(255,50,50,0.12); border-color: rgba(255,50,50,0.4); }
@@ -1083,6 +1139,7 @@
                 <div class="row" style="justify-content:center;gap:4px;margin-bottom:8px;">
                     <button class="btn btn-ghost btn-sm" onclick="saveCloudCreds()" style="border-style:dashed;">Save Settings & Push</button>
                     <button class="btn btn-ghost btn-sm" onclick="forceCloudPull()" style="border-style:dashed;">Force Pull</button>
+                    <button class="btn btn-sm" id="btn-sync-now" style="background:#4ade80;color:#111;font-weight:700;">⟳ Sync Now</button>
                 </div>
                 <div id="sync-status" class="sync-status"></div>
                 
@@ -1580,7 +1637,7 @@ logDebug("V103 Script execution started.");
 let activeSelection = "";
 document.addEventListener("selectionchange", () => { const sel = window.getSelection().toString().trim(); if (sel) activeSelection = sel; });
 
-const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar','incard-expand-wrapper','incard-expand-word','incard-expand-notes','incard-expand-exam-note','incard-expand-img-url','incard-expand-format-toolbar','incard-expand-save-row','btn-incard-expand-edit','btn-incard-expand-action','postop-errtype-filter','postop-topic-filter','postop-select-bar','postop-select-count']);
+const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar','incard-expand-wrapper','incard-expand-word','incard-expand-notes','incard-expand-exam-note','incard-expand-img-url','incard-expand-format-toolbar','incard-expand-save-row','btn-incard-expand-edit','btn-incard-expand-action','postop-errtype-filter','postop-topic-filter','postop-select-bar','postop-select-count','btn-sync-now','gallery-filters-collapsible','btn-toggle-gallery-filters','incard-ai-answer-row','incard-ai-exam-row','btn-incard-gen-answer','btn-incard-refine-answer','incard-refine-answer-input','btn-incard-gen-exam','btn-incard-refine-exam','incard-refine-exam-input']);
 const $ = id => { const el = document.getElementById(id); if (!el) { if(!_optionalIds.has(id)) logDebug(`WARNING: Element '${id}' not found.`); return document.createElement('div'); } return el; };
 const EXAM_DATE = new Date(2026, 3, 22);
 
@@ -1627,6 +1684,8 @@ let galleryTopicFilter = 'all';
 // V82: Gallery select mode for batch AI
 let gallerySelectMode = false;
 let gallerySelected = new Set();
+// V107: Gallery filters collapsed by default on mobile, open on desktop
+let galleryFiltersOpen = (typeof window !== 'undefined' && window.innerWidth > 700);
 // V82: Post-op review data
 let postOpSessionWords = [];
 let postOpResults = [];
@@ -1694,14 +1753,16 @@ function setSyncStatus(msg, color) {
     if($('home-sync-status')) { $('home-sync-status').textContent = msg; $('home-sync-status').style.color = color; }
 }
 
-// V104: Debounced push — coalesces calls within 4s, retries 403/429 with backoff
+// V107: Debounced push — coalesces calls within 1.5s (was 4s — too long, lost data on tab close)
 let _pushDebounceTimer = null;
 let _pushInFlight = false;
 let _pushPending = false;
 function pushToCloud() {
     if(!CLOUD_KEY || !CLOUD_BIN) return;
+    // V107: Tell any in-flight pull that local just changed — pull must not overwrite
+    if(_pullInFlight) _dirtyDuringPull = true;
     if(_pushDebounceTimer) clearTimeout(_pushDebounceTimer);
-    _pushDebounceTimer = setTimeout(() => { _pushDebounceTimer = null; _doPushToCloud(0); }, 4000);
+    _pushDebounceTimer = setTimeout(() => { _pushDebounceTimer = null; _doPushToCloud(0); }, 1500);
 }
 
 function _formatHM(ts) {
@@ -1745,7 +1806,14 @@ async function _doPushToCloud(retryCount) {
             const delays = [6000, 12000, 18000];
             setSyncStatus('Rate limited \u2014 retrying in ' + (delays[retryCount]/1000) + 's...', T().accent2);
             _pushInFlight = false;
-            setTimeout(() => _doPushToCloud(retryCount + 1), delays[retryCount]);
+            // V107: Preserve _pushPending across the retry — previously dropped any
+            // mutations that arrived during a rate-limited window.
+            const wasPending = _pushPending;
+            _pushPending = false;
+            setTimeout(() => {
+                if(wasPending) _pushPending = true;
+                _doPushToCloud(retryCount + 1);
+            }, delays[retryCount]);
             return;
         } else {
             _setPushFailStatus();
@@ -1766,6 +1834,11 @@ async function pushToCloudNow() {
     _doPushToCloud(0);
 }
 
+// V107: Race guard — set true while a pull is in flight; mutations during this window
+// flip _dirtyDuringPull so the pull can re-merge against fresh local state when it lands.
+let _pullInFlight = false;
+let _dirtyDuringPull = false;
+
 async function pullFromCloud(isManual = false) {
     // V79: On manual pull, read keys from inputs first (for fresh device setup)
     if(isManual) {
@@ -1780,16 +1853,30 @@ async function pullFromCloud(isManual = false) {
         setSyncStatus('Enter API Key & Bin ID first', T().alertBad); 
         return false; 
     }
+    if(_pullInFlight) { return false; }
+    _pullInFlight = true;
+    _dirtyDuringPull = false;
     setSyncStatus('Fetching from cloud...', T().accent2);
     try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN}/latest`, { headers: { 'X-Master-Key': CLOUD_KEY } });
         if(res.ok) {
             const json = await res.json();
             const data = json.record || json;
-            if(data.trk) TRACKER_DATA = normalizeArray(data.trk);
-            if(data.sess) sessions = normalizeArray(data.sess);
-            if(data.rev) REV_GOALS = deepParse(data.rev) || { pt: 1000, em: 500 };
-            if(data.bank) REVIEW_BANK = normalizeArray(data.bank);
+            // V107: Tracker, sessions, rev_goals — keep wholesale-replace UNLESS local mutated mid-pull
+            // (those are big monolithic structures, per-day merge is overkill)
+            if(!_dirtyDuringPull) {
+                if(data.trk) TRACKER_DATA = normalizeArray(data.trk);
+                if(data.sess) sessions = normalizeArray(data.sess);
+                if(data.rev) REV_GOALS = deepParse(data.rev) || { pt: 1000, em: 500 };
+            } else {
+                console.warn('[V107] Local mutated during pull — skipping trk/sess/rev replace, only merging bank');
+            }
+            // V107: REVIEW_BANK — always per-card merge (newer updatedAt wins, ties → local)
+            if(data.bank) {
+                const cloudBank = normalizeArray(data.bank);
+                const merged = mergeBankWithCloud(REVIEW_BANK, cloudBank);
+                REVIEW_BANK = merged;
+            }
             // V103: Sync per-day FC focus map across devices — merge taking max per day
             if(data.fcFocusMap && typeof data.fcFocusMap === 'object') {
                 const localMap = getFCFocusMap();
@@ -1813,15 +1900,28 @@ async function pullFromCloud(isManual = false) {
                 const mergedExam = { ...data.examModeMap, ...localExam };
                 setExamModeMap(mergedExam);
             }
+            backfillBankTimestamps(); // V107
             persistData(); autoAdjust();
-            setSyncStatus('Cloud Loaded \u2713 (' + (sessions.length) + ' sessions, ' + (REVIEW_BANK.length) + ' cards)', T().alertOk);
+            // V107: Push the merged result back so all devices converge
+            pushToCloud();
+            setSyncStatus('Cloud Merged \u2713 (' + (sessions.length) + ' sessions, ' + (REVIEW_BANK.length) + ' cards)', T().alertOk);
             if(isManual) { renderTrackerTab(); applyTheme(); }
+            // V107: If a flashcards view is open, re-render so any newly-merged cards appear
+            if($('v-flashcards') && $('v-flashcards').classList.contains('active')) {
+                if(typeof isGalleryView !== 'undefined' && isGalleryView && typeof renderGallery === 'function') {
+                    renderGallery();
+                } else if(typeof applyFlashcardSearch === 'function') {
+                    applyFlashcardSearch();
+                }
+            }
+            _pullInFlight = false;
             return true;
         } else {
             const errText = await res.text().catch(() => '');
             setSyncStatus('Pull Failed: HTTP ' + res.status + (errText.includes('unauthorized') ? ' - Check API Key' : ''), T().alertBad);
         }
     } catch(e) { setSyncStatus('Pull Failed: ' + (e.message || 'Network error'), T().alertBad); }
+    _pullInFlight = false;
     return false;
 }
 
@@ -2122,7 +2222,7 @@ function addNewCardFromGallery() {
     const word = prompt('Enter new term:');
     if(word && word.trim()) {
         const trimmed = word.trim();
-        REVIEW_BANK.push({ word: trimmed, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now() });
+        REVIEW_BANK.push({ word: trimmed, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now(), updatedAt: Date.now() /* V107 */ });
         persistData(); pushToCloud(); renderGallery();
         // V103: Open expand modal with AI generate option
         openExpandedCard(trimmed);
@@ -2388,6 +2488,8 @@ function initLocalData() {
     
     if(TRACKER_DATA.length === 0) TRACKER_DATA = buildDefaultArray();
     
+    backfillBankTimestamps(); // V107: ensure every bank item has updatedAt
+    
     const rawRev = localStorage.getItem(SK_REV) || '{"pt": 1000, "em": 500}';
     try { REV_GOALS = JSON.parse(rawRev); if(typeof REV_GOALS === 'string') REV_GOALS = JSON.parse(REV_GOALS); } catch(e) { REV_GOALS = { pt: 1000, em: 500 }; }
 
@@ -2413,6 +2515,101 @@ function persistData() {
     localStorage.setItem(SK_SESS, JSON.stringify(sessions));
     localStorage.setItem(SK_REV, JSON.stringify(REV_GOALS));
     localStorage.setItem(SK_BANK, JSON.stringify(REVIEW_BANK));
+}
+
+// V107: Stamp a REVIEW_BANK item as just-modified. Every save path that mutates a card
+// MUST call this so the cross-device merge can pick the newest version.
+// Pass an optional source ('ai' | 'user') to also tag the field provenance.
+function markBankItem(item, opts) {
+    if(!item) return;
+    item.updatedAt = Date.now();
+    if(opts && opts.notesSource) item.notesSource = opts.notesSource;
+    if(opts && opts.examNoteSource) item.examNoteSource = opts.examNoteSource;
+}
+
+// V107: Backfill updatedAt on legacy items so the merge doesn't treat them as "epoch zero".
+// Uses createdAt if present, otherwise the file load time, so any cloud item that DOES have
+// a real updatedAt will reliably win the merge for real edits.
+function backfillBankTimestamps() {
+    const now = Date.now();
+    let changed = 0;
+    REVIEW_BANK.forEach(item => {
+        if(typeof item.updatedAt !== 'number') {
+            item.updatedAt = item.createdAt || now;
+            changed++;
+        }
+        if(typeof item.createdAt !== 'number') {
+            item.createdAt = item.updatedAt;
+        }
+    });
+    if(changed > 0) {
+        try { localStorage.setItem(SK_BANK, JSON.stringify(REVIEW_BANK)); } catch(e) {}
+        console.log('[V107] Backfilled updatedAt on', changed, 'legacy bank items');
+    }
+}
+
+// V107: Per-card merge between local and incoming-cloud REVIEW_BANK arrays.
+// Rule: pick whichever copy has the newer updatedAt. Cards present only on one side
+// are kept. Tie-break: prefer local (the user is reading this device right now).
+// Returns a NEW array. Does NOT mutate either input.
+function mergeBankWithCloud(localBank, cloudBank) {
+    const out = [];
+    const seen = new Set();
+    const cloudByWord = new Map();
+    if(Array.isArray(cloudBank)) {
+        cloudBank.forEach(c => {
+            if(c && typeof c === 'object' && typeof c.word === 'string') {
+                cloudByWord.set(c.word, c);
+            }
+        });
+    }
+    if(Array.isArray(localBank)) {
+        localBank.forEach(l => {
+            if(!l || typeof l !== 'object' || typeof l.word !== 'string') return;
+            const c = cloudByWord.get(l.word);
+            if(!c) {
+                out.push(l);
+            } else {
+                const lt = typeof l.updatedAt === 'number' ? l.updatedAt : 0;
+                const ct = typeof c.updatedAt === 'number' ? c.updatedAt : 0;
+                // Strict greater-than for cloud — ties go to local
+                out.push(ct > lt ? c : l);
+            }
+            seen.add(l.word);
+        });
+    }
+    if(Array.isArray(cloudBank)) {
+        cloudBank.forEach(c => {
+            if(c && typeof c === 'object' && typeof c.word === 'string' && !seen.has(c.word)) {
+                out.push(c);
+            }
+        });
+    }
+    return out;
+}
+
+// V107: Synchronous flush via sendBeacon — used in beforeunload to guarantee
+// the latest local state reaches the cloud even if the user closes the tab.
+function flushPushBeacon() {
+    if(!CLOUD_KEY || !CLOUD_BIN) return;
+    try {
+        const payload = {
+            trk: TRACKER_DATA,
+            sess: sessions,
+            rev: REV_GOALS,
+            bank: REVIEW_BANK,
+            fcFocusMap: getFCFocusMap(),
+            examModeMap: getExamModeMap()
+        };
+        // jsonbin doesn't support custom headers via sendBeacon, so we fall back to
+        // a synchronous keepalive fetch which DOES allow X-Master-Key.
+        fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': CLOUD_KEY },
+            body: JSON.stringify(payload),
+            keepalive: true
+        }).catch(() => {});
+    } catch(e) {}
 }
 
 function getLogToday() { return TRACKER_DATA.find(r=>r.d===logTodayStr()); }
@@ -2597,6 +2794,7 @@ function saveAsExamNote() {
     // Save the full AI response as exam note
     REVIEW_BANK[globalIdx].examNote = lastAIResponseText;
     REVIEW_BANK[globalIdx].examNoteSource = 'ai'; // V106
+    markBankItem(REVIEW_BANK[globalIdx]); // V107
     
     // Auto-extract risk flag from response
     const riskMatch = lastAIResponseText.match(/RISK FLAG.*?(RED|YELLOW|GREEN)/i);
@@ -2644,6 +2842,7 @@ function editExamNote(word) {
     $('btn-action-confirm').onclick = () => {
         item.examNote = $('action-input').value;
         item.examNoteSource = 'user'; // V106
+        markBankItem(item); // V107
         persistData(); pushToCloud(); refreshCurrentView();
         $('action-modal').classList.remove('active');
         ta.style.height = '';
@@ -3210,7 +3409,7 @@ function logBreak(type) {
             incError(errorType);
             const existing = REVIEW_BANK.find(b => b.word === word);
             if(!existing) {
-                REVIEW_BANK.push({ word: word, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now(), errorType: errorType });
+                REVIEW_BANK.push({ word: word, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now(), updatedAt: Date.now(), errorType: errorType /* V107 */ });
             } else {
                 existing.errorType = errorType;
             }
@@ -3848,7 +4047,7 @@ document.addEventListener('scroll', hideGlobalMenu, true);
 
 function openFlashcardEditorEvent(word) {
     let bIdx = REVIEW_BANK.findIndex(b => b.word === word);
-    if (bIdx === -1) REVIEW_BANK.push({ word: word, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now() });
+    if (bIdx === -1) REVIEW_BANK.push({ word: word, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now(), updatedAt: Date.now() /* V107 */ });
     editingWordFromReport = word;
     const item = REVIEW_BANK.find(b => b.word === word);
     $('modal-word').textContent = item.word;
@@ -3924,7 +4123,7 @@ function addManualBankWord() {
     const input = $('bank-manual-input');
     const word = input.value.trim();
     if(word !== '') {
-        REVIEW_BANK.push({ word: word, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now() });
+        REVIEW_BANK.push({ word: word, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now(), updatedAt: Date.now() /* V107 */ });
         persistData(); pushToCloud(); buildGlobalReviewBank(); input.value = '';
     }
 }
@@ -3988,7 +4187,7 @@ function logSRS(quality) {
         item.dueDate = Date.now() + (item.interval * 24 * 60 * 60 * 1000);
     }
     
-    item.reviewed = true; persistData(); pushToCloud();
+    item.reviewed = true; markBankItem(item); /* V107 */ persistData(); pushToCloud();
     
     if (quality === 1) {
         const failedCard = fcQueue.splice(fcCurrentIdx, 1)[0];
@@ -4447,10 +4646,22 @@ function injectInCardExpandContent(item) {
                 <div>
                     <div class="dash-lbl" style="color:var(--accent2); margin-bottom:4px;">FLASHCARD ANSWER</div>
                     <div id="incard-expand-notes" contenteditable="false" style="line-height:1.6; padding:12px; word-wrap:break-word; border:1px solid rgba(128,128,128,0.15); border-radius:8px; outline:none; background:rgba(128,128,128,0.04);">${notesHtml}</div>
+                    <!-- V107: AI add/refine row for the flashcard answer -->
+                    <div id="incard-ai-answer-row" class="row" style="margin-top:6px; gap:4px;">
+                        <button class="btn btn-sm btn-ghost" id="btn-incard-gen-answer" onclick="event.stopPropagation(); incardGenAnswer()" style="border-color:#00f2fe; color:#00f2fe; font-size:0.55rem; padding:5px 9px; flex-shrink:0;">🤖 AI Answer</button>
+                        <input type="text" id="incard-refine-answer-input" placeholder="🪄 Refine answer..." onclick="event.stopPropagation()" style="font-size:0.6rem; padding:5px 8px; flex:1; border-radius:6px; border:1px solid rgba(128,128,128,0.25); background:rgba(128,128,128,0.08); color:inherit; font-family:'JetBrains Mono',monospace; outline:none; min-width:0;">
+                        <button class="btn btn-sm" id="btn-incard-refine-answer" onclick="event.stopPropagation(); incardRefineAnswer()" style="background:#00f2fe; color:#111; font-size:0.55rem; padding:5px 10px; flex-shrink:0;">Send</button>
+                    </div>
                 </div>
                 <div>
                     <div class="dash-lbl" style="color:#8b6914; margin-bottom:4px;">📌 EXAM NOTE</div>
                     <div id="incard-expand-exam-note" class="sticky-note" contenteditable="false" style="outline:none; padding:12px;">${examHtml}</div>
+                    <!-- V107: AI add/refine row for the exam note -->
+                    <div id="incard-ai-exam-row" class="row" style="margin-top:6px; gap:4px;">
+                        <button class="btn btn-sm btn-ghost" id="btn-incard-gen-exam" onclick="event.stopPropagation(); incardGenExam()" style="border-color:#a78bfa; color:#a78bfa; font-size:0.55rem; padding:5px 9px; flex-shrink:0;">🤖 AI Exam</button>
+                        <input type="text" id="incard-refine-exam-input" placeholder="🪄 Refine exam note..." onclick="event.stopPropagation()" style="font-size:0.6rem; padding:5px 8px; flex:1; border-radius:6px; border:1px solid rgba(128,128,128,0.25); background:rgba(128,128,128,0.08); color:inherit; font-family:'JetBrains Mono',monospace; outline:none; min-width:0;">
+                        <button class="btn btn-sm" id="btn-incard-refine-exam" onclick="event.stopPropagation(); incardRefineExam()" style="background:#a78bfa; color:#111; font-size:0.55rem; padding:5px 10px; flex-shrink:0;">Send</button>
+                    </div>
                 </div>
                 <input type="text" id="incard-expand-img-url" disabled placeholder="📷 Image URL" style="width:100%; padding:8px 10px; font-size:0.7rem; background:rgba(128,128,128,0.08); border:1px solid rgba(128,128,128,0.15); border-radius:6px; color:inherit; font-family:'JetBrains Mono',monospace; outline:none;" value="${item.img && !item.img.startsWith('data:') ? item.img : ''}">
             </div>
@@ -4481,6 +4692,175 @@ function removeInCardExpandContent() {
 function incardExpandAction() {
     const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
     if(item) showGlobalMenu(event, item.word, 'incard-expand');
+}
+
+// V107: In-card-modal AI handlers — generate / refine flashcard answer and exam note
+//       directly inside the flipped stack card. Targets the in-card DOM ids,
+//       writes through to REVIEW_BANK with provenance + updatedAt stamps,
+//       triggers persistData + pushToCloud so the change syncs.
+
+async function _incardCallGemini(prompt) {
+    const key = GEMINI_KEY || $('gemini-key').value.trim();
+    if(!key) { alert("Consultant Offline: paste your Gemini API Key in Settings."); return null; }
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+    });
+    const data = await res.json();
+    if(data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+        return cleanAIPreamble(data.candidates[0].content.parts[0].text);
+    }
+    return null;
+}
+
+async function incardGenAnswer() {
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(!item) return;
+    const target = document.getElementById('incard-expand-notes');
+    const btn = document.getElementById('btn-incard-gen-answer');
+    if(!target) return;
+    if(btn) { btn.disabled = true; btn.textContent = '\u23F3'; }
+    const orig = target.innerHTML;
+    target.innerHTML = '<div style="opacity:0.6;text-align:center;padding:14px;">\u23F3 Writing answer...</div>';
+    try {
+        const prompt = `You are an MRCS Part A revision tool. Write a concise flashcard answer for "${item.word}" — the kind of definition/explanation a UK surgical trainee would need to recall. Keep it under 6 lines. Bold the key testable terms. Plain prose, no headings.`;
+        const text = await _incardCallGemini(prompt);
+        if(text) {
+            item.notes = text;
+            item.notesSource = 'ai';
+            markBankItem(item);
+            persistData(); pushToCloud();
+            target.innerHTML = renderMarkdown(text);
+            // Sync to base front-of-card too
+            if($('fc-notes')) $('fc-notes').innerHTML = '<div class="md-content">' + renderMarkdown(text) + '</div>';
+        } else {
+            target.innerHTML = orig;
+            alert('AI generation failed. Try again.');
+        }
+    } catch(e) {
+        target.innerHTML = orig;
+        alert('Error: ' + (e.message || 'Network error'));
+    } finally {
+        if(btn) { btn.disabled = false; btn.textContent = '\uD83E\uDD16 AI Answer'; }
+    }
+}
+
+async function incardRefineAnswer() {
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(!item) return;
+    const inputEl = document.getElementById('incard-refine-answer-input');
+    const userPrompt = (inputEl && inputEl.value || '').trim();
+    if(!userPrompt) { alert('Type what you want changed about the answer.'); return; }
+    const target = document.getElementById('incard-expand-notes');
+    if(!target) return;
+    const currentNotes = item.notes || htmlToPlain(target.innerHTML);
+    if(!currentNotes.trim()) { alert('Generate or write an answer first before refining.'); return; }
+    const btn = document.getElementById('btn-incard-refine-answer');
+    if(btn) { btn.disabled = true; btn.textContent = '\u23F3'; }
+    const orig = target.innerHTML;
+    target.innerHTML = '<div style="opacity:0.6;text-align:center;padding:14px;">\u23F3 Refining...</div>';
+    try {
+        const prompt = `You are an MRCS Part A revision tool. Below is an existing flashcard answer for "${item.word}". The student wants you to revise it.\n\nEXISTING ANSWER:\n${currentNotes}\n\nSTUDENT REQUEST: ${userPrompt}\n\nINSTRUCTIONS:\n- Start directly with the revised content. NO preamble like "Here is...".\n- If the request is a tweak or improvement, return the FULL revised answer keeping the prose format.\n- If the request is to REPLACE with something specific (e.g. "give me a mnemonic", "convert to a list", "just the dose", "example question stem"), return ONLY what they asked for.\n- Bold key terms. No commentary.`;
+        const text = await _incardCallGemini(prompt);
+        if(text) {
+            item.notes = text;
+            item.notesSource = 'ai';
+            markBankItem(item);
+            persistData(); pushToCloud();
+            target.innerHTML = renderMarkdown(text);
+            if($('fc-notes')) $('fc-notes').innerHTML = '<div class="md-content">' + renderMarkdown(text) + '</div>';
+            if(inputEl) inputEl.value = '';
+        } else {
+            target.innerHTML = orig;
+            alert('Refine failed. Try again.');
+        }
+    } catch(e) {
+        target.innerHTML = orig;
+        alert('Refine error: ' + (e.message || 'Network error'));
+    } finally {
+        if(btn) { btn.disabled = false; btn.textContent = 'Send'; }
+    }
+}
+
+async function incardGenExam() {
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(!item) return;
+    const target = document.getElementById('incard-expand-exam-note');
+    const btn = document.getElementById('btn-incard-gen-exam');
+    if(!target) return;
+    if(btn) { btn.disabled = true; btn.textContent = '\u23F3'; }
+    const orig = target.innerHTML;
+    target.innerHTML = '<div style="opacity:0.6;text-align:center;padding:14px;">\u23F3 Writing exam note...</div>';
+    try {
+        // Reuse the surgeon prompt — gives us TOPIC/RISK/ANSWER + body in one shot
+        const prompt = buildSurgeonPrompt(item.word, 'Knowledge gap');
+        const text = await _incardCallGemini(prompt);
+        if(text) {
+            const parsed = parseSurgeonResponse(text);
+            applySurgeonResult(item, parsed); // already stamps markBankItem in v107
+            persistData(); pushToCloud();
+            target.innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;">No exam note generated.</span>';
+            // Sync to stack sidebar too
+            if($('fc-exam-note')) {
+                $('fc-exam-note').innerHTML = item.examNote ? '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(item.examNote) + '</div>' : '<span style="opacity:0.3;">No exam notes yet.</span>';
+            }
+            // Refresh answer pane too if surgeon also wrote it
+            const ansTarget = document.getElementById('incard-expand-notes');
+            if(ansTarget && item.notes) {
+                ansTarget.innerHTML = renderMarkdown(item.notes);
+                if($('fc-notes')) $('fc-notes').innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
+            }
+        } else {
+            target.innerHTML = orig;
+            alert('AI generation failed. Try again.');
+        }
+    } catch(e) {
+        target.innerHTML = orig;
+        alert('Error: ' + (e.message || 'Network error'));
+    } finally {
+        if(btn) { btn.disabled = false; btn.textContent = '\uD83E\uDD16 AI Exam'; }
+    }
+}
+
+async function incardRefineExam() {
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(!item) return;
+    const inputEl = document.getElementById('incard-refine-exam-input');
+    const userPrompt = (inputEl && inputEl.value || '').trim();
+    if(!userPrompt) { alert('Type what you want changed about the exam note.'); return; }
+    const target = document.getElementById('incard-expand-exam-note');
+    if(!target) return;
+    const currentNote = item.examNote || htmlToPlain(target.innerHTML);
+    if(!currentNote.trim()) { alert('Generate or write an exam note first before refining.'); return; }
+    const btn = document.getElementById('btn-incard-refine-exam');
+    if(btn) { btn.disabled = true; btn.textContent = '\u23F3'; }
+    const orig = target.innerHTML;
+    target.innerHTML = '<div style="opacity:0.6;text-align:center;padding:14px;">\u23F3 Refining...</div>';
+    try {
+        const prompt = `You are an MRCS Part A revision tool. Below is an existing exam note for "${item.word}". The student wants you to revise it.\n\nEXISTING NOTE:\n${currentNote}\n\nSTUDENT REQUEST: ${userPrompt}\n\nINSTRUCTIONS:\n- Start directly with the revised content. NO preamble.\n- Keep formatting (sections, bolding, bullets) consistent with the original unless the student asks for a structural change.\n- Bold key terms. Max 15 lines. No commentary.`;
+        const text = await _incardCallGemini(prompt);
+        if(text) {
+            item.examNote = text;
+            item.examNoteSource = 'ai';
+            const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
+            if(riskMatch) item.riskLevel = riskMatch[1].toLowerCase();
+            markBankItem(item);
+            persistData(); pushToCloud();
+            target.innerHTML = renderMarkdown(text);
+            if($('fc-exam-note')) {
+                $('fc-exam-note').innerHTML = '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(text) + '</div>';
+            }
+            if(inputEl) inputEl.value = '';
+        } else {
+            target.innerHTML = orig;
+            alert('Refine failed. Try again.');
+        }
+    } catch(e) {
+        target.innerHTML = orig;
+        alert('Refine error: ' + (e.message || 'Network error'));
+    } finally {
+        if(btn) { btn.disabled = false; btn.textContent = 'Send'; }
+    }
 }
 
 // V82: Exam note popup for stack view
@@ -4570,6 +4950,43 @@ function toggleFlashcardView() {
 function toggleGalleryReveal() {
     galleryRevealed = !galleryRevealed;
     renderGallery();
+}
+
+// V107: Mobile filter collapse
+function toggleGalleryFiltersCollapsed() {
+    galleryFiltersOpen = !galleryFiltersOpen;
+    const wrap = document.getElementById('gallery-filters-collapsible');
+    const btn = document.getElementById('btn-toggle-gallery-filters');
+    if(wrap) {
+        if(galleryFiltersOpen) wrap.classList.add('open');
+        else wrap.classList.remove('open');
+    }
+    if(btn) btn.textContent = galleryFiltersOpen ? '\u25B2 Hide Filters' : '\u25BC Filters & Tools';
+}
+
+// V107: Desktop tool dropdown menu
+function toggleGalleryToolMenu() {
+    const m = document.getElementById('gallery-tool-menu');
+    if(!m) return;
+    if(m.style.display === 'block') {
+        hideGalleryToolMenu();
+    } else {
+        m.style.display = 'block';
+        // Close on outside click
+        setTimeout(() => {
+            document.addEventListener('click', _galleryToolMenuOutside);
+        }, 0);
+    }
+}
+function hideGalleryToolMenu() {
+    const m = document.getElementById('gallery-tool-menu');
+    if(m) m.style.display = 'none';
+    document.removeEventListener('click', _galleryToolMenuOutside);
+}
+function _galleryToolMenuOutside(e) {
+    const m = document.getElementById('gallery-tool-menu');
+    const wrap = document.getElementById('gallery-tool-menu-wrap');
+    if(m && wrap && !wrap.contains(e.target)) hideGalleryToolMenu();
 }
 
 function openExpandedCard(word) {
@@ -4670,6 +5087,7 @@ function saveExpandAllEdits(prefix) {
     if(examEl) { item.examNote = htmlToPlain(examEl.innerHTML); item.examNoteSource = 'user'; /* V106 */ }
     const imgUrl = imgUrlEl ? imgUrlEl.value.trim() : '';
     if(imgUrl) item.img = imgUrl;
+    markBankItem(item); // V107
     persistData(); pushToCloud();
     
     // V103: Auto-update matching post-op tile if it exists
@@ -4832,6 +5250,7 @@ INSTRUCTIONS:
             item.examNoteSource = 'ai'; // V106
             const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
             if(riskMatch) item.riskLevel = riskMatch[1].toLowerCase();
+            markBankItem(item); // V107
             persistData(); pushToCloud();
             examEl.innerHTML = '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(text) + '</div>';
             if(inputEl) inputEl.value = '';
@@ -4976,13 +5395,16 @@ function parseSurgeonResponse(text) {
 // Risk and topic → tags
 // V106: Always refresh AI-sourced notes; preserve user-typed notes.
 //       Tracks provenance via item.notesSource ('ai' | 'user').
+// V107: Stamps updatedAt so cross-device merge picks the newer copy.
 function applySurgeonResult(item, parsed) {
     if(!item || !parsed) return;
-    if(parsed.risk) item.riskLevel = parsed.risk;
-    if(parsed.topic) item.topic = parsed.topic;
+    let touched = false;
+    if(parsed.risk) { item.riskLevel = parsed.risk; touched = true; }
+    if(parsed.topic) { item.topic = parsed.topic; touched = true; }
     if(parsed.examBody) {
         item.examNote = parsed.examBody;
         item.examNoteSource = 'ai';
+        touched = true;
     }
     // V106: Flashcard answer overwrite rule:
     //   - empty            → write
@@ -4997,8 +5419,10 @@ function applySurgeonResult(item, parsed) {
         if(!existing || wasV104Seed || !isUserAuthored) {
             item.notes = parsed.answer;
             item.notesSource = 'ai';
+            touched = true;
         }
     }
+    if(touched) markBankItem(item); // V107
 }
 
 // V105: Sanitize a REVIEW_BANK item in place — strip RISK FLAG remnants, Core Fact duplication from examNote
@@ -5064,6 +5488,7 @@ async function generateAnswerForExpand() {
             const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
             item.notes = text;
             item.notesSource = 'ai'; // V106
+            markBankItem(item); // V107
             persistData(); pushToCloud();
             notesEl.innerHTML = renderMarkdown(text);
             notesEl.contentEditable = expandEditActive ? 'true' : 'false';
@@ -5116,6 +5541,7 @@ INSTRUCTIONS:
             const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
             item.notes = text;
             item.notesSource = 'ai'; // V106
+            markBankItem(item); // V107
             persistData(); pushToCloud();
             notesEl.innerHTML = renderMarkdown(text);
             notesEl.contentEditable = expandEditActive ? 'true' : 'false';
@@ -5223,6 +5649,7 @@ INSTRUCTIONS:
             item.examNoteSource = 'ai'; // V106
             const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
             if(riskMatch) item.riskLevel = riskMatch[1].toLowerCase();
+            markBankItem(item); // V107
             persistData(); pushToCloud();
             examEl.innerHTML = renderMarkdown(text);
             examEl.contentEditable = expandEditActive ? 'true' : 'false';
@@ -5316,36 +5743,48 @@ function renderGallery() {
     grid.innerHTML = `
         <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; max-width: 1200px; flex-wrap:wrap; gap:6px;">
             <div style="font-size:0.8rem; opacity:0.6; padding-left:16px;">${itemsToRender.length} Cards</div>
-            <div class="gallery-risk-filter">
+            <!-- V107: Collapsible filter toggle for mobile -->
+            <button class="btn btn-sm btn-ghost gallery-filters-toggle" id="btn-toggle-gallery-filters" style="border-color:var(--accent2);color:var(--accent2);font-size:0.6rem;padding:5px 12px;display:none;">${galleryFiltersOpen ? '▲ Hide Filters' : '▼ Filters & Tools'}</button>
+            <!-- V107: Desktop tool menu replaces 5-button row -->
+            <div class="gallery-tool-menu-wrap" id="gallery-tool-menu-wrap" style="position:relative;">
+                <button class="btn btn-sm btn-ghost" id="btn-gallery-tools" onclick="event.stopPropagation();toggleGalleryToolMenu()" style="border-color:var(--accent2);color:var(--accent2);font-size:0.6rem;padding:5px 12px;">⚙️ Tools ▾</button>
+                <div class="gallery-tool-menu" id="gallery-tool-menu" style="display:none;">
+                    <button class="gallery-tool-item" onclick="toggleGalleryReveal();hideGalleryToolMenu();">${galleryRevealed ? '🔒 Hide Card Bodies' : '🔓 Reveal Card Bodies'}</button>
+                    <button class="gallery-tool-item" onclick="addNewCardFromGallery();hideGalleryToolMenu();">➕ New Card</button>
+                    <button class="gallery-tool-item" onclick="toggleGallerySelectMode();hideGalleryToolMenu();">✔ Select Multiple</button>
+                    <div class="gallery-tool-divider"></div>
+                    <button class="gallery-tool-item" onclick="autoRiskStratifyAll();hideGalleryToolMenu();" title="Auto-assign risk from performance">⚡ Auto Risk Stratify</button>
+                    <button class="gallery-tool-item" onclick="reclassifyAllByTopic();hideGalleryToolMenu();" title="Re-classify into eMRCS topics">🏷️ Re-classify Topics</button>
+                    <button class="gallery-tool-item" onclick="sanitizeAllBankCards();hideGalleryToolMenu();" title="Strip Core Fact duplication and RISK FLAG remnants">🧹 Clean Duplication</button>
+                </div>
+            </div>
+        </div>
+        <!-- V107: All filters now wrapped in collapsible container -->
+        <div id="gallery-filters-collapsible" class="gallery-filters-collapsible ${galleryFiltersOpen ? 'open' : ''}" style="width:100%;max-width:1200px;">
+            <div class="gallery-risk-filter" style="margin-bottom:6px;">
+                <span style="font-size:0.55rem;opacity:0.5;letter-spacing:1px;text-transform:uppercase;align-self:center;margin-right:4px;">Risk:</span>
                 <button class="risk-filter-btn ${galleryRiskFilter==='all'?'active':''}" onclick="setGalleryRiskFilter('all')">All</button>
                 <button class="risk-filter-btn ${galleryRiskFilter==='red'?'active':''}" onclick="setGalleryRiskFilter('red')">🔴</button>
                 <button class="risk-filter-btn ${galleryRiskFilter==='yellow'?'active':''}" onclick="setGalleryRiskFilter('yellow')">🟡</button>
                 <button class="risk-filter-btn ${galleryRiskFilter==='green'?'active':''}" onclick="setGalleryRiskFilter('green')">🟢</button>
             </div>
-            <div style="display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end;">
-                <button class="btn btn-sm btn-ghost" style="border-color:var(--accent2); color:var(--accent2); font-size:0.55rem; padding:4px 8px;" onclick="toggleGalleryReveal()">${galleryRevealed ? '\uD83D\uDD12 Hide' : '\uD83D\uDD13 Reveal'}</button>
-                <button class="btn btn-sm btn-ghost" style="border-color:#a78bfa; color:#a78bfa; font-size:0.55rem; padding:4px 8px;" onclick="toggleGallerySelectMode()">\u2714 Select</button>
-                <button class="btn btn-sm btn-ghost" style="border-color:#ff5252; color:#ff5252; font-size:0.55rem; padding:4px 8px;" onclick="autoRiskStratifyAll()" title="Auto-assign risk from performance data">⚡ Risk Stratify</button>
-                <button class="btn btn-sm btn-ghost" style="border-color:#00f2fe; color:#00f2fe; font-size:0.55rem; padding:4px 8px;" onclick="reclassifyAllByTopic()" title="Re-classify every card into an eMRCS topic">🏷️ Re-classify Topics</button>
-                <button class="btn btn-sm btn-ghost" style="border-color:#ffab00; color:#ffab00; font-size:0.55rem; padding:4px 8px;" onclick="sanitizeAllBankCards()" title="Strip Core Fact duplication and RISK FLAG remnants from every card">🧹 Clean Dup</button>
-                <button class="btn btn-sm btn-ghost" style="border-color:var(--accent); color:var(--accent); font-size:0.55rem; padding:4px 8px;" onclick="addNewCardFromGallery()">+ New</button>
+            <!-- V104: Error type filter row -->
+            <div class="gallery-risk-filter" style="margin-bottom:6px;">
+                <span style="font-size:0.55rem;opacity:0.5;letter-spacing:1px;text-transform:uppercase;align-self:center;margin-right:4px;">Error:</span>
+                <button class="risk-filter-btn ${galleryErrTypeFilter==='all'?'active':''}" onclick="setGalleryErrTypeFilter('all')">All</button>
+                <button class="risk-filter-btn ${galleryErrTypeFilter==='know'?'active':''}" onclick="setGalleryErrTypeFilter('know')">🧠 Knowledge</button>
+                <button class="risk-filter-btn ${galleryErrTypeFilter==='retrieval'?'active':''}" onclick="setGalleryErrTypeFilter('retrieval')">🔁 Retrieval</button>
+                <button class="risk-filter-btn ${galleryErrTypeFilter==='reasoning'?'active':''}" onclick="setGalleryErrTypeFilter('reasoning')">⚡ Reasoning</button>
             </div>
-        </div>
-        <!-- V104: Error type filter row -->
-        <div class="gallery-risk-filter" style="margin-bottom:6px; justify-content:center;">
-            <button class="risk-filter-btn ${galleryErrTypeFilter==='all'?'active':''}" onclick="setGalleryErrTypeFilter('all')">All Errors</button>
-            <button class="risk-filter-btn ${galleryErrTypeFilter==='know'?'active':''}" onclick="setGalleryErrTypeFilter('know')">🧠 Knowledge</button>
-            <button class="risk-filter-btn ${galleryErrTypeFilter==='retrieval'?'active':''}" onclick="setGalleryErrTypeFilter('retrieval')">🔁 Retrieval</button>
-            <button class="risk-filter-btn ${galleryErrTypeFilter==='reasoning'?'active':''}" onclick="setGalleryErrTypeFilter('reasoning')">⚡ Reasoning</button>
-        </div>
-        ${topicChipsHtml}
-        <!-- V104: Date range pickers -->
-        <div style="display:flex; gap:6px; align-items:center; justify-content:center; margin-bottom:8px; flex-wrap:wrap;">
-            <span style="font-size:0.6rem; opacity:0.6;">From</span>
-            <input type="date" id="fc-date-from" onchange="renderGallery()" style="font-size:0.65rem; padding:3px 6px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:transparent; color:inherit;">
-            <span style="font-size:0.6rem; opacity:0.6;">To</span>
-            <input type="date" id="fc-date-to" onchange="renderGallery()" style="font-size:0.65rem; padding:3px 6px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:transparent; color:inherit;">
-            <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px;" onclick="clearGalleryDates()">Clear Dates</button>
+            ${topicChipsHtml}
+            <!-- V104: Date range pickers -->
+            <div style="display:flex; gap:6px; align-items:center; justify-content:center; margin-bottom:8px; flex-wrap:wrap;">
+                <span style="font-size:0.6rem; opacity:0.6;">From</span>
+                <input type="date" id="fc-date-from" onchange="renderGallery()" style="font-size:0.65rem; padding:3px 6px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:transparent; color:inherit;">
+                <span style="font-size:0.6rem; opacity:0.6;">To</span>
+                <input type="date" id="fc-date-to" onchange="renderGallery()" style="font-size:0.65rem; padding:3px 6px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:transparent; color:inherit;">
+                <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px;" onclick="clearGalleryDates()">Clear Dates</button>
+            </div>
         </div>
         ${gallerySelectMode ? '<div class="gallery-batch-bar" id="gallery-batch-bar"><span style="font-size:0.7rem; opacity:0.7;">'+gallerySelected.size+' selected</span><button class="btn btn-sm" style="background:#a78bfa; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="batchGenerateAI(\'selected\')">🤖 AI → Exam Notes</button><button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#a78bfa; color:#a78bfa;" onclick="batchGenerateAI(\'empty\')">🤖 All Empty</button><button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-color:#ff5252; color:#ff5252;" onclick="toggleGallerySelectMode()">Cancel</button></div>' : ''}
     `;
@@ -5363,6 +5802,9 @@ function renderGallery() {
             setGalleryTopicFilter(t);
         });
     }
+    // V107: Bind mobile filter collapse toggle
+    const filterToggleBtn = document.getElementById('btn-toggle-gallery-filters');
+    if(filterToggleBtn) filterToggleBtn.addEventListener('click', toggleGalleryFiltersCollapsed);
     
     const container = document.createElement('div');
     if (galleryRevealed) container.className = 'mosaic-container';
@@ -5523,6 +5965,7 @@ function saveFlashcardEditor() {
         REVIEW_BANK[globalIdx].notes = newNotes;
         REVIEW_BANK[globalIdx].notesSource = 'user'; // V106
         REVIEW_BANK[globalIdx].img = newImg;
+        markBankItem(REVIEW_BANK[globalIdx]); // V107
         persistData(); pushToCloud();
     }
     
@@ -7301,7 +7744,9 @@ function openPostOpFromReport() {
     
     if(hasEmpty) {
         $('postop-progress-wrap').style.display = 'block';
-        $('postop-status').innerHTML = '<button class="btn btn-sm" style="background:#a78bfa; color:#111;" onclick="generateMissingPostOp()">🤖 Generate Missing Exam Notes</button>';
+        // V107: Removed the duplicate "Generate Missing" button — the toolbar button above the
+        // mosaic already handles this and is always visible. One generate button for the user.
+        $('postop-status').innerHTML = '<span style="opacity:0.7;font-size:0.7rem;">' + (postOpSessionWords.length ? postOpSessionWords.length + ' cards \u2014 use 🤖 Generate Missing AI Notes above' : '') + '</span>';
         $('postop-progress-fill').style.width = '0%';
     } else {
         $('postop-progress-wrap').style.display = 'none';
@@ -7526,6 +7971,7 @@ function saveStackFullEdit() {
     if(examEl) { item.examNote = htmlToPlain(examEl.innerHTML); item.examNoteSource = 'user'; /* V106 */ }
     const imgEl = document.getElementById('fc-back-img-url-inline');
     if(imgEl && imgEl.value && imgEl.value.trim()) item.img = imgEl.value.trim();
+    markBankItem(item); // V107
     // Update fcQueue too
     const qItem = fcQueue.find(b => b.word === stackEditingWord);
     if(qItem) { qItem.notes = item.notes; qItem.examNote = item.examNote; if(item.img) qItem.img = item.img; }
@@ -7607,6 +8053,7 @@ function toggleStackEdit() {
         let text = html.replace(/<div>/gi, '\n').replace(/<\/div>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
         item.notes = text.trim();
         item.notesSource = 'user'; // V106
+        markBankItem(item); // V107
         const imgUrl = $('fc-back-img-url-inline')?.value?.trim();
         if(imgUrl) item.img = imgUrl;
         // Also update fcQueue
@@ -7658,7 +8105,7 @@ function togglePanelEdit() {
 }
 function savePanelEdit() {
     const item = REVIEW_BANK.find(b => b.word === panelEditingWord);
-    if(item) { item.examNote = $('gallery-panel-textarea').value; item.examNoteSource = 'user'; /* V106 */ persistData(); pushToCloud(); }
+    if(item) { item.examNote = $('gallery-panel-textarea').value; item.examNoteSource = 'user'; /* V106 */ markBankItem(item); /* V107 */ persistData(); pushToCloud(); }
     $('gallery-panel-view').style.display = ''; $('gallery-panel-edit-area').style.display = 'none';
     $('gallery-panel-toolbar').classList.remove('active');
     $('btn-gallery-panel-edit').style.display = 'inline-flex'; $('btn-gallery-panel-save').style.display = 'none';
@@ -7689,7 +8136,7 @@ function toggleSidebarEdit() {
 }
 function saveSidebarEdit() {
     const item = REVIEW_BANK.find(b => b.word === sidebarEditingWord);
-    if(item) { item.examNote = $('fc-exam-textarea').value; item.examNoteSource = 'user'; /* V106 */ persistData(); pushToCloud(); }
+    if(item) { item.examNote = $('fc-exam-textarea').value; item.examNoteSource = 'user'; /* V106 */ markBankItem(item); /* V107 */ persistData(); pushToCloud(); }
     $('fc-exam-view').style.display = ''; $('fc-exam-edit-area').style.display = 'none';
     $('fc-sidebar-toolbar').classList.remove('active');
     $('btn-edit-exam-inline').style.display = 'inline-flex'; $('btn-save-exam-inline').style.display = 'none';
@@ -7902,6 +8349,30 @@ function initApp() {
     $('tab-rev').onclick = () => { activeTab = 'rev'; $('tab-rev').classList.add('active'); $('tab-1st').classList.remove('active'); applyTheme(); renderTrackerTab(); };
 
     if(CLOUD_KEY && CLOUD_BIN) pullFromCloud(false);
+    
+    // V107: Flush any pending push when tab is closed/hidden — last-mile durability.
+    // Uses keepalive fetch (sendBeacon doesn't allow custom headers for jsonbin auth).
+    window.addEventListener('beforeunload', () => {
+        if(_pushDebounceTimer) {
+            clearTimeout(_pushDebounceTimer);
+            _pushDebounceTimer = null;
+            flushPushBeacon();
+        }
+    });
+    document.addEventListener('visibilitychange', () => {
+        if(document.visibilityState === 'hidden' && _pushDebounceTimer) {
+            clearTimeout(_pushDebounceTimer);
+            _pushDebounceTimer = null;
+            flushPushBeacon();
+        }
+    });
+    // V107: Sync Now button — manual escape hatch
+    if($('btn-sync-now')) $('btn-sync-now').onclick = () => {
+        // Push current state, then pull-merge
+        if(_pushDebounceTimer) { clearTimeout(_pushDebounceTimer); _pushDebounceTimer = null; }
+        _doPushToCloud(0);
+        setTimeout(() => pullFromCloud(true), 1200);
+    };
     
     // V58: Action Modal bindings
     $('btn-action-cancel').onclick = () => $('action-modal').classList.remove('active');
