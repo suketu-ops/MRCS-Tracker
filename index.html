@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V107</title>
+<title>MRCS QBank Tracker Pro Max V108</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -633,6 +633,12 @@
     .gallery-cloud-popup .cloud-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: 1px; color: #5a4510 !important; margin-bottom: 6px; padding-right: 24px; }
     .gallery-cloud-popup .cloud-close { position: absolute; top: 4px; right: 6px; cursor: pointer; font-size: 1rem; opacity: 0.5; padding: 2px 8px; line-height: 1; color: #5a4510 !important; }
     .gallery-cloud-popup .cloud-close:hover { opacity: 1; }
+    /* V108: Section labels and image styling for the unified cloud popup */
+    .gallery-cloud-popup .cloud-section-label { font-size: 0.5rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.65; font-weight: 700; color: #8b6914 !important; margin-bottom: 3px; font-family: 'DM Sans', sans-serif; }
+    .gallery-cloud-popup .cloud-notes-block { padding: 6px 8px; background: rgba(255,255,255,0.45); border-radius: 6px; border-left: 3px solid #c9a84c; margin-bottom: 4px; }
+    .gallery-cloud-popup .cloud-img { display:block; max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 6px; margin-top: 8px; align-self: center; }
+    /* V108: Slightly taller popup since we now show notes + exam note + image */
+    .gallery-cloud-popup { max-height: 65vh; width: 320px; }
     
     /* V103: Connected stem from popup back to source card */
     .gallery-cloud-stem {
@@ -783,6 +789,10 @@
     .postop-fact-tile.selected-postop { outline: 3px solid #a78bfa; outline-offset: 2px; }
     .postop-fact-tile .tile-word { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: var(--accent2); margin-bottom: 6px; }
     .postop-fact-tile .tile-risk { position: absolute; top: 8px; right: 10px; font-size: 0.75rem; }
+    /* V108: Section labels inside postop tiles for parity with gallery cloud popup */
+    .postop-fact-tile .postop-tile-section-label { font-size: 0.5rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.55; font-weight: 700; margin-bottom: 3px; font-family: 'DM Sans', sans-serif; color: var(--accent2); }
+    .postop-fact-tile .postop-tile-notes { padding: 6px 8px; background: rgba(255, 171, 0, 0.06); border-radius: 5px; border-left: 2px solid rgba(255, 171, 0, 0.4); }
+    .postop-fact-tile .postop-tile-exam { padding: 6px 8px; background: rgba(167, 139, 250, 0.06); border-radius: 5px; border-left: 2px solid rgba(167, 139, 250, 0.4); }
     .postop-generating { text-align: center; padding: 24px; font-size: 0.85rem; opacity: 0.7; font-style: italic; }
     .postop-progress-bar { width: 100%; height: 4px; background: rgba(128,128,128,0.15); border-radius: 2px; margin: 12px 0; overflow: hidden; }
     .postop-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width 0.5s; }
@@ -1754,15 +1764,41 @@ function setSyncStatus(msg, color) {
 }
 
 // V107: Debounced push — coalesces calls within 1.5s (was 4s — too long, lost data on tab close)
+// V108: 3s debounce + 6s minimum gap between successful pushes (burst protection for SRS sessions
+//      and postop batches that fire many writes in quick succession). Combined with the no-op
+//      hash check below, this keeps us comfortably under JSONBin free-tier rate limits.
 let _pushDebounceTimer = null;
 let _pushInFlight = false;
 let _pushPending = false;
+let _lastPushedHash = null; // V108: avoid wasting requests when nothing changed
+let _lastPushedAt = 0;      // V108: enforce minimum gap between pushes
+const PUSH_MIN_GAP_MS = 6000;
 function pushToCloud() {
     if(!CLOUD_KEY || !CLOUD_BIN) return;
     // V107: Tell any in-flight pull that local just changed — pull must not overwrite
     if(_pullInFlight) _dirtyDuringPull = true;
     if(_pushDebounceTimer) clearTimeout(_pushDebounceTimer);
-    _pushDebounceTimer = setTimeout(() => { _pushDebounceTimer = null; _doPushToCloud(0); }, 1500);
+    // V108: Wait at least PUSH_MIN_GAP_MS since last successful push, but never less than 3s
+    const sinceLast = Date.now() - _lastPushedAt;
+    const wait = Math.max(3000, PUSH_MIN_GAP_MS - sinceLast);
+    _pushDebounceTimer = setTimeout(() => { _pushDebounceTimer = null; _doPushToCloud(0); }, wait);
+}
+
+// V108: Cheap, deterministic content fingerprint of the current bank + sessions + tracker.
+// Used to skip pushes when nothing has actually changed since the last successful push.
+function _computePayloadHash() {
+    try {
+        // Length-prefixed concat — collisions are vanishingly unlikely for our use
+        const bankSig = REVIEW_BANK.map(b => 
+            (b.word||'') + '|' + (b.updatedAt||0) + '|' + ((b.notes||'').length) + '|' + ((b.examNote||'').length)
+        ).join('§');
+        return [
+            bankSig.length + ':' + bankSig,
+            sessions.length,
+            TRACKER_DATA.length,
+            JSON.stringify(REV_GOALS||{})
+        ].join('::');
+    } catch(e) { return String(Date.now()); }
 }
 
 function _formatHM(ts) {
@@ -1786,6 +1822,14 @@ async function _doPushToCloud(retryCount) {
     if(!CLOUD_KEY || !CLOUD_BIN) return;
     if(_pushInFlight) { _pushPending = true; return; }
     _pushInFlight = true;
+    // V108: No-op skip — don't waste a JSONBin request if nothing changed since last push
+    const currentHash = _computePayloadHash();
+    if(retryCount === 0 && _lastPushedHash === currentHash) {
+        _pushInFlight = false;
+        // Update status quietly so the user knows we checked
+        _setPushSuccessStatus();
+        return;
+    }
     const payload = { 
         trk: TRACKER_DATA, 
         sess: sessions, 
@@ -1801,13 +1845,15 @@ async function _doPushToCloud(retryCount) {
             body: JSON.stringify(payload)
         });
         if(res.ok) {
+            _lastPushedHash = currentHash; // V108: remember what we just pushed
+            _lastPushedAt = Date.now();    // V108: enforce min gap between pushes
             _setPushSuccessStatus();
         } else if((res.status === 403 || res.status === 429) && retryCount < 3) {
-            const delays = [6000, 12000, 18000];
+            // V108: Longer backoff to actually clear JSONBin's rate window
+            const delays = [10000, 25000, 60000];
             setSyncStatus('Rate limited \u2014 retrying in ' + (delays[retryCount]/1000) + 's...', T().accent2);
             _pushInFlight = false;
-            // V107: Preserve _pushPending across the retry — previously dropped any
-            // mutations that arrived during a rate-limited window.
+            // V107/V108: Preserve _pushPending across the retry
             const wasPending = _pushPending;
             _pushPending = false;
             setTimeout(() => {
@@ -1824,7 +1870,8 @@ async function _doPushToCloud(retryCount) {
     _pushInFlight = false;
     if(_pushPending) {
         _pushPending = false;
-        setTimeout(() => _doPushToCloud(0), 500);
+        // V108: Hash check happens inside _doPushToCloud, so trailing push is cheap if no-op
+        setTimeout(() => _doPushToCloud(0), 800);
     }
 }
 
@@ -1872,9 +1919,16 @@ async function pullFromCloud(isManual = false) {
                 console.warn('[V107] Local mutated during pull — skipping trk/sess/rev replace, only merging bank');
             }
             // V107: REVIEW_BANK — always per-card merge (newer updatedAt wins, ties → local)
+            // V108: Track whether the merge actually changed local state. If not, skip the
+            //      reciprocal push entirely (huge rate-limit win on every boot).
+            let bankChanged = false;
             if(data.bank) {
                 const cloudBank = normalizeArray(data.bank);
                 const merged = mergeBankWithCloud(REVIEW_BANK, cloudBank);
+                // Compare lengths and a coarse fingerprint to decide if anything changed
+                const beforeSig = REVIEW_BANK.map(b => (b.word||'') + (b.updatedAt||0)).join('|');
+                const afterSig = merged.map(b => (b.word||'') + (b.updatedAt||0)).join('|');
+                if(beforeSig !== afterSig) bankChanged = true;
                 REVIEW_BANK = merged;
             }
             // V103: Sync per-day FC focus map across devices — merge taking max per day
@@ -1902,8 +1956,13 @@ async function pullFromCloud(isManual = false) {
             }
             backfillBankTimestamps(); // V107
             persistData(); autoAdjust();
-            // V107: Push the merged result back so all devices converge
-            pushToCloud();
+            // V108: Seed the last-pushed hash from the just-pulled state. The reciprocal
+            //      push that follows will be a no-op when nothing was actually merged.
+            _lastPushedHash = _computePayloadHash();
+            // V108: Only push back if the merge produced changes OR local was dirty during pull
+            if(bankChanged || _dirtyDuringPull) {
+                pushToCloud();
+            }
             setSyncStatus('Cloud Merged \u2713 (' + (sessions.length) + ' sessions, ' + (REVIEW_BANK.length) + ' cards)', T().alertOk);
             if(isManual) { renderTrackerTab(); applyTheme(); }
             // V107: If a flashcards view is open, re-render so any newly-merged cards appear
@@ -5836,8 +5895,9 @@ function renderGallery() {
                      }
                      // Text-only: do nothing
                  } else {
-                     // Desktop: cloud popup if exam note exists, otherwise expand modal
-                     if(item.examNote) {
+                     // V108: Desktop unified cloud popup — open whenever ANY content exists
+                     // (notes, exam note, or image). Previously only opened on examNote.
+                     if(item.notes || item.examNote || item.img) {
                          showGalleryCloudPopup(card, item);
                      } else {
                          openExpandedCard(item.word);
@@ -5884,8 +5944,8 @@ function renderGallery() {
                      if(item.img) showFullscreenImage(item.img);
                      // else: do nothing — text-only cards aren't tappable on mobile
                  } else {
-                     // Desktop: cloud popup if exam note exists
-                     if(item.examNote) showGalleryCloudPopup(card, item);
+                     // V108: Desktop unified popup — open whenever ANY content exists
+                     if(item.notes || item.examNote || item.img) showGalleryCloudPopup(card, item);
                      // else: do nothing
                  }
              };
@@ -7047,16 +7107,33 @@ function showGalleryCloudPopup(cardEl, item) {
     _activeCloudSource = cardEl;
     
     // V103: Build the popup
+    // V108: Cloud popup is now a UNIFIED preview — flashcard answer + exam note + image,
+    //      matching what the postop tile / stack flipped view show. Single source of truth.
     const popup = document.createElement('div');
     popup.className = 'gallery-cloud-popup';
     popup.dataset.word = item.word;
     const risk = item.riskLevel || '';
     const riskHtml = risk ? '<span class="risk-badge risk-' + risk + '" style="margin-bottom:4px; display:inline-block;">' + risk.toUpperCase() + ' RISK</span>' : '';
+    const notesHtml = item.notes && item.notes.trim()
+        ? '<div class="cloud-section-label">FLASHCARD ANSWER</div><div class="md-content cloud-notes-block">' + renderMarkdown(item.notes) + '</div>'
+        : '';
+    const examHtml = item.examNote && item.examNote.trim()
+        ? '<div class="cloud-section-label" style="margin-top:8px;">EXAM NOTE</div><div class="md-content">' + renderMarkdown(item.examNote) + '</div>'
+        : '';
+    const imgHtml = item.img && item.img.trim()
+        ? '<img src="' + item.img + '" class="cloud-img" onerror="this.style.display=\'none\'">'
+        : '';
+    const emptyHtml = (!notesHtml && !examHtml && !imgHtml)
+        ? '<div style="opacity:0.5;font-style:italic;font-size:0.7rem;text-align:center;padding:12px;">No content yet \u2014 use \uD83E\uDD16 AI Surgeon or edit to add.</div>'
+        : '';
     popup.innerHTML = `
         <div class="cloud-close">✕</div>
         <div class="cloud-title">${item.word}</div>
         ${riskHtml}
-        <div class="md-content">${renderMarkdown(item.examNote)}</div>
+        ${notesHtml}
+        ${examHtml}
+        ${imgHtml}
+        ${emptyHtml}
     `;
     document.body.appendChild(popup);
     popup.querySelector('.cloud-close').onclick = (e) => { e.stopPropagation(); hideGalleryCloudPopup(); };
@@ -7349,15 +7426,24 @@ function refreshPostOpTileContent(tile, word, examNoteOverride, riskLevelOverrid
     const riskLevel = riskLevelOverride || (item && item.riskLevel) || '';
     const riskEmoji = riskLevel === 'red' ? '🔴' : riskLevel === 'yellow' ? '🟡' : riskLevel === 'green' ? '🟢' : '';
     
+    // V108: Show BOTH notes AND examNote for parity with the gallery cloud popup.
+    // The unified card content lives in REVIEW_BANK; postop and gallery now render the
+    // same fields the same way.
     let displayHtml = '';
-    if(item && item.notes && item.notes.trim()) {
-        // V105: The flashcard answer IS the core fact — show it directly
-        displayHtml = '<div class="md-content" style="font-size:0.78rem; line-height:1.5;">' + renderMarkdown(item.notes) + '</div>';
-    } else if(item && item.examNote && item.examNote.trim() && item.examNote !== '\u23F3 Pending generation...') {
-        // Fallback: show first ~150 chars of exam note if no flashcard answer yet
-        const preview = item.examNote.replace(/\*\*/g, '').substring(0, 150);
-        displayHtml = '<div class="md-content" style="font-size:0.72rem; line-height:1.5; opacity:0.8;">' + renderMarkdown(preview) + (item.examNote.length > 150 ? '…' : '') + '</div>';
-    } else {
+    const hasNotes = item && item.notes && item.notes.trim();
+    const hasExam = item && item.examNote && item.examNote.trim() && item.examNote !== '\u23F3 Pending generation...';
+    if(hasNotes) {
+        displayHtml += '<div class="postop-tile-section-label">ANSWER</div>';
+        displayHtml += '<div class="md-content postop-tile-notes" style="font-size:0.74rem; line-height:1.45;">' + renderMarkdown(item.notes) + '</div>';
+    }
+    if(hasExam) {
+        displayHtml += '<div class="postop-tile-section-label" style="margin-top:6px;">EXAM NOTE</div>';
+        // Cap exam note preview at ~220 chars on the tile so the layout stays compact
+        const examFull = item.examNote;
+        const examPreview = examFull.length > 220 ? examFull.substring(0, 220).trim() + '…' : examFull;
+        displayHtml += '<div class="md-content postop-tile-exam" style="font-size:0.66rem; line-height:1.4; opacity:0.85;">' + renderMarkdown(examPreview) + '</div>';
+    }
+    if(!hasNotes && !hasExam) {
         const placeholder = examNoteOverride && examNoteOverride.includes('Pending') ? '\u23F3 Pending...' : 'No notes yet.';
         displayHtml = '<div style="font-size:0.72rem; line-height:1.5; opacity:0.5; font-style:italic;">' + placeholder + '</div>';
     }
