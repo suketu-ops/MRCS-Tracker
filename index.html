@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V89</title>
+<title>MRCS QBank Tracker Pro Max V96</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -174,10 +174,11 @@
     .fc-edit-btn:hover { opacity: 1; transform: scale(1.05); }
 
     /* Gallery Masonry Container */
-    .mosaic-container { column-count: 1; column-gap: 16px; width: 100%; max-width: 1200px; padding: 0 16px; }
+    .mosaic-container { column-count: 1; column-gap: 16px; width: 100%; padding: 0 16px; }
     @media (min-width: 600px) { .mosaic-container { column-count: 2; } }
     @media (min-width: 900px) { .mosaic-container { column-count: 3; } }
     @media (min-width: 1200px) { .mosaic-container { column-count: 4; } }
+    @media (min-width: 1600px) { .mosaic-container { column-count: 5; } }
 
     .grid-container { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; width: 100%; }
     .fc-mini-card { position: relative; width: 140px; height: 140px; border: 1.5px solid var(--accent); border-radius: 12px; padding: 12px; cursor: pointer; transition: all 0.3s ease; background: rgba(128,128,128,0.05); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
@@ -212,22 +213,22 @@
     .modal-textarea { width: 100%; height: 300px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; padding: 12px; font-family: inherit; font-size: 0.95rem; resize: none; outline: none; }
     .modal-textarea:focus { border-color: var(--accent2); }
     
-    /* V60: Force light text in all modal/popup dark backgrounds regardless of theme */
-    .modal-content { color: #fff !important; }
-    .modal-content .input-field { color: #fff !important; border-color: rgba(255,255,255,0.3) !important; background: rgba(255,255,255,0.08) !important; }
-    .modal-content .input-field:focus { border-color: var(--accent2) !important; background: rgba(255,255,255,0.15) !important; }
-    .modal-content .input-field::placeholder { color: rgba(255,255,255,0.4); }
-    .modal-content .btn { color: #fff; }
-    .modal-content .btn-ghost { border-color: rgba(255,255,255,0.4) !important; color: #fff !important; }
+    /* V96: All modal text colours use CSS variables set by applyTheme */
+    .modal-content { color: var(--modal-fg, #fff) !important; }
+    .modal-content .input-field { color: var(--modal-fg, #fff) !important; border-color: var(--modal-input-border, rgba(255,255,255,0.3)) !important; background: var(--modal-input-bg, rgba(255,255,255,0.08)) !important; }
+    .modal-content .input-field:focus { border-color: var(--accent2) !important; background: var(--modal-input-bg-focus, rgba(255,255,255,0.15)) !important; }
+    .modal-content .input-field::placeholder { color: var(--modal-placeholder, rgba(255,255,255,0.4)); }
+    .modal-content .btn { color: var(--modal-fg, #fff); }
+    .modal-content .btn-ghost { border-color: var(--btn-ghost-border, rgba(255,255,255,0.4)) !important; color: var(--btn-ghost-fg, #fff) !important; }
     .modal-content .btn-ghost:hover { border-color: var(--accent2) !important; color: var(--accent2) !important; }
     .modal-content .dash-lbl { color: var(--accent2) !important; }
-    .modal-content .clock-label { color: rgba(255,255,255,0.5) !important; }
-    .modal-content .score-input { color: #fff !important; border-color: var(--accent) !important; }
-    .global-context-menu .menu-opt { color: #fff !important; }
+    .modal-content .clock-label { color: var(--modal-clock-label, rgba(255,255,255,0.5)) !important; }
+    .modal-content .score-input { color: var(--modal-fg, #fff) !important; border-color: var(--accent) !important; }
+    .global-context-menu .menu-opt { color: var(--ctx-fg, #fff) !important; }
     .global-context-menu .menu-opt:hover { color: var(--accent2) !important; }
     
     /* AI Follow Up CSS */
-    .ai-response-box { display: flex; flex-direction: column; gap: 12px; background: rgba(0, 242, 254, 0.05); border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 8px; padding: 20px; font-size: 0.95rem; line-height: 1.6; color: #fff; height: 450px; overflow-y: auto; user-select: text; scroll-behavior: smooth; }
+    .ai-response-box { display: flex; flex-direction: column; gap: 12px; background: rgba(0, 242, 254, 0.05); border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 8px; padding: 20px; font-size: 0.95rem; line-height: 1.6; color: inherit; height: 450px; overflow-y: auto; user-select: text; scroll-behavior: smooth; }
     .ai-response-box ul { margin-left: 20px; margin-bottom: 12px; }
     .ai-response-box li { margin-bottom: 8px; }
     .ai-msg-user { align-self: flex-end; background: rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 12px 12px 0 12px; width: fit-content; max-width: 85%; border: 1px solid rgba(255,255,255,0.2); }
@@ -389,6 +390,22 @@
         
         /* Tag badges */
         .tag-study, .tag-work, .tag-rest { font-size: 0.5rem; padding: 3px 5px; }
+        
+        /* V96: Mobile stack view — sidebar moves below SRS buttons as a sticky note */
+        #fc-stack-layout { flex-direction: column !important; align-items: stretch !important; }
+        .fc-exam-sidebar { 
+            width: 100% !important; max-width: 100% !important; max-height: 200px; 
+            margin-top: 12px; position: relative !important; top: 0 !important;
+            order: 99; /* push to bottom of flex */
+        }
+        /* V96: Mobile gallery panel — full screen takeover */
+        .gallery-exam-panel { width: 100vw !important; max-width: 100vw !important; left: 0 !important; right: 0 !important; padding: 60px 18px 24px !important; }
+        /* V96: Expand modal full screen on mobile, single column, hide image */
+        #expand-modal-content { width: 100vw !important; max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; padding: 60px 16px 20px !important; border-radius: 0 !important; border-left: none !important; border-right: none !important; }
+        #expand-modal-content #expand-word { font-size: 1.6rem !important; }
+        #expand-body-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+        #expand-img-col { display: none !important; }
+        #expand-modal-content #expand-notes { font-size: 0.9rem !important; }
     }
 
     /* --- Medium phones (481-640px) --- */
@@ -472,15 +489,20 @@
 
     
     
-    /* V82: Stack view - exam note popup dialog (only on flipped) */
-    .fc-exam-sidebar { display: none; }
-    .exam-note-popup { position: absolute; top: 10px; right: -320px; width: 300px; max-height: 80vh; padding: 14px 16px; overflow-y: auto; font-size: 0.72rem; line-height: 1.6; font-family: 'JetBrains Mono', monospace; background: rgba(20,10,30,0.97); border-radius: 14px; border: 1.5px solid rgba(124,58,237,0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.6); z-index: 100; animation: popIn 0.2s ease; backdrop-filter: blur(12px); }
-    .exam-note-popup .exam-note-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.4; margin-bottom: 6px; font-weight: 700; font-family: 'DM Sans', sans-serif; }
-    .exam-note-popup .exam-note-content { white-space: pre-wrap; word-wrap: break-word; opacity: 0.85; }
-    @keyframes popIn { from { opacity: 0; transform: scale(0.9) translateX(-10px); } to { opacity: 1; transform: scale(1) translateX(0); } }
+    /* V96: Universal sticky note style — used for ALL exam note displays */
+    .sticky-note { background: #fef9e7 !important; color: #2c2c2c !important; border: 1px solid #e6c54b !important; border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; line-height: 1.6; box-shadow: 2px 3px 8px rgba(0,0,0,0.15); }
+    .sticky-note *, .sticky-note .md-content, .sticky-note .md-content * { color: #2c2c2c !important; }
+    .sticky-note b, .sticky-note strong { color: #1a1a1a !important; font-weight: 900 !important; }
+    .sticky-note .exam-note-label, .sticky-note .panel-title, .sticky-note h1, .sticky-note h2, .sticky-note h3 { color: #8b6914 !important; }
+    .sticky-note .risk-badge { color: inherit !important; }
+    .sticky-note .btn-ghost { color: #5a4510 !important; border-color: #c9a84c !important; background: transparent !important; }
+    .sticky-note .fc-add-btn { color: #5a4510 !important; background: rgba(201,168,76,0.25) !important; border-color: #c9a84c !important; }
+    .sticky-note textarea, .sticky-note input[type="text"] { color: #2c2c2c !important; background: #fdf5d6 !important; border: 1px solid #ddc66e !important; }
+    .sticky-note [contenteditable="true"] { background: #fdf5d6 !important; outline: 2px dashed #c9a84c !important; padding: 6px !important; border-radius: 4px; }
+
+    /* V96: Removed legacy popup CSS — sidebar uses sticky note style */
     @media (max-width: 700px) {
         #fc-stack-layout { flex-direction: column !important; }
-        .exam-note-popup { position: fixed; top: 50%; left: 50%; right: auto; transform: translate(-50%, -50%); width: 90vw; max-width: 360px; max-height: 70vh; }
     }
 
     /* V82: Gallery exam note - fixed right panel — V88: theme-adaptive */
@@ -572,7 +594,7 @@
     @media (max-width: 480px) { .scratch-3col { flex-direction: column; gap: 4px; } .scratch-3col .scratch-input { font-size: 0.8rem; } }
 
     /* V89: Stack + gallery sidebar — sticky note style, universal */
-    .fc-exam-sidebar { width: 220px; min-width: 180px; max-width: 260px; padding: 14px 16px; overflow-y: auto; font-size: 0.72rem; line-height: 1.65; font-family: 'JetBrains Mono', monospace; background: #fef9e7; color: #2c2c2c; border-radius: 12px; border: 1px solid #e6c54b; flex-shrink: 0; position: sticky; top: 60px; align-self: flex-start; max-height: calc(100vh - 120px); }
+    .fc-exam-sidebar { flex: 1; min-width: 280px; max-width: 33vw; padding: 18px 22px; overflow-y: auto; font-size: 0.78rem; line-height: 1.65; font-family: 'JetBrains Mono', monospace; background: #fef9e7; color: #2c2c2c; border-radius: 12px; border: 1px solid #e6c54b; flex-shrink: 0; position: sticky; top: 60px; align-self: flex-start; max-height: calc(100vh - 120px); }
     .fc-exam-sidebar .exam-note-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; margin-bottom: 6px; font-weight: 700; font-family: 'DM Sans', sans-serif; color: #8b6914; }
     .fc-exam-sidebar .exam-note-content { white-space: pre-wrap; word-wrap: break-word; opacity: 0.9; color: #2c2c2c; }
     .fc-exam-sidebar, .fc-exam-sidebar *, .fc-exam-sidebar .md-content, .fc-exam-sidebar .md-content * { color: #2c2c2c !important; }
@@ -683,6 +705,11 @@
         <button class="fs-btn" onclick="changeFs(1)">A+</button>
         <button class="fs-btn" onclick="cycleFont()">Aa</button>
     </div>
+    <!-- V96: Home + Export PDF buttons centred in unshakeable top bar -->
+    <div id="topbar-actions" style="display:none; gap:8px; align-items:center; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">
+        <button class="fs-btn" id="btn-topbar-export" onclick="exportFlashcardsPDF()" style="font-size:0.75rem; padding:6px 12px;">📄 PDF</button>
+        <button class="fs-btn" id="btn-topbar-home" onclick="goToHome()" style="font-size:0.75rem; padding:6px 14px; background:var(--accent2); color:#111;">⌂ HOME</button>
+    </div>
     <div class="th-bar" id="themes"></div>
   </div>
 
@@ -695,16 +722,6 @@
                     <div style="font-size:0.75rem;font-weight:700;color:var(--accent2);" id="morning-label">Good Morning! Tap to check in</div>
                     <div style="font-size:0.6rem;opacity:0.5;" id="morning-streak">Morning streak: 0 days</div>
                 </div>
-            </div>
-            <div id="micro-quiz-gate" style="display:none;text-align:center;padding:12px;border-radius:12px;border:1.5px solid var(--accent);background:rgba(128,128,128,0.05);margin-bottom:8px;">
-                <div style="font-size:0.7rem;font-weight:700;color:var(--accent);margin-bottom:8px;">🧠 MORNING BRAIN ACTIVATION</div>
-                <div id="mq-card" style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--accent2);margin-bottom:4px;"></div>
-                <div id="mq-answer" style="font-size:0.75rem;opacity:0;transition:opacity 0.3s;margin-bottom:8px;max-height:100px;overflow-y:auto;text-align:left;padding:0 8px;"></div>
-                <div class="row" style="justify-content:center;gap:8px;">
-                    <button class="btn btn-sm btn-ghost" onclick="mqReveal()">Reveal</button>
-                    <button class="btn btn-sm" onclick="mqNext()" style="background:var(--accent2);color:#111;">Next (→)</button>
-                </div>
-                <div style="font-size:0.6rem;opacity:0.4;margin-top:6px;" id="mq-progress">1 / 5</div>
             </div>
             <div id="home-header" style="text-align:center;padding-top:10px;">
               <div class="clock" id="top-date">--/--/--</div>
@@ -748,6 +765,16 @@
         </div>
         
         <div class="col" style="justify-content:center;">
+            <div id="micro-quiz-gate" style="display:none;text-align:center;padding:12px;border-radius:12px;border:1.5px solid var(--accent);background:rgba(128,128,128,0.05);margin-bottom:8px;">
+                <div style="font-size:0.7rem;font-weight:700;color:var(--accent);margin-bottom:8px;">🧠 MORNING BRAIN ACTIVATION</div>
+                <div id="mq-card" style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--accent2);margin-bottom:4px;"></div>
+                <div id="mq-answer" style="font-size:0.75rem;opacity:0;transition:opacity 0.3s;margin-bottom:8px;max-height:100px;overflow-y:auto;text-align:left;padding:0 8px;"></div>
+                <div class="row" style="justify-content:center;gap:8px;">
+                    <button class="btn btn-sm btn-ghost" onclick="mqReveal()">Reveal</button>
+                    <button class="btn btn-sm" onclick="mqNext()" style="background:var(--accent2);color:#111;">Next (→)</button>
+                </div>
+                <div style="font-size:0.6rem;opacity:0.4;margin-top:6px;" id="mq-progress">1 / 5</div>
+            </div>
             <div id="home-bars-area" class="dash-card"></div>
             <div class="row" style="justify-content:center;gap:8px;">
               <button class="btn btn-ghost btn-sm" id="btn-tracker">Tracker</button>
@@ -1001,17 +1028,25 @@
         </div>
         <div style="display:flex; gap:4px; align-items:center; flex-shrink:0;">
             <button class="btn btn-sm btn-ghost" id="btn-fc-toggle" style="border-style:dashed; padding:5px 8px; font-size:0.6rem;">Gallery</button>
-            <button class="btn btn-sm btn-ghost" id="btn-export-pdf" style="border-style:dashed; padding:5px 8px; font-size:0.6rem;">📄</button>
-            <button class="btn btn-sm" id="btn-fc-back" style="padding:5px 8px; font-size:0.6rem;">Home</button>
         </div>
     </div>
 
-    <div style="width: 100%; display: flex; justify-content: center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap;">
-        <input type="text" id="fc-search-input" class="input-field" placeholder="🔍 Search notes or words..." style="padding: 8px; font-size: 0.8rem; max-width: 300px; border-radius: 20px; flex:1;" oninput="applyFlashcardSearch()">
-        <div class="date-filter-bar" id="fc-date-filter">
-            <input type="date" id="fc-date-from" onchange="applyFlashcardSearch()" title="From date">
-            <input type="date" id="fc-date-to" onchange="applyFlashcardSearch()" title="To date">
-            <button class="btn btn-sm btn-ghost" style="font-size:0.5rem; padding:3px 6px; border-style:dashed;" onclick="clearDateFilter()">✕</button>
+    <div style="width: 100%; display: flex; justify-content: center; align-items:center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap;">
+        <input type="text" id="fc-search-input" class="input-field" placeholder="🔍 Search notes or words..." style="padding: 8px; font-size: 0.8rem; max-width: 320px; border-radius: 20px; flex:1;" oninput="applyFlashcardSearch()">
+        <!-- V96: Stack edit toolbar — single button reveals all field edit functions -->
+        <div id="stack-edit-toolbar" style="display:flex; gap:4px; align-items:center;">
+            <button class="btn btn-sm btn-ghost" id="btn-stack-edit-toggle" onclick="toggleStackFullEdit()" style="font-size:0.6rem; padding:5px 10px; border-style:dashed; border-color:var(--accent2); color:var(--accent2);">✏️ Edit</button>
+            <div id="stack-edit-tools" style="display:none; gap:3px;">
+                <button class="btn btn-sm btn-ghost" onclick="execFormat('bold')" style="padding:3px 6px;font-size:0.65rem;font-weight:900;" title="Bold">B</button>
+                <button class="btn btn-sm btn-ghost" onclick="execFormat('italic')" style="padding:3px 6px;font-size:0.65rem;font-style:italic;" title="Italic">I</button>
+                <button class="btn btn-sm btn-ghost" onclick="execFormat('underline')" style="padding:3px 6px;font-size:0.65rem;text-decoration:underline;" title="Underline">U</button>
+                <button class="btn btn-sm btn-ghost" onclick="execFormat('hiliteColor','#ffe066')" style="padding:3px 6px;font-size:0.6rem;background:#ffe066;color:#1a1a1a;font-weight:700;border-color:#e6c54b;" title="Yellow highlight">🖍️</button>
+                <button class="btn btn-sm btn-ghost" onclick="execFormat('foreColor','#ff5252')" style="padding:3px 6px;font-size:0.6rem;color:#ff5252;font-weight:900;border-color:#ff5252;" title="Red text">🔴</button>
+                <button class="btn btn-sm btn-ghost" onclick="execFormat('foreColor','#4ade80')" style="padding:3px 6px;font-size:0.6rem;color:#4ade80;font-weight:900;border-color:#4ade80;" title="Green text">🟢</button>
+                <button class="btn btn-sm btn-ghost" onclick="execFormat('removeFormat')" style="padding:3px 6px;font-size:0.55rem;opacity:0.7;" title="Clear formatting">✕</button>
+                <button class="btn btn-sm" onclick="saveStackFullEdit()" style="background:var(--accent2);color:#111;padding:3px 8px;font-size:0.6rem;">💾 Save</button>
+                <button class="btn btn-sm btn-ghost" onclick="cancelStackFullEdit()" style="padding:3px 8px;font-size:0.6rem;">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -1021,8 +1056,8 @@
     </div>
 
     <div id="fc-active-state" style="display:flex; flex-direction:column; align-items:center; width:100%; flex:1;">
-        <div id="fc-stack-layout" style="display:flex; gap:16px; width:100%; max-width:1100px; align-items:flex-start; justify-content:center;">
-            <div style="flex:1; min-width:0; max-width:900px; display:flex; flex-direction:column; align-items:center;">
+        <div id="fc-stack-layout" style="display:flex; gap:16px; width:100%; max-width:none; align-items:flex-start; justify-content:center; padding:0 20px;">
+            <div id="fc-card-col" style="flex:2; min-width:0; display:flex; flex-direction:column; align-items:center;">
                 <div class="fc-card" id="fc-card" onclick="flipCard(event)">
                     
                     <div class="fc-face fc-front" id="fc-front">
@@ -1051,25 +1086,17 @@
                 </div>
             </div>
             <!-- V88: Exam sidebar — always visible, inline edit -->
-            <div class="fc-exam-sidebar" id="fc-exam-sidebar">
-                <div class="exam-note-label">EXAM NOTES</div>
+            <div class="fc-exam-sidebar sticky-note" id="fc-exam-sidebar">
+                <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <div class="exam-note-label">EXAM NOTES</div>
+                    <button class="btn btn-sm btn-ghost" id="btn-stack-ai-generate" onclick="generateExamNoteForStack()" style="font-size:0.5rem; padding:3px 6px; border-color:#00f2fe; color:#00f2fe;">🤖 AI Surgeon</button>
+                </div>
                 <div id="fc-exam-risk"></div>
-                <div id="fc-exam-view">
-                    <div class="exam-note-content" id="fc-exam-note">No exam notes yet.</div>
-                </div>
-                <div id="fc-exam-edit-area" style="display:none;">
-                    <textarea id="fc-exam-textarea" style="width:100%; height:200px; background:rgba(128,128,128,0.1); border:1px solid rgba(128,128,128,0.3); border-radius:6px; color:inherit; padding:8px; font-family:'JetBrains Mono',monospace; font-size:0.68rem; resize:none; outline:none;"></textarea>
-                </div>
-                <div id="fc-exam-edit-btn" style="margin-top:6px; display:flex; gap:4px; justify-content:center; flex-wrap:wrap;">
-                    <button class="btn btn-sm btn-ghost" style="font-size:0.5rem; padding:2px 6px; border-style:dashed;" id="btn-edit-exam-inline" onclick="toggleSidebarEdit()">✏️ Edit</button>
-                    <button class="btn btn-sm btn-ghost" style="font-size:0.5rem; padding:2px 6px; border-style:dashed; display:none;" id="btn-save-exam-inline" onclick="saveSidebarEdit()">💾 Save</button>
-                    <button class="fc-add-btn" id="btn-add-exam-to-fc" style="display:none; font-size:0.5rem;">📥 Add Selected</button>
-                </div>
-                <div class="sidebar-toolbar" id="fc-sidebar-toolbar">
-                    <button class="btn btn-sm btn-ghost" onclick="wrapSidebarText('**','**')" style="padding:2px 6px;font-size:0.6rem;font-weight:900;min-height:22px;">B</button>
-                    <button class="btn btn-sm btn-ghost" onclick="wrapSidebarText('*','*')" style="padding:2px 6px;font-size:0.6rem;font-style:italic;min-height:22px;">I</button>
-                    <button class="btn btn-sm btn-ghost" onclick="wrapSidebarText('__','__')" style="padding:2px 6px;font-size:0.6rem;text-decoration:underline;min-height:22px;">U</button>
-                    <button class="btn btn-sm btn-ghost" onclick="wrapSidebarText('- ','')" style="padding:2px 6px;font-size:0.55rem;min-height:22px;">List</button>
+                <div class="exam-note-content" id="fc-exam-note">No exam notes yet.</div>
+                <!-- V96: Stack refine bar for exam note only -->
+                <div class="row" style="margin-top:6px; gap:4px;">
+                    <input type="text" id="stack-ai-refine-input" placeholder="🪄 Modify..." style="font-size:0.6rem; padding:5px 8px; flex:1; border-radius:6px; border:1px solid #c9a84c; background:#fdf5d6; color:#2c2c2c; font-family:'JetBrains Mono',monospace; outline:none; min-width:0;">
+                    <button class="btn btn-sm" id="btn-stack-ai-refine" onclick="refineStackExamNote()" style="background:#00f2fe; color:#111; font-size:0.55rem; padding:5px 10px;">Send</button>
                 </div>
             </div>
         </div>
@@ -1204,24 +1231,80 @@
   </div>
 
   <div class="modal-overlay" id="expand-modal" onclick="closeExpandModal()">
-    <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto; margin-right: 340px;" id="expand-modal-content" onclick="event.stopPropagation()">
-        <div class="row" style="justify-content:space-between; margin-bottom:12px;">
-            <div style="font-family:'Bebas Neue', sans-serif; font-size:2.5rem; color:var(--accent2); line-height:1;" id="expand-word"></div>
-            <div style="display:flex; gap:4px;">
-                <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 6px;" id="btn-expand-edit" onclick="toggleExpandEdit()">✏️ Edit Notes</button>
-                <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 6px;" id="btn-expand-action" onclick="expandAction()">⋮</button>
-                <button class="btn-ghost btn-sm" id="btn-expand-close" style="border-color:rgba(255,255,255,0.2); color:#fff; padding:3px 8px; font-size:0.55rem;">✕</button>
+    <div class="modal-content" style="max-width: 1300px; width: 95vw; max-height: 95vh; overflow-y: auto;" id="expand-modal-content" onclick="event.stopPropagation()">
+        <div class="row" style="justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
+            <div id="expand-word" contenteditable="false" style="font-family:'Bebas Neue', sans-serif; font-size:2.5rem; color:var(--accent2); line-height:1; flex:1; outline:none;"></div>
+            <div style="display:flex; gap:4px; flex-shrink:0;">
+                <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 8px;" id="btn-expand-edit" onclick="toggleExpandEdit()">✏️ Edit</button>
+                <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 8px;" id="btn-expand-action" onclick="expandAction()">⋮</button>
+                <button class="btn-ghost btn-sm" id="btn-expand-close" style="padding:4px 10px; font-size:0.6rem;">✕</button>
             </div>
         </div>
-        <div style="font-size:1rem; line-height:1.6; padding:0 4px; word-wrap:break-word;" id="expand-notes"></div>
-        <div class="expand-img-wrap" id="expand-img-wrap">
-            <img id="expand-img" style="max-width:100%; max-height:50vh; object-fit:contain; border-radius:8px;" src="">
+        
+        <div id="expand-format-toolbar" style="display:none; gap:4px; margin-bottom:12px; flex-wrap:wrap;">
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('bold')" style="padding:3px 10px;font-size:0.7rem;font-weight:900;min-height:28px;" title="Bold">B</button>
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('italic')" style="padding:3px 10px;font-size:0.7rem;font-style:italic;min-height:28px;" title="Italic">I</button>
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('underline')" style="padding:3px 10px;font-size:0.7rem;text-decoration:underline;min-height:28px;" title="Underline">U</button>
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('hiliteColor','#ffe066')" style="padding:3px 8px;font-size:0.65rem;background:#ffe066;color:#1a1a1a;font-weight:700;min-height:28px;border-color:#e6c54b;" title="Yellow highlight">🖍️ Hi</button>
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('foreColor','#ff5252')" style="padding:3px 8px;font-size:0.65rem;color:#ff5252;font-weight:900;min-height:28px;border-color:#ff5252;" title="Red text">🔴 Red</button>
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('foreColor','#4ade80')" style="padding:3px 8px;font-size:0.65rem;color:#4ade80;font-weight:900;min-height:28px;border-color:#4ade80;" title="Green text">🟢 Grn</button>
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('removeFormat')" style="padding:3px 8px;font-size:0.6rem;min-height:28px;opacity:0.7;" title="Clear formatting">✕ Clear</button>
+        </div>
+        
+        <!-- V96: Two-column layout — image left, fields stacked right -->
+        <div id="expand-body-grid" style="display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap:16px; align-items:start;">
+            <!-- LEFT: Image -->
+            <div id="expand-img-col" style="display:flex; flex-direction:column; gap:8px; min-width:0;">
+                <div class="expand-img-wrap" id="expand-img-wrap">
+                    <img id="expand-img" style="max-width:100%; width:100%; max-height:60vh; object-fit:contain; border-radius:8px;" src="">
+                </div>
+                <div id="expand-no-img-placeholder" style="display:none; padding:40px 20px; text-align:center; opacity:0.4; border:2px dashed rgba(128,128,128,0.2); border-radius:8px;">No image</div>
+            </div>
+            <!-- RIGHT: Fields stacked -->
+            <div id="expand-fields-col" style="display:flex; flex-direction:column; gap:12px; min-width:0;">
+                <div>
+                    <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <div class="dash-lbl" style="color:var(--accent2);">FLASHCARD ANSWER</div>
+                        <button class="btn btn-sm btn-ghost" id="btn-expand-ai-answer" onclick="generateAnswerForExpand()" style="font-size:0.55rem; padding:3px 8px; border-color:#00f2fe; color:#00f2fe;">🤖 AI Answer</button>
+                    </div>
+                    <div id="expand-notes" contenteditable="false" style="font-size:0.95rem; line-height:1.6; padding:12px; word-wrap:break-word; border:1px solid rgba(128,128,128,0.15); border-radius:8px; outline:none; height:auto; overflow:visible; background:rgba(128,128,128,0.04);"></div>
+                    <!-- V96: Ask AI to refine answer bar -->
+                    <div class="row" style="margin-top:6px; gap:4px;">
+                        <input type="text" id="expand-answer-refine-input" class="input-field" placeholder="🪄 Ask AI to refine the answer..." style="font-size:0.7rem; padding:6px 10px; flex:1; border-radius:6px; border-color:rgba(0,242,254,0.4);">
+                        <button class="btn btn-sm" id="btn-expand-answer-refine" onclick="refineExpandAnswer()" style="background:#00f2fe; color:#111; font-size:0.65rem; padding:6px 12px;">Send</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="dash-lbl" style="margin-bottom:4px;color:var(--accent2);">📷 PHOTO URL</div>
+                    <input type="text" id="expand-img-url" disabled placeholder="No image" style="width:100%;padding:8px 10px;font-size:0.7rem;background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.15);border-radius:6px;color:inherit;font-family:'JetBrains Mono',monospace;outline:none;">
+                </div>
+                <div>
+                    <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <div class="dash-lbl" style="color:#8b6914;">📌 EXAM NOTE</div>
+                        <button class="btn btn-sm btn-ghost" id="btn-expand-ai-generate" onclick="generateExamNoteForExpand()" style="font-size:0.55rem; padding:3px 8px; border-color:#00f2fe; color:#00f2fe;">🤖 Generate AI Note</button>
+                    </div>
+                    <div id="expand-exam-note" class="sticky-note" contenteditable="false" style="outline:none; height:auto; overflow:visible; padding:14px;"></div>
+                    <!-- V96: Ask AI to refine bar -->
+                    <div class="row" style="margin-top:6px; gap:4px;">
+                        <input type="text" id="expand-ai-refine-input" class="input-field" placeholder="🪄 Ask AI to refine the exam note..." style="font-size:0.7rem; padding:6px 10px; flex:1; border-radius:6px; border-color:rgba(0,242,254,0.4);">
+                        <button class="btn btn-sm" id="btn-expand-ai-refine" onclick="refineExpandExamNote()" style="background:#00f2fe; color:#111; font-size:0.65rem; padding:6px 12px;">Send</button>
+                    </div>
+                </div>
+                <div class="row" style="justify-content:flex-end;">
+                    <button class="fc-add-btn" id="btn-expand-add-selected" onclick="addExpandSelectedToCard()" style="display:none;">📥 Add Selected to Answer</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row" id="expand-save-row" style="justify-content:center; margin-top:16px; display:none; gap:8px;">
+            <button class="btn btn-sm" onclick="saveExpandAllEdits()" style="background:var(--accent2); color:#111; padding:6px 16px;">💾 Save All</button>
+            <button class="btn btn-sm btn-ghost" onclick="cancelExpandAllEdits()" style="padding:6px 16px;">Cancel</button>
         </div>
     </div>
   </div>
 
   <!-- V82: Gallery exam note right panel -->
-  <div class="gallery-exam-panel" id="gallery-exam-panel">
+  <div class="gallery-exam-panel sticky-note" id="gallery-exam-panel">
     <div class="panel-close" onclick="closeGalleryExamPanel()">✕</div>
     <div class="panel-title" id="gallery-panel-word">WORD</div>
     <div class="panel-risk" id="gallery-panel-risk"></div>
@@ -1249,6 +1332,10 @@
   <div id="v-postop-review" class="view" style="max-width: 1100px;">
     <div class="clock" style="font-size:2.5rem;margin-bottom:4px;">Post-Op Review</div>
     <div class="clock-label" id="postop-subtitle" style="margin-bottom:8px; color:var(--accent2); font-weight:700;">Session Debrief</div>
+    <!-- V96: Search bar -->
+    <div style="width:100%; display:flex; justify-content:center; margin-bottom:12px;">
+        <input type="text" id="postop-search-input" class="input-field" placeholder="🔍 Search post-op cards..." style="padding:8px 14px; font-size:0.8rem; max-width:400px; border-radius:20px; width:100%;" oninput="filterPostOpBySearch()">
+    </div>
     <div id="postop-strip-wrap" class="postop-strip"><div class="postop-strip-inner" id="postop-strip-inner"></div></div>
     <div id="postop-progress-wrap" style="width:100%; max-width:600px; margin:0 auto;">
         <div class="postop-progress-bar"><div class="postop-progress-fill" id="postop-progress-fill" style="width:0%"></div></div>
@@ -1299,13 +1386,14 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
     return false; 
 };
 function logDebug(msg) { const logsEl = document.getElementById('debug-logs'); if (logsEl) logsEl.innerHTML += `<div class="log-line log-boot">[BOOT] ${msg}</div>`; }
-logDebug("V89 Script execution started.");
+logDebug("V96 Script execution started.");
 
 // V56 Selection Cache - fixes Safari/mobile highlight disappearing on button click
 let activeSelection = "";
 document.addEventListener("selectionchange", () => { const sel = window.getSelection().toString().trim(); if (sel) activeSelection = sel; });
 
-const $ = id => { const el = document.getElementById(id); if (!el) { logDebug(`WARNING: Element '${id}' not found.`); return document.createElement('div'); } return el; };
+const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar']);
+const $ = id => { const el = document.getElementById(id); if (!el) { if(!_optionalIds.has(id)) logDebug(`WARNING: Element '${id}' not found.`); return document.createElement('div'); } return el; };
 const EXAM_DATE = new Date(2026, 3, 22);
 
 const PT_TOTAL = 3137;
@@ -1416,7 +1504,7 @@ async function pushToCloud() {
     if(!CLOUD_KEY || !CLOUD_BIN) return;
     setSyncStatus('Syncing to cloud...', T().accent2);
     
-    const payload = { trk: TRACKER_DATA, sess: sessions, rev: REV_GOALS, bank: REVIEW_BANK };
+    const payload = { trk: TRACKER_DATA, sess: sessions, rev: REV_GOALS, bank: REVIEW_BANK, fcFocus: parseInt(localStorage.getItem('mrcs-fc-focus') || '0') };
     try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN}`, {
             method: 'PUT',
@@ -1452,6 +1540,12 @@ async function pullFromCloud(isManual = false) {
             if(data.sess) sessions = normalizeArray(data.sess);
             if(data.rev) REV_GOALS = deepParse(data.rev) || { pt: 1000, em: 500 };
             if(data.bank) REVIEW_BANK = normalizeArray(data.bank);
+            // V96: Sync fc focus time across devices — take max
+            if(typeof data.fcFocus === 'number') {
+                const localFC = parseInt(localStorage.getItem('mrcs-fc-focus') || '0');
+                const merged = Math.max(localFC, data.fcFocus);
+                localStorage.setItem('mrcs-fc-focus', merged);
+            }
             persistData(); autoAdjust();
             setSyncStatus('Cloud Loaded \u2713 (' + (sessions.length) + ' sessions, ' + (REVIEW_BANK.length) + ' cards)', T().alertOk);
             if(isManual) { renderTrackerTab(); applyTheme(); }
@@ -1760,9 +1854,11 @@ function colorWrap() {
 function addNewCardFromGallery() {
     const word = prompt('Enter new term:');
     if(word && word.trim()) {
-        REVIEW_BANK.push({ word: word.trim(), reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now() });
+        const trimmed = word.trim();
+        REVIEW_BANK.push({ word: trimmed, reviewed: false, notes: '', img: '', reps: 0, ease: 2.5, interval: 0, dueDate: Date.now(), createdAt: Date.now() });
         persistData(); pushToCloud(); renderGallery();
-        openFlashcardEditorEvent(word.trim());
+        // V96: Open expand modal with AI generate option
+        openExpandedCard(trimmed);
     }
 }
 
@@ -2104,14 +2200,33 @@ function doMorningCheckin() {
 function updateMorningZone() {
     const hour = new Date().getHours();
     const zone = $('morning-zone');
-    if(hour < 9) {
+    if(hour >= 6 && hour < 9) {
         zone.style.display = 'block';
         const today = displayTodayStr();
         if(getLastMorningDate() === today) {
             $('morning-label').textContent = '✅ Checked in today!';
             $('morning-checkin').style.background = 'rgba(0,200,100,0.08)';
+        } else {
+            $('morning-label').textContent = '☀️ Good Morning! Tap to check in';
+            $('morning-checkin').style.background = 'rgba(128,128,128,0.05)';
         }
         $('morning-streak').textContent = '☀️ Morning streak: ' + getMorningStreak() + ' days';
+    } else if(hour >= 23 || hour < 6) {
+        // V96: Sleep hygiene reminder from 11pm
+        zone.style.display = 'block';
+        const sleepMessages = [
+            '🌙 Wind down now. The brain consolidates memory in deep sleep.',
+            '😴 Lights out by midnight. Cortisol resets at 3am — be in REM by then.',
+            '🛏️ Sleep is performance enhancement. The exam needs you rested.',
+            '📵 Phone away. Blue light shifts melatonin by 90 mins.',
+            '🌟 Tomorrow you. Yesterday\'s questions are sticking right now while you sleep.'
+        ];
+        const msg = sleepMessages[Math.floor(Math.random() * sleepMessages.length)];
+        $('morning-label').textContent = msg;
+        $('morning-checkin').style.background = 'rgba(100,80,200,0.08)';
+        $('morning-checkin').style.borderColor = '#7c3aed';
+        $('morning-streak').textContent = '🌙 Sleep hygiene mode';
+        $('morning-checkin').onclick = null; // not clickable in sleep mode
     } else {
         zone.style.display = 'none';
     }
@@ -2122,7 +2237,8 @@ let mqCards = [], mqIdx = 0, mqDone = false;
 function initMicroQuiz() {
     const hour = new Date().getHours();
     const quizDoneToday = localStorage.getItem('mrcs-mq-' + displayTodayStr()) === 'done';
-    if(hour >= 9 || quizDoneToday) { mqDone = true; $('micro-quiz-gate').style.display = 'none'; return; }
+    // V96: Active from 6am to 9am only
+    if(hour < 6 || hour >= 9 || quizDoneToday) { mqDone = true; $('micro-quiz-gate').style.display = 'none'; return; }
     
     // Pick 5 random cards that have notes
     const withNotes = REVIEW_BANK.filter(b => b.notes && b.notes.trim().length > 10);
@@ -2267,7 +2383,25 @@ function wrapExamNote(before, after) {
     ta.selectionEnd = start + before.length + selected.length;
 }
 
-function _showView(id) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); $(id).classList.add('active'); }
+// V96: Universal home button — closes FC session if active and goes to setup
+function goToHome() {
+    if(typeof closeFCSession === 'function' && fcSessionStart > 0) closeFCSession();
+    show('v-setup'); applyTheme();
+}
+
+function _showView(id) { 
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); 
+    $(id).classList.add('active');
+    // V96: Topbar Home shown on most pages, hidden when timer running. PDF only on flashcards.
+    const tba = $('topbar-actions');
+    const homeBtn = $('btn-topbar-home');
+    const pdfBtn = $('btn-topbar-export');
+    const pagesWithHome = ['v-flashcards','v-postop-review','v-session-summary','v-history','v-bank','v-tracker'];
+    const showHome = pagesWithHome.includes(id) && !running;
+    if(tba) tba.style.display = showHome ? 'flex' : 'none';
+    if(pdfBtn) pdfBtn.style.display = (id === 'v-flashcards') ? '' : 'none';
+    if(homeBtn) homeBtn.style.display = showHome ? '' : 'none';
+}
 function T() { return THEMES[theme]; }
 function fmt(s) { const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sc=s%60; return `${h > 0 ? h+':' : ''}${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`; }
 
@@ -2355,18 +2489,89 @@ function applyTheme() {
   document.querySelectorAll('.dash-card').forEach(el => el.style.borderColor = t.cardBorder);
   document.querySelectorAll('.hist-row,.tracker-row').forEach(el => el.style.borderColor = t.histBorder);
   
+  // V96: Detect light theme by parsing bg hex brightness
+  function isLightTheme(bg) {
+      if(!bg || !bg.startsWith('#')) return false;
+      const hex = bg.replace('#','');
+      const r = parseInt(hex.substring(0,2),16);
+      const g = parseInt(hex.substring(2,4),16);
+      const b = parseInt(hex.substring(4,6),16);
+      return (r*0.299 + g*0.587 + b*0.114) > 180;
+  }
+  const lightTheme = isLightTheme(t.bg);
+  const modalBg = lightTheme ? t.bg : '#111';
+  const modalFg = lightTheme ? t.fg : '#fff';
+  
+  // V96: Set CSS variables for context menu and modal text — handles BOTH light and dark themes
+  document.documentElement.style.setProperty('--ctx-fg', modalFg);
+  document.documentElement.style.setProperty('--btn-ghost-fg', modalFg);
+  document.documentElement.style.setProperty('--btn-ghost-border', lightTheme ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)');
+  document.documentElement.style.setProperty('--modal-fg', modalFg);
+  document.documentElement.style.setProperty('--modal-input-border', lightTheme ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)');
+  document.documentElement.style.setProperty('--modal-input-bg', lightTheme ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.08)');
+  document.documentElement.style.setProperty('--modal-input-bg-focus', lightTheme ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.15)');
+  document.documentElement.style.setProperty('--modal-placeholder', lightTheme ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)');
+  document.documentElement.style.setProperty('--modal-clock-label', lightTheme ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)');
+  
+  // V96: Helper — is colour string "near white" or "near black"?
+  function isNearWhite(c) {
+      if(!c) return false;
+      const s = c.toLowerCase().replace(/\s/g,'');
+      return s === '#fff' || s === '#ffffff' || s === 'white' || s === 'rgb(255,255,255)';
+  }
+  function isNearBlack(c) {
+      if(!c) return false;
+      const s = c.toLowerCase().replace(/\s/g,'');
+      return s === '#000' || s === '#000000' || s === 'black' || s === 'rgb(0,0,0)' || s === '#111' || s === '#111111' || s === '#1a1a1a' || s === '#1a1a2e' || s === '#0a0a0a' || s === '#0f0a19';
+  }
+  
   // V60: Theme all modals and popups consistently
   document.querySelectorAll('.modal-content').forEach(el => { 
-      el.style.background = t.bg === '#f4f6f9' ? '#1a1a2e' : '#111'; // darker bg for light themes
+      el.style.background = modalBg;
       el.style.borderColor = t.accent; 
-      el.style.color = '#fff';
+      el.style.color = modalFg;
+      // V96: Force modal foreground on children — fix BOTH white-on-light AND dark-on-dark
+      el.querySelectorAll('*').forEach(child => {
+          // Skip elements that have their own theming
+          if(child.closest('.sticky-note')) return;
+          if(child.classList.contains('risk-badge')) return;
+          if(child.id === 'expand-word') return; // accent2 colour
+          if(child.classList.contains('dash-lbl')) { child.style.color = t.accent2; return; }
+          
+          const cs = child.style.color;
+          
+          if(child.tagName === 'BUTTON') {
+              // For buttons: fix unreadable colours in current theme
+              if(!cs) { child.style.color = modalFg; return; }
+              if(lightTheme && isNearWhite(cs)) { child.style.color = modalFg; return; }
+              if(!lightTheme && isNearBlack(cs)) { child.style.color = modalFg; return; }
+              // Otherwise leave coloured buttons (red/yellow/green/cyan) alone
+              return;
+          }
+          
+          // Non-button text elements
+          if(!cs) { child.style.color = modalFg; return; }
+          if(lightTheme && isNearWhite(cs)) { child.style.color = modalFg; return; }
+          if(!lightTheme && isNearBlack(cs)) { child.style.color = modalFg; return; }
+      });
+      // Override input/textarea backgrounds for light themes
+      if(lightTheme) {
+          el.querySelectorAll('input, textarea').forEach(inp => {
+              if(!inp.classList.contains('sticky-note')) {
+                  inp.style.background = 'rgba(0,0,0,0.05)';
+                  inp.style.color = modalFg;
+                  inp.style.borderColor = 'rgba(0,0,0,0.15)';
+              }
+          });
+      }
   });
   document.querySelectorAll('.fc-edit-btn').forEach(el => { 
-      el.style.background = t.bg === '#f4f6f9' ? '#1a1a2e' : '#111'; 
-      el.style.color = '#fff'; el.style.borderColor = t.accent; 
+      el.style.background = modalBg; 
+      el.style.color = modalFg; el.style.borderColor = t.accent; 
   });
   const ctxMenu = $('global-context-menu');
-  ctxMenu.style.background = t.bg === '#f4f6f9' ? '#1a1a2e' : '#0a0a0a';
+  ctxMenu.style.background = lightTheme ? t.bg : '#0a0a0a';
+  ctxMenu.style.color = modalFg;
   ctxMenu.style.borderColor = t.accent;
   
   // V60: Theme SRS buttons text on non-dark themes
@@ -3252,10 +3457,10 @@ function showGlobalMenu(e, word, context) {
     menu.innerHTML = '';
     
     // Pure DOM binding - NO INLINE HTML
-    const createOpt = (text, onClickFn, isLink = false, href = '', color = '#fff') => {
+    const createOpt = (text, onClickFn, isLink = false, href = '', color = 'inherit') => {
         const el = document.createElement(isLink ? 'a' : 'div');
         el.className = 'menu-opt';
-        el.style.color = color;
+        if(color !== 'inherit') el.style.color = color;
         el.textContent = text;
         if(isLink) { el.href = href; el.target = '_blank'; }
         el.onclick = (ev) => {
@@ -3266,9 +3471,14 @@ function showGlobalMenu(e, word, context) {
         menu.appendChild(el);
     };
     
-    createOpt('🤖 Ask Consultant', () => askConsultant(word));
-    createOpt('✏️ Edit Flashcard', () => openFlashcardEditorEvent(word));
-    createOpt('📌 Edit Exam Note', () => editExamNote(word));
+    // V96: In expand context, skip Edit Flashcard/Exam Note since the modal already does it
+    if(context !== 'expand') {
+        createOpt('🤖 Ask Consultant', () => askConsultant(word));
+        // V96: Edit Flashcard now opens the unified expand modal everywhere
+        createOpt('✏️ Edit Flashcard', () => openExpandedCard(word));
+    } else {
+        createOpt('🤖 Ask Consultant', () => askConsultant(word));
+    }
     createOpt('📝 Rename Word', () => triggerRename(word));
     createOpt('🧠 TeachMeAnatomy', () => markReviewedAndClose(word), true, `https://teachmeanatomy.info/?s=${encodeURIComponent(word)}`);
     createOpt('🔍 Image (Anatomy)', () => markReviewedAndClose(word), true, `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(word + " anatomy")}`);
@@ -3285,10 +3495,21 @@ function showGlobalMenu(e, word, context) {
     if (y + rect.height > window.innerHeight) y = window.innerHeight - rect.height - 10;
     
     menu.style.left = x + 'px'; menu.style.top = y + 'px';
+    
+    // V96: Close menu on next click anywhere outside the menu (capture phase to bypass stopPropagation)
+    setTimeout(() => {
+        const closeFn = (ev) => {
+            if(ev.target.closest('#global-context-menu')) return;
+            hideGlobalMenu();
+            document.removeEventListener('click', closeFn, true);
+            document.removeEventListener('mousedown', closeFn, true);
+        };
+        document.addEventListener('click', closeFn, true);
+        document.addEventListener('mousedown', closeFn, true);
+    }, 0);
 }
 
 function hideGlobalMenu() { $('global-context-menu').classList.remove('active'); }
-document.addEventListener('click', hideGlobalMenu);
 document.addEventListener('scroll', hideGlobalMenu, true);
 
 function openFlashcardEditorEvent(word) {
@@ -3314,8 +3535,7 @@ function markReviewedAndClose(word) {
         REVIEW_BANK[bIdx].reviewed = true;
         persistData(); pushToCloud(); refreshCurrentView();
     }
-    // V84: Auto-open flashcard editor so user can paste when they return from external search
-    setTimeout(() => openFlashcardEditorEvent(word), 300);
+    // V96: No longer auto-opens editor — was causing duplicate edit window when already in edit mode
 }
 
 function toggleReviewedStatus(word) {
@@ -3516,6 +3736,8 @@ function closeFCSession() {
             // V79: Store FC focus time separately - don't pollute MCQ sessions
             const fcTime = parseInt(localStorage.getItem('mrcs-fc-focus') || '0');
             localStorage.setItem('mrcs-fc-focus', fcTime + mins);
+            // V96: Push to cloud so other devices see updated FC focus
+            pushToCloud();
         }
         fcSessionStart = 0;
     }
@@ -3544,20 +3766,12 @@ function renderFlashcard() {
     }
     $('fc-counter').textContent = `${fcCurrentIdx + 1} / ${fcQueue.length}`;
     
-    // V88: Update exam sidebar
+    // V96: Update exam sidebar (sticky note, no inline edit buttons — top toolbar handles edit)
     sidebarEditingWord = item.word;
     const examNote = item.examNote || '';
     const risk = item.riskLevel || '';
-    // Reset edit state
-    $('fc-exam-view').style.display = ''; $('fc-exam-edit-area').style.display = 'none';
-    $('fc-sidebar-toolbar').classList.remove('active');
-    $('btn-edit-exam-inline').style.display = 'inline-flex'; $('btn-save-exam-inline').style.display = 'none';
     $('fc-exam-note').innerHTML = examNote ? '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(examNote) + '</div>' : '<span style="opacity:0.3;">No exam notes yet.</span>';
     $('fc-exam-risk').innerHTML = risk ? '<span class="risk-badge risk-' + risk + '" style="margin-bottom:6px;">' + risk.toUpperCase() + ' RISK</span> ' : '';
-    // V88: Add Selected button — always visible if exam note exists
-    const addBtn = $('btn-add-exam-to-fc');
-    if(examNote) { addBtn.style.display = 'inline-flex'; addBtn.onclick = () => addExamNoteToFlashcard(item.word); }
-    else { addBtn.style.display = 'none'; }
     
     // V82: Remove any old popup
     const oldPopup = document.querySelector('.exam-note-popup');
@@ -3579,14 +3793,7 @@ function renderFlashcard() {
     btnBack.textContent = '\u22EE';
     btnBack.onclick = (e) => { e.stopPropagation(); showGlobalMenu(e, item.word, 'fc'); };
     
-    // V89: Add inline edit button on back
-    const btnBackEdit = document.createElement('div');
-    btnBackEdit.className = 'fc-edit-btn';
-    btnBackEdit.style.cssText = 'position:absolute; top:10px; left:10px; background:transparent; border:1.5px solid; border-color:var(--accent2); color:var(--accent2); opacity:0.6; padding:3px 6px; font-size:0.55rem; border-radius:6px; line-height:1; z-index:20; font-weight:700;';
-    btnBackEdit.textContent = '✏️ Edit';
-    btnBackEdit.onclick = (e) => { e.stopPropagation(); toggleStackEdit(); };
-    
-    actionsFront.appendChild(btnFront); actionsBack.appendChild(btnBack); actionsBack.appendChild(btnBackEdit);
+    actionsFront.appendChild(btnFront); actionsBack.appendChild(btnBack);
     
     // V89: Set stack editing word and reset contenteditable state
     stackEditingWord = item.word;
@@ -3595,14 +3802,23 @@ function renderFlashcard() {
     $('fc-notes').style.outline = ''; $('fc-notes').style.padding = '';
     const oldUrlBar = $('fc-back-img-bar');
     if(oldUrlBar) oldUrlBar.style.display = 'none';
+    // V96: Hide exam sidebar — only show when flipped
+    const sidebar = $('fc-exam-sidebar');
+    if(sidebar) sidebar.style.visibility = $('fc-card').classList.contains('flipped') ? 'visible' : 'hidden';
 }
 
 function flipCard(e) {
     if(e && e.target && (e.target.closest('.fc-edit-btn') || e.target.closest('.review-tile-menu') || e.target.closest('.exam-note-popup'))) return;
+    // V96: Block flipping while editing — let user click into the answer box without flipping
+    if(stackFullEditActive) return;
+    if(e && e.target && (e.target.closest('#fc-notes') || e.target.closest('#fc-exam-note') || e.target.closest('#fc-back-img-bar') || e.target.closest('.stack-edit-tools'))) {
+        if(stackFullEditActive) return;
+    }
     if(fcQueue.length === 0) return;
     
     const card = $('fc-card');
     card.classList.toggle('flipped');
+    const sidebar = $('fc-exam-sidebar');
     
     if (card.classList.contains('flipped')) {
         const item = fcQueue[fcCurrentIdx];
@@ -3617,14 +3833,14 @@ function flipCard(e) {
         $('srs-btn-group').style.opacity = '1';
         $('srs-btn-group').style.pointerEvents = 'auto';
         
-        // V82: Show exam note popup on flip (if has exam note)
-        showExamNotePopup(item);
+        // V96: Show exam sidebar only when flipped
+        if(sidebar) sidebar.style.visibility = 'visible';
     } else {
         $('srs-btn-group').style.opacity = '0';
         $('srs-btn-group').style.pointerEvents = 'none';
         $('fc-nav-group').style.display = 'flex';
-        // V82: Hide exam note popup
-        hideExamNotePopup();
+        // V96: Hide exam sidebar when not flipped
+        if(sidebar) sidebar.style.visibility = 'hidden';
     }
 }
 
@@ -3691,12 +3907,17 @@ function toggleFlashcardView() {
         $('fc-gallery-state').style.display = 'flex';
         $('fc-heatmap-wrap').style.display = 'block';
         $('btn-fc-toggle').textContent = 'Stack';
+        // V96: Hide stack edit toolbar in gallery
+        const set = $('stack-edit-toolbar');
+        if(set) set.style.display = 'none';
         renderGallery(); renderFCHeatmap();
     } else {
         $('fc-active-state').style.display = 'flex';
         $('fc-gallery-state').style.display = 'none';
         $('fc-heatmap-wrap').style.display = 'none';
         $('btn-fc-toggle').textContent = 'Gallery';
+        const set = $('stack-edit-toolbar');
+        if(set) set.style.display = 'flex';
         if(fcQueue.length > 0) renderFlashcard();
     }
 }
@@ -3712,88 +3933,477 @@ function openExpandedCard(word) {
     expandEditingWord = word;
     
     $('expand-word').textContent = item.word;
-    $('expand-notes').innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
+    $('expand-notes').innerHTML = item.notes ? renderMarkdown(item.notes) : '<span style="opacity:0.4;font-style:italic;">No notes yet.</span>';
+    $('expand-img-url').value = item.img && !item.img.startsWith('data:') ? item.img : '';
     
     if(item.img) {
         $('expand-img').src = item.img;
         $('expand-img').style.display = 'block';
         $('expand-img-wrap').style.display = 'flex';
+        $('expand-no-img-placeholder').style.display = 'none';
     } else {
         $('expand-img').style.display = 'none';
         $('expand-img-wrap').style.display = 'none';
+        $('expand-no-img-placeholder').style.display = 'block';
     }
-    // Reset edit state
-    $('expand-view-area').style.display = ''; $('expand-edit-area').style.display = 'none';
-    $('expand-modal').classList.add('active');
     
-    // V87: Also open the right panel with editable exam note
-    openGalleryExamPanel(item);
+    // V96: Render exam note in sticky-note styled div
+    const examEl = $('expand-exam-note');
+    examEl.innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;font-style:italic;">No exam note yet.</span>';
+    
+    // Reset edit state
+    expandEditActive = false;
+    $('expand-word').contentEditable = 'false';
+    $('expand-notes').contentEditable = 'false';
+    $('expand-exam-note').contentEditable = 'false';
+    $('expand-img-url').disabled = true;
+    $('expand-format-toolbar').style.display = 'none';
+    $('expand-save-row').style.display = 'none';
+    $('btn-expand-add-selected').style.display = 'none';
+    $('btn-expand-edit').textContent = '✏️ Edit';
+    
+    $('expand-modal').classList.add('active');
+    // V96: Close the gallery exam panel since the expand modal already shows the exam note
+    if($('gallery-exam-panel')) closeGalleryExamPanel();
 }
 
 let expandEditingWord = '';
 let expandEditActive = false;
+
 function toggleExpandEdit() {
     const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
     if(!item) return;
-    const notesEl = $('expand-notes');
     if(!expandEditActive) {
         expandEditActive = true;
-        notesEl.contentEditable = 'true';
-        notesEl.style.outline = '2px dashed var(--accent2)';
-        notesEl.style.borderRadius = '8px';
-        notesEl.style.padding = '12px';
-        notesEl.style.minHeight = '100px';
-        notesEl.focus();
-        // Show image URL bar above image
-        let urlBar = $('expand-img-bar');
-        if(!urlBar) {
-            urlBar = document.createElement('div');
-            urlBar.id = 'expand-img-bar';
-            urlBar.style.cssText = 'width:100%;padding:0 20px;margin-top:8px;';
-            urlBar.innerHTML = '<input type="text" id="expand-img-url-inline" class="input-field" placeholder="Image URL" style="font-size:0.7rem; padding:5px 8px;" onclick="event.stopPropagation()">';
-            $('expand-img-wrap').parentNode.insertBefore(urlBar, $('expand-img-wrap'));
-        }
-        urlBar.style.display = 'block';
-        $('expand-img-url-inline').value = (item.img && !item.img.startsWith('data:')) ? item.img : '';
-        $('btn-expand-edit').textContent = '💾 Save';
+        // Make all 4 fields editable
+        $('expand-word').contentEditable = 'true';
+        $('expand-notes').contentEditable = 'true';
+        $('expand-exam-note').contentEditable = 'true';
+        $('expand-img-url').disabled = false;
+        // If exam note placeholder, clear it
+        if(!item.examNote) $('expand-exam-note').innerHTML = '';
+        if(!item.notes) $('expand-notes').innerHTML = '';
+        $('expand-format-toolbar').style.display = 'flex';
+        $('expand-save-row').style.display = 'flex';
+        $('btn-expand-add-selected').style.display = 'inline-flex';
+        $('btn-expand-edit').textContent = '👁️ View';
+        $('expand-notes').focus();
     } else {
-        expandEditActive = false;
-        let html = notesEl.innerHTML;
-        let text = html.replace(/<div>/gi, '\n').replace(/<\/div>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-        item.notes = text.trim();
-        const imgUrl = $('expand-img-url-inline')?.value?.trim();
-        if(imgUrl) item.img = imgUrl;
-        persistData(); pushToCloud();
-        notesEl.contentEditable = 'false';
-        notesEl.style.outline = ''; notesEl.style.padding = '0 4px';
-        notesEl.innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
-        if(item.img) { $('expand-img').src = item.img; $('expand-img').style.display = 'block'; $('expand-img-wrap').style.display = 'flex'; }
-        const urlBar = $('expand-img-bar');
-        if(urlBar) urlBar.style.display = 'none';
-        $('btn-expand-edit').textContent = '✏️ Edit Notes';
-        refreshCurrentView();
+        // Toggle back to view
+        cancelExpandAllEdits();
     }
 }
-function saveExpandEdit() { if(expandEditActive) toggleExpandEdit(); }
-function cancelExpandEdit() {
-    if(!expandEditActive) return;
+
+function saveExpandAllEdits() {
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(!item) return;
+    const newWord = $('expand-word').textContent.trim();
+    if(newWord && newWord !== item.word) {
+        // Rename — update word in fcQueue too
+        const oldWord = item.word;
+        item.word = newWord;
+        const qItem = fcQueue.find(b => b.word === oldWord);
+        if(qItem) qItem.word = newWord;
+        expandEditingWord = newWord;
+    }
+    item.notes = htmlToPlain($('expand-notes').innerHTML);
+    item.examNote = htmlToPlain($('expand-exam-note').innerHTML);
+    const imgUrl = $('expand-img-url').value.trim();
+    if(imgUrl) item.img = imgUrl;
+    persistData(); pushToCloud();
+    
+    // Re-render in view mode
+    $('expand-notes').innerHTML = renderMarkdown(item.notes);
+    $('expand-exam-note').innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;font-style:italic;">No exam note yet.</span>';
+    if(item.img) { $('expand-img').src = item.img; $('expand-img').style.display = 'block'; $('expand-img-wrap').style.display = 'flex'; }
+    
     expandEditActive = false;
-    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
-    const notesEl = $('expand-notes');
-    notesEl.contentEditable = 'false';
-    notesEl.style.outline = ''; notesEl.style.padding = '0 4px';
-    if(item) notesEl.innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
-    const urlBar = $('expand-img-bar');
-    if(urlBar) urlBar.style.display = 'none';
-    $('btn-expand-edit').textContent = '✏️ Edit Notes';
-}
-function wrapExpandText(before, after) {} // contenteditable handles formatting
-function expandAction() {
-    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
-    if(item) showGlobalMenu(event, item.word, 'gallery');
+    $('expand-word').contentEditable = 'false';
+    $('expand-notes').contentEditable = 'false';
+    $('expand-exam-note').contentEditable = 'false';
+    $('expand-img-url').disabled = true;
+    $('expand-format-toolbar').style.display = 'none';
+    $('expand-save-row').style.display = 'none';
+    $('btn-expand-add-selected').style.display = 'none';
+    $('btn-expand-edit').textContent = '✏️ Edit';
+    
+    refreshCurrentView();
 }
 
-function closeExpandModal() { $('expand-modal').classList.remove('active'); }
+function cancelExpandAllEdits() {
+    expandEditActive = false;
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    $('expand-word').contentEditable = 'false';
+    $('expand-notes').contentEditable = 'false';
+    $('expand-exam-note').contentEditable = 'false';
+    $('expand-img-url').disabled = true;
+    $('expand-format-toolbar').style.display = 'none';
+    $('expand-save-row').style.display = 'none';
+    $('btn-expand-add-selected').style.display = 'none';
+    $('btn-expand-edit').textContent = '✏️ Edit';
+    if(item) {
+        $('expand-word').textContent = item.word;
+        $('expand-notes').innerHTML = renderMarkdown(item.notes);
+        $('expand-exam-note').innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;font-style:italic;">No exam note yet.</span>';
+        $('expand-img-url').value = item.img && !item.img.startsWith('data:') ? item.img : '';
+    }
+}
+
+function execFormat(cmd, val) {
+    document.execCommand(cmd, false, val || null);
+}
+
+function htmlToPlain(html) {
+    // Convert HTML back to markdown-ish plain text
+    return html
+        .replace(/<strong>/gi, '**').replace(/<\/strong>/gi, '**')
+        .replace(/<b>/gi, '**').replace(/<\/b>/gi, '**')
+        .replace(/<em>/gi, '*').replace(/<\/em>/gi, '*')
+        .replace(/<i>/gi, '*').replace(/<\/i>/gi, '*')
+        .replace(/<u>/gi, '__').replace(/<\/u>/gi, '__')
+        .replace(/<div>/gi, '\n').replace(/<\/div>/gi, '')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .trim();
+}
+
+// V96: Generate AI exam note for stack view
+async function generateExamNoteForStack() {
+    if(!stackEditingWord) return;
+    const key = GEMINI_KEY || $('gemini-key').value.trim();
+    if(!key) { alert("Consultant Offline: paste your Gemini API Key in Settings."); return; }
+    const item = REVIEW_BANK.find(b => b.word === stackEditingWord);
+    if(!item) return;
+    const examEl = document.getElementById('fc-exam-note');
+    const btn = document.getElementById('btn-stack-ai-generate');
+    if(btn) { btn.disabled = true; btn.textContent = '⏳'; }
+    examEl.innerHTML = '<div style="opacity:0.6;text-align:center;padding:10px;">⏳ Surgeon is writing...</div>';
+    try {
+        const errorContext = item.errorType === 'know' ? 'Knowledge gap' : item.errorType === 'retrieval' ? 'Retrieval failure' : item.errorType === 'reasoning' ? 'Reasoning error' : 'General review';
+        const prompt = `You are an MRCS Part A exam coach referencing Bailey & Love, Schwartz, NICE guidelines, RCSEng curriculum. Generate a concise exam note for "${item.word}". Error type: ${errorContext}.
+
+RESPOND IN THIS EXACT FORMAT — never exceed 12 lines total. Start directly with **CORE FACT** — no preamble.
+
+**CORE FACT** (2-3 sentences)
+Key testable facts. Bold the most examined detail.
+
+**EXAM TRAP** (1 sentence)
+The common wrong answer and why.
+
+**SBA LOGIC** (1-2 sentences)
+Question pattern and reasoning shortcut.
+
+**RISK FLAG:** [RED|YELLOW|GREEN]
+RED = high-yield surgical/peri-op/pathology. YELLOW = anatomy/physiology/specialty. GREEN = EM/post-op/skin.
+
+RULES: Max 12 lines. Bold key terms. Evidence-based only. No preamble or commentary.`;
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        if(data.candidates && data.candidates[0].content.parts[0].text) {
+            const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
+            item.examNote = text;
+            const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
+            if(riskMatch) item.riskLevel = riskMatch[1].toLowerCase();
+            persistData(); pushToCloud();
+            examEl.innerHTML = '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(text) + '</div>';
+        } else {
+            examEl.innerHTML = '<span style="color:#ff5252;">AI generation failed.</span>';
+        }
+    } catch(e) {
+        examEl.innerHTML = '<span style="color:#ff5252;">Error: ' + (e.message || 'Network error') + '</span>';
+    } finally {
+        if(btn) { btn.disabled = false; btn.textContent = '🤖 AI Surgeon'; }
+    }
+}
+
+// V96: Refine stack exam note
+async function refineStackExamNote() {
+    if(!stackEditingWord) return;
+    const key = GEMINI_KEY || $('gemini-key').value.trim();
+    if(!key) { alert("Consultant Offline: paste your Gemini API Key in Settings."); return; }
+    const inputEl = document.getElementById('stack-ai-refine-input');
+    const userPrompt = (inputEl?.value || '').trim();
+    if(!userPrompt) { alert('Type what you want changed.'); return; }
+    const item = REVIEW_BANK.find(b => b.word === stackEditingWord);
+    if(!item || !item.examNote) { alert('Generate an exam note first.'); return; }
+    const examEl = document.getElementById('fc-exam-note');
+    const btn = document.getElementById('btn-stack-ai-refine');
+    if(btn) { btn.disabled = true; btn.textContent = '⏳'; }
+    const originalHTML = examEl.innerHTML;
+    examEl.innerHTML = '<div style="opacity:0.6;text-align:center;padding:10px;">⏳ Refining...</div>';
+    try {
+        const prompt = `You are an MRCS Part A exam coach. Below is an existing exam note for "${item.word}". Revise it according to the student's request. Start directly with the revised content — NO preamble.
+
+EXISTING EXAM NOTE:
+${item.examNote}
+
+STUDENT REQUEST: ${userPrompt}
+
+Return the COMPLETE revised exam note in the same format (CORE FACT, EXAM TRAP, SBA LOGIC, RISK FLAG). Max 12 lines. Bold key terms. No preamble.`;
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        if(data.candidates && data.candidates[0].content.parts[0].text) {
+            const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
+            item.examNote = text;
+            const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
+            if(riskMatch) item.riskLevel = riskMatch[1].toLowerCase();
+            persistData(); pushToCloud();
+            examEl.innerHTML = '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(text) + '</div>';
+            if(inputEl) inputEl.value = '';
+        } else {
+            examEl.innerHTML = originalHTML;
+            alert('Refine failed.');
+        }
+    } catch(e) {
+        examEl.innerHTML = originalHTML;
+        alert('Refine error: ' + (e.message || 'Network error'));
+    } finally {
+        if(btn) { btn.disabled = false; btn.textContent = 'Send'; }
+    }
+}
+
+// V96: Strip common AI preambles like "Here is the revised exam note for X:" before saving
+function cleanAIPreamble(text) {
+    if(!text) return text;
+    return text
+        .replace(/^(Here['']?s|Here is)[^\n]*?(revised|updated|refined|new|modified)[^\n]*?\n+/i, '')
+        .replace(/^(Here['']?s|Here is) (the |a |an )?[^\n]*?:\s*\n+/i, '')
+        .replace(/^(Sure|Okay|Certainly|Of course)[!,.]?[^\n]*\n+/i, '')
+        .replace(/^\*\*Revised[^*]*\*\*\s*\n+/i, '')
+        .trim();
+}
+
+// V96: Generate AI flashcard answer
+async function generateAnswerForExpand() {
+    if(!expandEditingWord) return;
+    const key = GEMINI_KEY || $('gemini-key').value.trim();
+    if(!key) { alert("Consultant Offline: paste your Gemini API Key in Settings."); return; }
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(!item) return;
+    const notesEl = document.getElementById('expand-notes');
+    const btn = document.getElementById('btn-expand-ai-answer');
+    if(btn) { btn.disabled = true; btn.textContent = '⏳'; }
+    notesEl.innerHTML = '<div style="opacity:0.6;text-align:center;padding:20px;">⏳ Writing answer...</div>';
+    try {
+        const prompt = `You are an MRCS Part A revision tool. Write a concise flashcard answer for "${item.word}" — the kind of definition/explanation a UK surgical trainee would need to recall. Keep it under 6 lines. Bold the key testable terms. Plain prose, no headings.`;
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        if(data.candidates && data.candidates[0].content.parts[0].text) {
+            const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
+            item.notes = text;
+            persistData(); pushToCloud();
+            notesEl.innerHTML = renderMarkdown(text);
+            notesEl.contentEditable = expandEditActive ? 'true' : 'false';
+        } else {
+            notesEl.innerHTML = '<span style="color:#ff5252;">AI generation failed. Try again.</span>';
+        }
+    } catch(e) {
+        notesEl.innerHTML = '<span style="color:#ff5252;">Error: ' + (e.message || 'Network error') + '</span>';
+    } finally {
+        if(btn) { btn.disabled = false; btn.textContent = '🤖 AI Answer'; }
+    }
+}
+
+// V96: Ask AI to refine the existing answer based on user prompt
+async function refineExpandAnswer() {
+    if(!expandEditingWord) return;
+    const key = GEMINI_KEY || $('gemini-key').value.trim();
+    if(!key) { alert("Consultant Offline: paste your Gemini API Key in Settings."); return; }
+    const inputEl = document.getElementById('expand-answer-refine-input');
+    const userPrompt = (inputEl?.value || '').trim();
+    if(!userPrompt) { alert('Type what you want changed about the answer.'); return; }
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(!item) return;
+    const notesEl = document.getElementById('expand-notes');
+    const currentNotes = item.notes || htmlToPlain(notesEl.innerHTML);
+    if(!currentNotes.trim()) { alert('Generate or write an answer first before refining.'); return; }
+    const btn = document.getElementById('btn-expand-answer-refine');
+    if(btn) { btn.disabled = true; btn.textContent = '⏳'; }
+    const originalHTML = notesEl.innerHTML;
+    notesEl.innerHTML = '<div style="opacity:0.6;text-align:center;padding:20px;">⏳ Refining...</div>';
+    try {
+        const prompt = `You are an MRCS Part A revision tool. Below is an existing flashcard answer for "${item.word}". The student wants you to revise it.
+
+EXISTING ANSWER:
+${currentNotes}
+
+STUDENT REQUEST: ${userPrompt}
+
+Return the COMPLETE revised answer. Keep it under 6 lines. Bold key terms.`;
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        if(data.candidates && data.candidates[0].content.parts[0].text) {
+            const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
+            item.notes = text;
+            persistData(); pushToCloud();
+            notesEl.innerHTML = renderMarkdown(text);
+            notesEl.contentEditable = expandEditActive ? 'true' : 'false';
+            if(inputEl) inputEl.value = '';
+        } else {
+            notesEl.innerHTML = originalHTML;
+            alert('Refine failed. Try again.');
+        }
+    } catch(e) {
+        notesEl.innerHTML = originalHTML;
+        alert('Refine error: ' + (e.message || 'Network error'));
+    } finally {
+        if(btn) { btn.disabled = false; btn.textContent = 'Send'; }
+    }
+}
+
+// V96: Generate AI exam note for the currently open expand modal card
+async function generateExamNoteForExpand() {
+    if(!expandEditingWord) return;
+    const key = GEMINI_KEY || $('gemini-key').value.trim();
+    if(!key) { alert("Consultant Offline: paste your Gemini API Key in Settings."); return; }
+    
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(!item) return;
+    
+    const examEl = document.getElementById('expand-exam-note');
+    const btn = document.getElementById('btn-expand-ai-generate');
+    if(btn) { btn.disabled = true; btn.textContent = '⏳ Generating...'; }
+    examEl.innerHTML = '<div style="opacity:0.6;text-align:center;padding:20px;">⏳ Consultant AI is writing the exam note...</div>';
+    
+    try {
+        const errorContext = item.errorType === 'know' ? 'Knowledge gap' : item.errorType === 'retrieval' ? 'Retrieval failure' : item.errorType === 'reasoning' ? 'Reasoning error' : 'General review';
+        const prompt = `You are an MRCS Part A exam coach referencing Bailey & Love, Schwartz, NICE guidelines, RCSEng curriculum. Generate a concise exam note for "${item.word}". Error type: ${errorContext}.
+
+RESPOND IN THIS EXACT FORMAT — never exceed 12 lines total:
+
+**CORE FACT** (2-3 sentences)
+Key testable facts. Bold the most examined detail.
+
+**EXAM TRAP** (1 sentence)
+The common wrong answer and why.
+
+**SBA LOGIC** (1-2 sentences)
+Question pattern and reasoning shortcut.
+
+**RISK FLAG:** [RED|YELLOW|GREEN]
+RED = high-yield surgical/peri-op/pathology. YELLOW = anatomy/physiology/specialty. GREEN = EM/post-op/skin.
+
+RULES: Max 12 lines. Bold key terms. Evidence-based only.`;
+        
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        if(data.candidates && data.candidates[0].content.parts[0].text) {
+            const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
+            item.examNote = text;
+            const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
+            if(riskMatch) item.riskLevel = riskMatch[1].toLowerCase();
+            persistData(); pushToCloud();
+            examEl.innerHTML = renderMarkdown(text);
+            // Enable edit on the field so user can tweak
+            examEl.contentEditable = expandEditActive ? 'true' : 'false';
+        } else {
+            examEl.innerHTML = '<span style="color:#ff5252;">AI generation failed. Try again.</span>';
+        }
+    } catch(e) {
+        examEl.innerHTML = '<span style="color:#ff5252;">Error: ' + (e.message || 'Network error') + '</span>';
+    } finally {
+        if(btn) { btn.disabled = false; btn.textContent = '🤖 Generate AI Note'; }
+    }
+}
+
+// V96: Ask AI to refine the existing exam note based on user prompt
+async function refineExpandExamNote() {
+    if(!expandEditingWord) return;
+    const key = GEMINI_KEY || $('gemini-key').value.trim();
+    if(!key) { alert("Consultant Offline: paste your Gemini API Key in Settings."); return; }
+    
+    const inputEl = document.getElementById('expand-ai-refine-input');
+    const userPrompt = (inputEl?.value || '').trim();
+    if(!userPrompt) { alert('Type what you want changed about the exam note.'); return; }
+    
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(!item) return;
+    
+    const examEl = document.getElementById('expand-exam-note');
+    const currentNote = item.examNote || htmlToPlain(examEl.innerHTML);
+    if(!currentNote.trim()) { alert('Generate an exam note first before refining.'); return; }
+    
+    const btn = document.getElementById('btn-expand-ai-refine');
+    if(btn) { btn.disabled = true; btn.textContent = '⏳'; }
+    const originalHTML = examEl.innerHTML;
+    examEl.innerHTML = '<div style="opacity:0.6;text-align:center;padding:20px;">⏳ Refining...</div>';
+    
+    try {
+        const prompt = `You are an MRCS Part A exam coach. Below is an existing exam note for "${item.word}". The student wants you to revise it according to their request.
+
+EXISTING EXAM NOTE:
+${currentNote}
+
+STUDENT REQUEST: ${userPrompt}
+
+Return the COMPLETE revised exam note in the same format (CORE FACT, EXAM TRAP, SBA LOGIC, RISK FLAG). Apply the student's requested change. Max 12 lines. Bold key terms. Evidence-based only.`;
+        
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        if(data.candidates && data.candidates[0].content.parts[0].text) {
+            const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
+            item.examNote = text;
+            const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
+            if(riskMatch) item.riskLevel = riskMatch[1].toLowerCase();
+            persistData(); pushToCloud();
+            examEl.innerHTML = renderMarkdown(text);
+            examEl.contentEditable = expandEditActive ? 'true' : 'false';
+            if(inputEl) inputEl.value = '';
+        } else {
+            examEl.innerHTML = originalHTML;
+            alert('Refine failed. Try again.');
+        }
+    } catch(e) {
+        examEl.innerHTML = originalHTML;
+        alert('Refine error: ' + (e.message || 'Network error'));
+    } finally {
+        if(btn) { btn.disabled = false; btn.textContent = 'Send'; }
+    }
+}
+
+function addExpandSelectedToCard() {
+    const sel = window.getSelection().toString().trim();
+    if(!sel) { alert('Select text from the exam note first.'); return; }
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(!item) return;
+    item.notes = (item.notes || '') + (item.notes ? '\n\n' : '') + sel;
+    persistData(); pushToCloud();
+    $('expand-notes').innerHTML = renderMarkdown(item.notes);
+    haptic(20);
+}
+
+function expandAction() {
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(item) showGlobalMenu(event, item.word, 'expand');
+}
+
+function closeExpandModal() { 
+    if(expandEditActive) {
+        if(!confirm('Discard unsaved edits?')) return;
+        cancelExpandAllEdits();
+    }
+    $('expand-modal').classList.remove('active'); 
+}
 
 function renderGallery() {
     const grid = $('fc-gallery-state');
@@ -4567,11 +5177,23 @@ function playBeep(freq = 880, dur = 0.12) {
 function haptic(ms = 10) { try { navigator.vibrate(ms); } catch(e) {} }
 
 // =================== V79: KEYBOARD SHORTCUTS ===================
+// V96: Strip HTML from clipboard when pasting into contenteditable elements
+document.addEventListener('paste', function(e) {
+    if(!e.target.isContentEditable) return;
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, text);
+});
+
 document.addEventListener('keydown', function(e) {
     // Only active in flashcard view
     if(!$('v-flashcards').classList.contains('active')) return;
     if(isGalleryView) return;
     if(document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+    // V96: Don't intercept keys when editing — contenteditable focused or stack edit active
+    if(document.activeElement.isContentEditable) return;
+    if(typeof stackFullEditActive !== 'undefined' && stackFullEditActive) return;
+    if(typeof expandEditActive !== 'undefined' && expandEditActive) return;
     
     const card = $('fc-card');
     const isFlipped = card.classList.contains('flipped');
@@ -4872,6 +5494,9 @@ function openGalleryExamPanel(item) {
     $('btn-gallery-panel-add').onclick = () => addExamNoteToFlashcard(item.word);
     $('btn-gallery-panel-add').style.display = item.examNote ? 'inline-flex' : 'none';
     panel.classList.add('open');
+    // V96: Shrink gallery container so cards don't overlap with panel
+    const galleryEl = document.getElementById('fc-gallery-state');
+    if(galleryEl) galleryEl.style.paddingRight = '340px';
     // V88: Glow active card
     document.querySelectorAll('.fc-mini-card.active-working').forEach(c => c.classList.remove('active-working'));
     const activeCard = [...document.querySelectorAll('.fc-mini-card')].find(c => { const b = c.querySelector('b'); return b && b.textContent.trim() === item.word; });
@@ -4879,6 +5504,9 @@ function openGalleryExamPanel(item) {
 }
 function closeGalleryExamPanel() { 
     $('gallery-exam-panel').classList.remove('open');
+    // V96: Restore gallery container width
+    const galleryEl = document.getElementById('fc-gallery-state');
+    if(galleryEl) galleryEl.style.paddingRight = '';
     document.querySelectorAll('.fc-mini-card.active-working').forEach(c => c.classList.remove('active-working'));
 }
 
@@ -4943,7 +5571,7 @@ RULES: Max 12 lines. Bold key terms. Evidence-based only.`;
             });
             const data = await res.json();
             if(data.candidates && data.candidates[0].content.parts[0].text) {
-                const text = data.candidates[0].content.parts[0].text;
+                const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
                 const globalIdx = REVIEW_BANK.findIndex(b => b.word === word);
                 if(globalIdx > -1) {
                     REVIEW_BANK[globalIdx].examNote = text;
@@ -4993,15 +5621,34 @@ function buildPostOpStrip(words) {
 function addPostOpTile(word, examNote, riskLevel) {
     const mosaic = $('postop-mosaic');
     const tile = document.createElement('div');
-    tile.className = 'postop-fact-tile';
+    tile.className = 'postop-fact-tile sticky-note';
     tile.setAttribute('data-risk', riskLevel);
     const riskEmoji = riskLevel === 'red' ? '🔴' : riskLevel === 'yellow' ? '🟡' : riskLevel === 'green' ? '🟢' : '';
     
-    // Extract just the core fact for the tile display
-    let displayText = examNote.replace(/\*\*/g, '').substring(0, 200);
-    if(examNote.length > 200) displayText += '...';
+    // V96: If user has personal notes, show the FULL flashcard answer.
+    // Otherwise (AI-only generated), show only the CORE FACT section.
+    const item = REVIEW_BANK.find(b => b.word === word);
+    const hasPersonalNotes = item && item.notes && item.notes.trim().length > 0;
     
-    tile.innerHTML = '<div class="tile-word">' + word + '</div><div class="tile-risk">' + riskEmoji + '</div><div style="font-size:0.72rem; opacity:0.8; line-height:1.5;">' + displayText + '</div>';
+    let displayHtml = '';
+    if(hasPersonalNotes) {
+        // Show full flashcard answer
+        displayHtml = '<div style="font-size:0.75rem; line-height:1.5;">' + renderMarkdown(item.notes) + '</div>';
+    } else {
+        // Extract just CORE FACT section from AI exam note
+        let coreFact = '';
+        const coreMatch = examNote.match(/\*\*CORE FACT\*\*[\s\S]*?(?=\*\*EXAM TRAP|\*\*SBA LOGIC|\*\*RISK FLAG|$)/i);
+        if(coreMatch) {
+            coreFact = coreMatch[0].replace(/\*\*CORE FACT\*\*/i, '').trim();
+        } else {
+            // Fallback: first 200 chars
+            coreFact = examNote.replace(/\*\*/g, '').substring(0, 200);
+            if(examNote.length > 200) coreFact += '...';
+        }
+        displayHtml = '<div style="font-size:0.72rem; line-height:1.5;">' + renderMarkdown(coreFact) + '</div>';
+    }
+    
+    tile.innerHTML = '<div class="tile-word" style="color:#5a4510 !important;">' + word + '</div><div class="tile-risk">' + riskEmoji + '</div>' + displayHtml;
     tile.style.cursor = 'pointer';
     tile.onclick = () => openExpandedCard(word);
     mosaic.appendChild(tile);
@@ -5014,6 +5661,18 @@ function filterPostOp(level) {
     document.querySelectorAll('.postop-fact-tile').forEach(tile => {
         const tileRisk = tile.getAttribute('data-risk');
         tile.style.display = (level === 'all' || tileRisk === level) ? '' : 'none';
+    });
+}
+
+// V96: Search filter for post-op page
+function filterPostOpBySearch() {
+    const q = (document.getElementById('postop-search-input')?.value || '').toLowerCase().trim();
+    document.querySelectorAll('.postop-fact-tile').forEach(tile => {
+        const text = tile.textContent.toLowerCase();
+        const matches = !q || text.includes(q);
+        const tileRisk = tile.getAttribute('data-risk');
+        const riskMatches = postOpRiskFilter === 'all' || tileRisk === postOpRiskFilter;
+        tile.style.display = (matches && riskMatches) ? '' : 'none';
     });
 }
 
@@ -5081,7 +5740,7 @@ RULES: Max 12 lines. Bold key terms. Evidence-based only.`;
             });
             const data = await res.json();
             if(data.candidates && data.candidates[0].content.parts[0].text) {
-                const text = data.candidates[0].content.parts[0].text;
+                const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
                 const globalIdx = REVIEW_BANK.findIndex(b => b.word === word);
                 if(globalIdx > -1) {
                     REVIEW_BANK[globalIdx].examNote = text;
@@ -5293,6 +5952,102 @@ document.addEventListener('touchend', function(e) {
 }, { passive: true });
 
 // =================== V88: INLINE EDIT + SELECTION ADD ===================
+
+// V96: Stack full edit — single toolbar at top, edits notes, image URL, exam note all in place
+let stackFullEditActive = false;
+function toggleStackFullEdit() {
+    const item = REVIEW_BANK.find(b => b.word === stackEditingWord);
+    if(!item) { alert('Flip the card to a flashcard first.'); return; }
+    if(!stackFullEditActive) {
+        // Make sure card is flipped so user can see what they're editing
+        if(!$('fc-card').classList.contains('flipped')) flipCard();
+        stackFullEditActive = true;
+        // Notes contenteditable — DON'T change font/size, just outline
+        const notesEl = $('fc-notes');
+        notesEl.contentEditable = 'true';
+        notesEl.style.outline = '2px dashed var(--accent2)';
+        notesEl.style.borderRadius = '6px';
+        // V96: Clear "No notes added yet." placeholder so user starts with blank field
+        if(!item.notes || !item.notes.trim()) notesEl.innerHTML = '';
+        // Exam note contenteditable
+        const examEl = $('fc-exam-note');
+        if(examEl) {
+            examEl.contentEditable = 'true';
+            examEl.style.outline = '2px dashed #c9a84c';
+            examEl.style.borderRadius = '6px';
+            // V96: Clear "No exam notes yet." placeholder
+            if(!item.examNote || !item.examNote.trim()) examEl.innerHTML = '';
+        }
+        // Show image URL bar above image
+        let urlBar = $('fc-back-img-bar');
+        if(!urlBar) {
+            urlBar = document.createElement('div');
+            urlBar.id = 'fc-back-img-bar';
+            urlBar.style.cssText = 'width:100%;margin-top:8px;';
+            urlBar.innerHTML = '<input type="text" id="fc-back-img-url-inline" class="input-field" placeholder="📷 Image URL" style="font-size:0.7rem; padding:6px 10px; border-radius:8px; width:100%;" onclick="event.stopPropagation()">';
+            const imgEl = $('fc-img');
+            imgEl.parentNode.insertBefore(urlBar, imgEl);
+        }
+        urlBar.style.display = 'block';
+        $('fc-back-img-url-inline').value = (item.img && !item.img.startsWith('data:')) ? item.img : '';
+        // Toggle UI
+        $('btn-stack-edit-toggle').style.display = 'none';
+        $('stack-edit-tools').style.display = 'flex';
+        notesEl.focus();
+    } else {
+        saveStackFullEdit();
+    }
+}
+
+function saveStackFullEdit() {
+    const item = REVIEW_BANK.find(b => b.word === stackEditingWord);
+    if(!item) return;
+    item.notes = htmlToPlain($('fc-notes').innerHTML);
+    const examEl = $('fc-exam-note');
+    if(examEl) item.examNote = htmlToPlain(examEl.innerHTML);
+    const imgEl = document.getElementById('fc-back-img-url-inline');
+    if(imgEl && imgEl.value && imgEl.value.trim()) item.img = imgEl.value.trim();
+    // Update fcQueue too
+    const qItem = fcQueue.find(b => b.word === stackEditingWord);
+    if(qItem) { qItem.notes = item.notes; qItem.examNote = item.examNote; if(item.img) qItem.img = item.img; }
+    persistData(); pushToCloud();
+    
+    stackFullEditActive = false;
+    const notesEl = $('fc-notes');
+    notesEl.contentEditable = 'false';
+    notesEl.style.outline = '';
+    notesEl.innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
+    if(examEl) {
+        examEl.contentEditable = 'false';
+        examEl.style.outline = '';
+        examEl.innerHTML = item.examNote ? '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(item.examNote) + '</div>' : '<span style="opacity:0.3;">No exam notes yet.</span>';
+    }
+    if(item.img) { $('fc-img').src = item.img; $('fc-img').style.display = 'block'; }
+    const urlBar = $('fc-back-img-bar');
+    if(urlBar) urlBar.style.display = 'none';
+    $('btn-stack-edit-toggle').style.display = 'inline-flex';
+    $('stack-edit-tools').style.display = 'none';
+}
+
+function cancelStackFullEdit() {
+    if(!stackFullEditActive) return;
+    stackFullEditActive = false;
+    const item = REVIEW_BANK.find(b => b.word === stackEditingWord);
+    const notesEl = $('fc-notes');
+    notesEl.contentEditable = 'false';
+    notesEl.style.outline = '';
+    if(item) notesEl.innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
+    const examEl = $('fc-exam-note');
+    if(examEl) {
+        examEl.contentEditable = 'false';
+        examEl.style.outline = '';
+        if(item) examEl.innerHTML = item.examNote ? '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(item.examNote) + '</div>' : '<span style="opacity:0.3;">No exam notes yet.</span>';
+    }
+    const urlBar = $('fc-back-img-bar');
+    if(urlBar) urlBar.style.display = 'none';
+    $('btn-stack-edit-toggle').style.display = 'inline-flex';
+    $('stack-edit-tools').style.display = 'none';
+}
 
 // V89: Stack card inline note editing — contenteditable, no layout change
 let stackEditingWord = '';
@@ -5602,7 +6357,8 @@ function initApp() {
     $('btn-append-ai').onclick = appendAIToNote;
     $('ai-followup-input').onkeypress = (e) => { if(e.key === 'Enter') sendFollowUp(); };
     $('btn-ss-back').onclick = showHistoryView;
-    $('btn-export-pdf').onclick = exportFlashcardsPDF;
+    // V96: Old btn-export-pdf removed — handled by topbar
+    if($('btn-export-pdf')) $('btn-export-pdf').onclick = exportFlashcardsPDF;
     
     $('btn-srs-1').onclick = () => logSRS(1);
     $('btn-srs-2').onclick = () => logSRS(2);
@@ -5617,7 +6373,7 @@ function initApp() {
     $('btn-tk-back').onclick = () => { show('v-setup'); applyTheme(); };
     $('btn-back').onclick = () => { show('v-setup'); applyTheme(); };
     $('btn-bank-back').onclick = () => { show('v-setup'); applyTheme(); };
-    $('btn-fc-back').onclick = () => { closeFCSession(); show('v-setup'); applyTheme(); };
+    if($('btn-fc-back')) $('btn-fc-back').onclick = () => { closeFCSession(); show('v-setup'); applyTheme(); };
     $('btn-fc-toggle').onclick = toggleFlashcardView;
     
     $('btn-clear').onclick = clearHistory;
@@ -5631,7 +6387,7 @@ function initApp() {
     $('btn-action-cancel').onclick = () => $('action-modal').classList.remove('active');
     $('action-modal').onclick = () => $('action-modal').classList.remove('active');
     
-    logDebug("V89 App initialized successfully. All systems operational.");
+    logDebug("V96 App initialized successfully. All systems operational.");
 }
 
 initApp();
