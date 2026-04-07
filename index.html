@@ -178,8 +178,36 @@
     #v-flashcards.active { max-width: 100%; width: 100%; height: 100%; flex: 1; display: flex; flex-direction: column; }
     #fc-active-state { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px 0; overflow-y: auto; perspective: 1200px; }
 
-    .fc-card { width: 100%; max-width: 900px; display: grid; border: 2px solid var(--accent); border-radius: 16px; background: transparent; cursor: pointer; transform-style: preserve-3d; transition: transform 0.6s; margin: 0 auto 12px; min-height: 220px; height: auto; }
+    .fc-card { width: 100%; max-width: 900px; display: grid; border: 2px solid var(--accent); border-radius: 16px; background: transparent; cursor: pointer; transform-style: preserve-3d; transition: transform 0.6s, max-width 0.4s, max-height 0.4s, min-height 0.4s; margin: 0 auto 12px; min-height: 220px; height: auto; }
     .fc-card.flipped { transform: rotateY(180deg); }
+    
+    /* V104: Desktop in-card cuboid — flipped card grows to fill viewport */
+    @media (min-width: 1025px) {
+        .fc-card.in-card-modal.flipped {
+            max-width: min(95vw, 1300px);
+            width: min(95vw, 1300px);
+            min-height: 80vh;
+            max-height: 90vh;
+        }
+        .fc-card.in-card-modal.flipped .fc-back {
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+            padding: 24px 28px 20px;
+            overflow-y: auto;
+        }
+        .fc-card.in-card-modal.flipped .fc-back .incard-srs-anchor {
+            margin-top: auto;
+        }
+        /* Hide global stack-edit toolbar on desktop — dead code there */
+        #stack-edit-toolbar { display: none !important; }
+        /* Hide nav arrows when card is flipped on desktop — force SRS keys */
+        .fc-card.flipped ~ #fc-nav-group,
+        #fc-nav-group.hidden-when-flipped { display: none !important; }
+    }
+    .fc-card.in-card-modal.flipped #fc-front { visibility: hidden; }
+    /* V104: Larger answer text inside in-card modal */
+    .fc-card.in-card-modal.flipped #incard-expand-notes { font-size: 1.25rem; line-height: 1.6; }
     
     .fc-face { grid-area: 1 / 1; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; border-radius: 16px; background: rgba(128,128,128,0.05); }
     .fc-front { transform: rotateY(0deg); z-index: 2; }
@@ -1286,13 +1314,8 @@
             <div class="row" style="flex-wrap:wrap; justify-content:center; gap:6px;" id="ss-autopsy-grid"></div>
         </div>
 
-        <div class="dash-card">
-            <div class="dash-lbl" style="text-align:center; margin-bottom:6px; color:var(--accent2);">Error Sparklines (Last 10 Sessions)</div>
-            <div id="ss-error-sparklines"></div>
-        </div>
-
         <div class="dash-card" id="ss-weak-topic-card">
-            <div class="dash-lbl" style="text-align:center; margin-bottom:6px; color:var(--accent2);">Weak Topic Heatmap</div>
+            <div class="dash-lbl" style="text-align:center; margin-bottom:6px; color:var(--accent2);">Error Trend (Last 10 Sessions)</div>
             <div id="error-trend-container"></div>
         </div>
 
@@ -1469,12 +1492,21 @@
         <div class="postop-progress-bar"><div class="postop-progress-fill" id="postop-progress-fill" style="width:0%"></div></div>
         <div class="postop-generating" id="postop-status">Generating AI summaries...</div>
     </div>
-    <div class="gallery-risk-filter" id="postop-risk-filter" style="justify-content:center; margin-bottom:12px;">
+    <div class="gallery-risk-filter" id="postop-risk-filter" style="justify-content:center; margin-bottom:8px;">
         <button class="risk-filter-btn active" onclick="filterPostOp('all')">All</button>
         <button class="risk-filter-btn" onclick="filterPostOp('red')">🔴 High</button>
         <button class="risk-filter-btn" onclick="filterPostOp('yellow')">🟡 Medium</button>
         <button class="risk-filter-btn" onclick="filterPostOp('green')">🟢 Low</button>
     </div>
+    <!-- V104: Error type filter -->
+    <div class="gallery-risk-filter" id="postop-errtype-filter" style="justify-content:center; margin-bottom:8px;">
+        <button class="risk-filter-btn active" onclick="filterPostOpErrType('all', this)">All Errors</button>
+        <button class="risk-filter-btn" onclick="filterPostOpErrType('know', this)">🧠 Knowledge</button>
+        <button class="risk-filter-btn" onclick="filterPostOpErrType('retrieval', this)">🔁 Retrieval</button>
+        <button class="risk-filter-btn" onclick="filterPostOpErrType('reasoning', this)">⚡ Reasoning</button>
+    </div>
+    <!-- V104: Dynamic topic filter (populated from tile data-topic attrs) -->
+    <div class="gallery-risk-filter" id="postop-topic-filter" style="justify-content:center; margin-bottom:12px; flex-wrap:wrap;"></div>
     <div class="postop-fact-mosaic" id="postop-mosaic"></div>
     <div class="row" style="justify-content:center; gap:8px; margin-top:16px;">
         <button class="btn btn-sm btn-ghost" id="btn-postop-close" onclick="closePostOpReview()">Close Post-Op Review</button>
@@ -1520,7 +1552,7 @@ logDebug("V103 Script execution started.");
 let activeSelection = "";
 document.addEventListener("selectionchange", () => { const sel = window.getSelection().toString().trim(); if (sel) activeSelection = sel; });
 
-const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar']);
+const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar','incard-expand-wrapper','incard-expand-word','incard-expand-notes','incard-expand-exam-note','incard-expand-img-url','incard-expand-format-toolbar','incard-expand-save-row','btn-incard-expand-edit','btn-incard-expand-action','postop-errtype-filter','postop-topic-filter']);
 const $ = id => { const el = document.getElementById(id); if (!el) { if(!_optionalIds.has(id)) logDebug(`WARNING: Element '${id}' not found.`); return document.createElement('div'); } return el; };
 const EXAM_DATE = new Date(2026, 3, 22);
 
@@ -1561,6 +1593,9 @@ let lastAIResponseText = "";
 
 // V82: Gallery risk filter
 let galleryRiskFilter = 'all';
+// V104: Gallery error type and topic filters
+let galleryErrTypeFilter = 'all';
+let galleryTopicFilter = 'all';
 // V82: Gallery select mode for batch AI
 let gallerySelectMode = false;
 let gallerySelected = new Set();
@@ -1568,6 +1603,9 @@ let gallerySelected = new Set();
 let postOpSessionWords = [];
 let postOpResults = [];
 let postOpRiskFilter = 'all';
+// V104: Post-op error type and topic filters
+let postOpErrTypeFilter = 'all';
+let postOpTopicFilter = 'all';
 // V82: Session auto-save
 let sessionAutoSave = {}; 
 
@@ -1628,11 +1666,37 @@ function setSyncStatus(msg, color) {
     if($('home-sync-status')) { $('home-sync-status').textContent = msg; $('home-sync-status').style.color = color; }
 }
 
-async function pushToCloud() {
+// V104: Debounced push — coalesces calls within 4s, retries 403/429 with backoff
+let _pushDebounceTimer = null;
+let _pushInFlight = false;
+let _pushPending = false;
+function pushToCloud() {
     if(!CLOUD_KEY || !CLOUD_BIN) return;
-    setSyncStatus('Syncing to cloud...', T().accent2);
-    
-    // V103: Sync per-day FC focus map across devices
+    if(_pushDebounceTimer) clearTimeout(_pushDebounceTimer);
+    _pushDebounceTimer = setTimeout(() => { _pushDebounceTimer = null; _doPushToCloud(0); }, 4000);
+}
+
+function _formatHM(ts) {
+    const d = new Date(ts);
+    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function _setPushSuccessStatus() {
+    const ts = Date.now();
+    localStorage.setItem('mrcs-last-push-ok', String(ts));
+    setSyncStatus('Cloud Synced \u2713 ' + _formatHM(ts) + ' (' + sessions.length + ' sessions \u2022 local safe)', T().alertOk);
+}
+
+function _setPushFailStatus() {
+    const last = parseInt(localStorage.getItem('mrcs-last-push-ok')||'0',10);
+    const lastStr = last ? _formatHM(last) : '--:--';
+    setSyncStatus('Offline \u2014 local data safe \u2022 last good: ' + lastStr, T().alertBad);
+}
+
+async function _doPushToCloud(retryCount) {
+    if(!CLOUD_KEY || !CLOUD_BIN) return;
+    if(_pushInFlight) { _pushPending = true; return; }
+    _pushInFlight = true;
     const payload = { 
         trk: TRACKER_DATA, 
         sess: sessions, 
@@ -1647,9 +1711,31 @@ async function pushToCloud() {
             headers: { 'Content-Type': 'application/json', 'X-Master-Key': CLOUD_KEY },
             body: JSON.stringify(payload)
         });
-        if(res.ok) setSyncStatus('Cloud Synced \u2713 (' + sessions.length + ' sessions)', T().alertOk);
-        else setSyncStatus('Push Failed: HTTP ' + res.status, T().alertBad);
-    } catch(e) { setSyncStatus('Push Failed: ' + (e.message || 'Network error'), T().alertBad); }
+        if(res.ok) {
+            _setPushSuccessStatus();
+        } else if((res.status === 403 || res.status === 429) && retryCount < 3) {
+            const delays = [6000, 12000, 18000];
+            setSyncStatus('Rate limited \u2014 retrying in ' + (delays[retryCount]/1000) + 's...', T().accent2);
+            _pushInFlight = false;
+            setTimeout(() => _doPushToCloud(retryCount + 1), delays[retryCount]);
+            return;
+        } else {
+            _setPushFailStatus();
+        }
+    } catch(e) {
+        _setPushFailStatus();
+    }
+    _pushInFlight = false;
+    if(_pushPending) {
+        _pushPending = false;
+        setTimeout(() => _doPushToCloud(0), 500);
+    }
+}
+
+// V104: Bypass debounce — used by saveCloudCreds only
+async function pushToCloudNow() {
+    if(_pushDebounceTimer) { clearTimeout(_pushDebounceTimer); _pushDebounceTimer = null; }
+    _doPushToCloud(0);
 }
 
 async function pullFromCloud(isManual = false) {
@@ -1696,7 +1782,7 @@ async function pullFromCloud(isManual = false) {
             // V103: Sync exam-mode session flags across devices
             if(data.examModeMap && typeof data.examModeMap === 'object') {
                 const localExam = getExamModeMap();
-                const mergedExam = { ...localExam, ...data.examModeMap };
+                const mergedExam = { ...data.examModeMap, ...localExam };
                 setExamModeMap(mergedExam);
             }
             persistData(); autoAdjust();
@@ -1718,7 +1804,7 @@ function saveCloudCreds() {
     localStorage.setItem('mrcs-cloud-key', CLOUD_KEY);
     localStorage.setItem('mrcs-cloud-bin', CLOUD_BIN);
     localStorage.setItem('mrcs-gemini-key', GEMINI_KEY);
-    pushToCloud();
+    pushToCloudNow();
 }
 
 function forceCloudPull() { pullFromCloud(true); }
@@ -3098,7 +3184,11 @@ function redrawScratchpad() {
         chip.className = 'scratch-chip';
         const typeIcon = s.errorType === 'know' ? '🧠' : s.errorType === 'retrieval' ? '🔁' : '⚡';
         chip.textContent = typeIcon + ' ' + s.word;
-        chip.onclick = (e) => showGlobalMenu(e, s.word, 'scratchpad');
+        chip.onclick = (e) => {
+            // V104: When timer running, show minimal Edit/Delete menu only
+            if(running) showTimerChipMenu(e, s.word);
+            else showGlobalMenu(e, s.word, 'scratchpad');
+        };
         container.appendChild(chip);
     });
 }
@@ -3629,7 +3719,8 @@ function showGlobalMenu(e, word, context) {
     };
     
     // V103: In expand context, skip Edit Flashcard/Exam Note since the modal already does it
-    if(context !== 'expand') {
+    // V104: incard-expand context same as expand — skip Edit Flashcard
+    if(context !== 'expand' && context !== 'incard-expand') {
         createOpt('🤖 Ask Consultant', () => askConsultant(word));
         // V103: Edit Flashcard now opens the unified expand modal everywhere
         createOpt('✏️ Edit Flashcard', () => openExpandedCard(word));
@@ -3654,6 +3745,45 @@ function showGlobalMenu(e, word, context) {
     menu.style.left = x + 'px'; menu.style.top = y + 'px';
     
     // V103: Close menu on next click anywhere outside the menu (capture phase to bypass stopPropagation)
+    setTimeout(() => {
+        const closeFn = (ev) => {
+            if(ev.target.closest('#global-context-menu')) return;
+            hideGlobalMenu();
+            document.removeEventListener('click', closeFn, true);
+            document.removeEventListener('mousedown', closeFn, true);
+        };
+        document.addEventListener('click', closeFn, true);
+        document.addEventListener('mousedown', closeFn, true);
+    }, 0);
+}
+
+// V104: Minimal chip menu shown only while timer is running — Edit Word + Delete
+function showTimerChipMenu(e, word) {
+    e.stopPropagation();
+    const menu = $('global-context-menu');
+    menu.innerHTML = '';
+    const createOpt = (text, onClickFn, color) => {
+        const el = document.createElement('div');
+        el.className = 'menu-opt';
+        if(color) el.style.color = color;
+        el.textContent = text;
+        el.onclick = (ev) => { ev.preventDefault(); onClickFn(ev); hideGlobalMenu(); };
+        menu.appendChild(el);
+    };
+    createOpt('\u270F\uFE0F Edit Word', () => triggerRename(word));
+    createOpt('\uD83D\uDDD1\uFE0F Delete', () => {
+        sessionScratchpad = sessionScratchpad.filter(s => {
+            const w = typeof s === 'string' ? s : s.word;
+            return w !== word;
+        });
+        redrawScratchpad();
+    }, '#ff5252');
+    menu.classList.add('active');
+    const rect = menu.getBoundingClientRect();
+    let x = e.clientX, y = e.clientY;
+    if (x + rect.width > window.innerWidth) x = window.innerWidth - rect.width - 10;
+    if (y + rect.height > window.innerHeight) y = window.innerHeight - rect.height - 10;
+    menu.style.left = x + 'px'; menu.style.top = y + 'px';
     setTimeout(() => {
         const closeFn = (ev) => {
             if(ev.target.closest('#global-context-menu')) return;
@@ -4164,11 +4294,16 @@ function flipCard(e) {
     if(e && e.target && (e.target.closest('#fc-notes') || e.target.closest('#fc-exam-note') || e.target.closest('#fc-back-img-bar') || e.target.closest('.stack-edit-tools'))) {
         if(stackFullEditActive) return;
     }
+    // V104: Don't flip if user clicked inside an already-injected in-card modal
+    if(e && e.target && e.target.closest('.in-card-modal-content')) return;
     if(fcQueue.length === 0) return;
     
     const card = $('fc-card');
     card.classList.toggle('flipped');
     const sidebar = $('fc-exam-sidebar');
+    
+    // V104: Desktop in-card cuboid detection — only on wide landscape viewports
+    const isDesktop = window.innerWidth > 1024 && window.innerWidth >= window.innerHeight;
     
     if (card.classList.contains('flipped')) {
         const item = fcQueue[fcCurrentIdx];
@@ -4185,13 +4320,108 @@ function flipCard(e) {
         
         // V103: Show exam sidebar only when flipped
         if(sidebar) sidebar.style.visibility = 'visible';
+        
+        // V104: On desktop, inject the in-card modal content into #fc-back
+        if(isDesktop && item) {
+            card.classList.add('in-card-modal');
+            expandEditingWord = item.word;
+            injectInCardExpandContent(item);
+        }
     } else {
         $('srs-btn-group').style.opacity = '0';
         $('srs-btn-group').style.pointerEvents = 'none';
         $('fc-nav-group').style.display = 'flex';
         // V103: Hide exam sidebar when not flipped
         if(sidebar) sidebar.style.visibility = 'hidden';
+        
+        // V104: Restore fc-back to original content on flip-back
+        if(card.classList.contains('in-card-modal')) {
+            card.classList.remove('in-card-modal');
+            removeInCardExpandContent();
+        }
     }
+}
+
+// V104: Build and inject the in-card expand modal content into #fc-back
+function injectInCardExpandContent(item) {
+    const fcBack = document.getElementById('fc-back');
+    if(!fcBack) return;
+    // Save the current children so we can restore them when flipping back
+    if(!fcBack._savedChildren) {
+        fcBack._savedChildren = Array.from(fcBack.childNodes);
+    }
+    // Hide the saved children
+    fcBack._savedChildren.forEach(n => { if(n.nodeType === 1) n.style.display = 'none'; });
+    // Remove any prior injected wrapper
+    const prior = document.getElementById('incard-expand-wrapper');
+    if(prior) prior.remove();
+    
+    const wrap = document.createElement('div');
+    wrap.id = 'incard-expand-wrapper';
+    wrap.className = 'in-card-modal-content';
+    wrap.style.cssText = 'width:100%; display:flex; flex-direction:column; gap:14px; padding:0;';
+    wrap.onclick = (ev) => ev.stopPropagation();
+    
+    const imgSrc = item.img || '';
+    const hasImg = !!imgSrc;
+    const notesHtml = item.notes ? renderMarkdown(item.notes) : '<span style="opacity:0.4;font-style:italic;">No notes yet.</span>';
+    const examHtml = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;font-style:italic;">No exam note yet.</span>';
+    
+    wrap.innerHTML = `
+        <div class="row" style="justify-content:space-between; align-items:flex-start; margin-bottom:6px; gap:8px;">
+            <div id="incard-expand-word" contenteditable="false" style="font-family:'Bebas Neue', sans-serif; font-size:2.2rem; color:var(--accent2); line-height:1; flex:1; outline:none;">${item.word}</div>
+            <div style="display:flex; gap:4px; flex-shrink:0;">
+                <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 8px;" id="btn-incard-expand-edit" onclick="event.stopPropagation(); toggleExpandEdit('incard-expand-')">✏️ Edit</button>
+                <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 8px;" id="btn-incard-expand-action" onclick="event.stopPropagation(); incardExpandAction()">⋮</button>
+            </div>
+        </div>
+        <div id="incard-expand-format-toolbar" style="display:none; gap:4px; margin-bottom:8px; flex-wrap:wrap;">
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('bold')" style="padding:3px 10px;font-size:0.7rem;font-weight:900;min-height:28px;">B</button>
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('italic')" style="padding:3px 10px;font-size:0.7rem;font-style:italic;min-height:28px;">I</button>
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('underline')" style="padding:3px 10px;font-size:0.7rem;text-decoration:underline;min-height:28px;">U</button>
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('hiliteColor','#ffe066')" style="padding:3px 8px;font-size:0.65rem;background:#ffe066;color:#1a1a1a;font-weight:700;min-height:28px;border-color:#e6c54b;">🖍️ Hi</button>
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('removeFormat')" style="padding:3px 8px;font-size:0.6rem;min-height:28px;opacity:0.7;">✕ Clear</button>
+        </div>
+        <div style="display:grid; grid-template-columns: ${hasImg ? 'minmax(0,1fr) minmax(0,1.2fr)' : '1fr'}; gap:16px; align-items:start; flex:1; min-height:0;">
+            ${hasImg ? `<div style="display:flex; flex-direction:column; gap:6px; min-width:0;"><img src="${imgSrc}" style="max-width:100%; width:100%; max-height:55vh; object-fit:contain; border-radius:8px;"></div>` : ''}
+            <div style="display:flex; flex-direction:column; gap:10px; min-width:0;">
+                <div>
+                    <div class="dash-lbl" style="color:var(--accent2); margin-bottom:4px;">FLASHCARD ANSWER</div>
+                    <div id="incard-expand-notes" contenteditable="false" style="line-height:1.6; padding:12px; word-wrap:break-word; border:1px solid rgba(128,128,128,0.15); border-radius:8px; outline:none; background:rgba(128,128,128,0.04);">${notesHtml}</div>
+                </div>
+                <div>
+                    <div class="dash-lbl" style="color:#8b6914; margin-bottom:4px;">📌 EXAM NOTE</div>
+                    <div id="incard-expand-exam-note" class="sticky-note" contenteditable="false" style="outline:none; padding:12px;">${examHtml}</div>
+                </div>
+                <input type="text" id="incard-expand-img-url" disabled placeholder="📷 Image URL" style="width:100%; padding:8px 10px; font-size:0.7rem; background:rgba(128,128,128,0.08); border:1px solid rgba(128,128,128,0.15); border-radius:6px; color:inherit; font-family:'JetBrains Mono',monospace; outline:none;" value="${item.img && !item.img.startsWith('data:') ? item.img : ''}">
+            </div>
+        </div>
+        <div class="row" id="incard-expand-save-row" style="justify-content:center; margin-top:10px; display:none; gap:8px;">
+            <button class="btn btn-sm" onclick="event.stopPropagation(); saveExpandAllEdits('incard-expand-')" style="background:var(--accent2); color:#111; padding:6px 16px;">💾 Save All</button>
+            <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); cancelExpandAllEdits('incard-expand-')" style="padding:6px 16px;">Cancel</button>
+        </div>
+        <div class="incard-srs-anchor"></div>
+    `;
+    fcBack.appendChild(wrap);
+}
+
+// V104: Tear down injected in-card expand content and restore original fc-back
+function removeInCardExpandContent() {
+    const fcBack = document.getElementById('fc-back');
+    if(!fcBack) return;
+    const wrap = document.getElementById('incard-expand-wrapper');
+    if(wrap) wrap.remove();
+    if(fcBack._savedChildren) {
+        fcBack._savedChildren.forEach(n => { if(n.nodeType === 1) n.style.display = ''; });
+        fcBack._savedChildren = null;
+    }
+    expandEditActive = false;
+}
+
+// V104: ⋮ menu inside in-card modal — uses incard-expand context (no Edit option)
+function incardExpandAction() {
+    const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
+    if(item) showGlobalMenu(event, item.word, 'incard-expand');
 }
 
 // V82: Exam note popup for stack view
@@ -4321,34 +4551,48 @@ function openExpandedCard(word) {
 let expandEditingWord = '';
 let expandEditActive = false;
 
-function toggleExpandEdit() {
+function toggleExpandEdit(prefix) {
+    prefix = prefix || 'expand-';
     const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
     if(!item) return;
     if(!expandEditActive) {
         expandEditActive = true;
         // Make all 4 fields editable
-        $('expand-word').contentEditable = 'true';
-        $('expand-notes').contentEditable = 'true';
-        $('expand-exam-note').contentEditable = 'true';
-        $('expand-img-url').disabled = false;
+        const wordEl = document.getElementById(prefix + 'word');
+        const notesEl = document.getElementById(prefix + 'notes');
+        const examEl = document.getElementById(prefix + 'exam-note');
+        const imgUrlEl = document.getElementById(prefix + 'img-url');
+        if(wordEl) wordEl.contentEditable = 'true';
+        if(notesEl) notesEl.contentEditable = 'true';
+        if(examEl) examEl.contentEditable = 'true';
+        if(imgUrlEl) imgUrlEl.disabled = false;
         // If exam note placeholder, clear it
-        if(!item.examNote) $('expand-exam-note').innerHTML = '';
-        if(!item.notes) $('expand-notes').innerHTML = '';
-        $('expand-format-toolbar').style.display = 'flex';
-        $('expand-save-row').style.display = 'flex';
-        $('btn-expand-add-selected').style.display = 'inline-flex';
-        $('btn-expand-edit').textContent = '👁️ View';
-        $('expand-notes').focus();
+        if(!item.examNote && examEl) examEl.innerHTML = '';
+        if(!item.notes && notesEl) notesEl.innerHTML = '';
+        const tb = document.getElementById(prefix + 'format-toolbar');
+        const sr = document.getElementById(prefix + 'save-row');
+        const addBtn = document.getElementById('btn-' + prefix + 'add-selected');
+        const editBtn = document.getElementById('btn-' + prefix + 'edit');
+        if(tb) tb.style.display = 'flex';
+        if(sr) sr.style.display = 'flex';
+        if(addBtn) addBtn.style.display = 'inline-flex';
+        if(editBtn) editBtn.textContent = '👁️ View';
+        if(notesEl) notesEl.focus();
     } else {
         // Toggle back to view
-        cancelExpandAllEdits();
+        cancelExpandAllEdits(prefix);
     }
 }
 
-function saveExpandAllEdits() {
+function saveExpandAllEdits(prefix) {
+    prefix = prefix || 'expand-';
     const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
     if(!item) return;
-    const newWord = $('expand-word').textContent.trim();
+    const wordEl = document.getElementById(prefix + 'word');
+    const notesEl = document.getElementById(prefix + 'notes');
+    const examEl = document.getElementById(prefix + 'exam-note');
+    const imgUrlEl = document.getElementById(prefix + 'img-url');
+    const newWord = wordEl ? wordEl.textContent.trim() : '';
     if(newWord && newWord !== item.word) {
         // Rename — update word in fcQueue too
         const oldWord = item.word;
@@ -4357,9 +4601,9 @@ function saveExpandAllEdits() {
         if(qItem) qItem.word = newWord;
         expandEditingWord = newWord;
     }
-    item.notes = htmlToPlain($('expand-notes').innerHTML);
-    item.examNote = htmlToPlain($('expand-exam-note').innerHTML);
-    const imgUrl = $('expand-img-url').value.trim();
+    if(notesEl) item.notes = htmlToPlain(notesEl.innerHTML);
+    if(examEl) item.examNote = htmlToPlain(examEl.innerHTML);
+    const imgUrl = imgUrlEl ? imgUrlEl.value.trim() : '';
     if(imgUrl) item.img = imgUrl;
     persistData(); pushToCloud();
     
@@ -4367,39 +4611,53 @@ function saveExpandAllEdits() {
     if(typeof refreshPostOpTileByWord === 'function') refreshPostOpTileByWord(item.word);
     
     // Re-render in view mode
-    $('expand-notes').innerHTML = renderMarkdown(item.notes);
-    $('expand-exam-note').innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;font-style:italic;">No exam note yet.</span>';
-    if(item.img) { $('expand-img').src = item.img; $('expand-img').style.display = 'block'; $('expand-img-wrap').style.display = 'flex'; }
+    if(notesEl) notesEl.innerHTML = renderMarkdown(item.notes);
+    if(examEl) examEl.innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;font-style:italic;">No exam note yet.</span>';
+    // Only update the modal-specific image elements when in modal context
+    if(prefix === 'expand-' && item.img) { $('expand-img').src = item.img; $('expand-img').style.display = 'block'; $('expand-img-wrap').style.display = 'flex'; }
     
     expandEditActive = false;
-    $('expand-word').contentEditable = 'false';
-    $('expand-notes').contentEditable = 'false';
-    $('expand-exam-note').contentEditable = 'false';
-    $('expand-img-url').disabled = true;
-    $('expand-format-toolbar').style.display = 'none';
-    $('expand-save-row').style.display = 'none';
-    $('btn-expand-add-selected').style.display = 'none';
-    $('btn-expand-edit').textContent = '✏️ Edit';
+    if(wordEl) wordEl.contentEditable = 'false';
+    if(notesEl) notesEl.contentEditable = 'false';
+    if(examEl) examEl.contentEditable = 'false';
+    if(imgUrlEl) imgUrlEl.disabled = true;
+    const tb = document.getElementById(prefix + 'format-toolbar');
+    const sr = document.getElementById(prefix + 'save-row');
+    const addBtn = document.getElementById('btn-' + prefix + 'add-selected');
+    const editBtn = document.getElementById('btn-' + prefix + 'edit');
+    if(tb) tb.style.display = 'none';
+    if(sr) sr.style.display = 'none';
+    if(addBtn) addBtn.style.display = 'none';
+    if(editBtn) editBtn.textContent = '✏️ Edit';
     
     refreshCurrentView();
 }
 
-function cancelExpandAllEdits() {
+function cancelExpandAllEdits(prefix) {
+    prefix = prefix || 'expand-';
     expandEditActive = false;
     const item = REVIEW_BANK.find(b => b.word === expandEditingWord);
-    $('expand-word').contentEditable = 'false';
-    $('expand-notes').contentEditable = 'false';
-    $('expand-exam-note').contentEditable = 'false';
-    $('expand-img-url').disabled = true;
-    $('expand-format-toolbar').style.display = 'none';
-    $('expand-save-row').style.display = 'none';
-    $('btn-expand-add-selected').style.display = 'none';
-    $('btn-expand-edit').textContent = '✏️ Edit';
+    const wordEl = document.getElementById(prefix + 'word');
+    const notesEl = document.getElementById(prefix + 'notes');
+    const examEl = document.getElementById(prefix + 'exam-note');
+    const imgUrlEl = document.getElementById(prefix + 'img-url');
+    if(wordEl) wordEl.contentEditable = 'false';
+    if(notesEl) notesEl.contentEditable = 'false';
+    if(examEl) examEl.contentEditable = 'false';
+    if(imgUrlEl) imgUrlEl.disabled = true;
+    const tb = document.getElementById(prefix + 'format-toolbar');
+    const sr = document.getElementById(prefix + 'save-row');
+    const addBtn = document.getElementById('btn-' + prefix + 'add-selected');
+    const editBtn = document.getElementById('btn-' + prefix + 'edit');
+    if(tb) tb.style.display = 'none';
+    if(sr) sr.style.display = 'none';
+    if(addBtn) addBtn.style.display = 'none';
+    if(editBtn) editBtn.textContent = '✏️ Edit';
     if(item) {
-        $('expand-word').textContent = item.word;
-        $('expand-notes').innerHTML = renderMarkdown(item.notes);
-        $('expand-exam-note').innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;font-style:italic;">No exam note yet.</span>';
-        $('expand-img-url').value = item.img && !item.img.startsWith('data:') ? item.img : '';
+        if(wordEl) wordEl.textContent = item.word;
+        if(notesEl) notesEl.innerHTML = renderMarkdown(item.notes);
+        if(examEl) examEl.innerHTML = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;font-style:italic;">No exam note yet.</span>';
+        if(imgUrlEl) imgUrlEl.value = item.img && !item.img.startsWith('data:') ? item.img : '';
     }
 }
 
@@ -4443,35 +4701,20 @@ async function generateExamNoteForStack() {
     examEl.innerHTML = '<div style="opacity:0.6;text-align:center;padding:10px;">⏳ Surgeon is writing...</div>';
     try {
         const errorContext = item.errorType === 'know' ? 'Knowledge gap' : item.errorType === 'retrieval' ? 'Retrieval failure' : item.errorType === 'reasoning' ? 'Reasoning error' : 'General review';
-        const prompt = `You are an MRCS Part A exam coach referencing Bailey & Love, Schwartz, NICE guidelines, RCSEng curriculum. Generate a concise exam note for "${item.word}". Error type: ${errorContext}.
-
-RESPOND IN THIS EXACT FORMAT — never exceed 12 lines total. Start directly with **CORE FACT** — no preamble.
-
-**CORE FACT** (2-3 sentences)
-Key testable facts. Bold the most examined detail.
-
-**EXAM TRAP** (1 sentence)
-The common wrong answer and why.
-
-**SBA LOGIC** (1-2 sentences)
-Question pattern and reasoning shortcut.
-
-**RISK FLAG:** [RED|YELLOW|GREEN]
-RED = high-yield surgical/peri-op/pathology. YELLOW = anatomy/physiology/specialty. GREEN = EM/post-op/skin.
-
-RULES: Max 12 lines. Bold key terms. Evidence-based only. No preamble or commentary.`;
+        const prompt = buildSurgeonPrompt(item.word, errorContext);
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
         });
         const data = await res.json();
         if(data.candidates && data.candidates[0].content.parts[0].text) {
-            const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
-            item.examNote = text;
-            const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
-            if(riskMatch) item.riskLevel = riskMatch[1].toLowerCase();
+            const parsed = parseSurgeonResponse(data.candidates[0].content.parts[0].text);
+            applySurgeonResult(item, parsed);
             persistData(); pushToCloud();
-            examEl.innerHTML = '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(text) + '</div>';
+            examEl.innerHTML = '<div class="md-content" style="font-size:0.7rem;">' + renderMarkdown(parsed.displayNote) + '</div>';
+            // V104: Re-render notes panel inline if visible
+            const notesEl = document.getElementById('fc-notes');
+            if(notesEl && !stackFullEditActive) notesEl.innerHTML = '<div class="md-content">' + renderMarkdown(item.notes) + '</div>';
         } else {
             examEl.innerHTML = '<span style="color:#ff5252;">AI generation failed.</span>';
         }
@@ -4532,6 +4775,92 @@ INSTRUCTIONS:
         alert('Refine error: ' + (e.message || 'Network error'));
     } finally {
         if(btn) { btn.disabled = false; btn.textContent = 'Send'; }
+    }
+}
+
+// V104: Shared eMRCS topic taxonomy and surgeon prompt builder
+const EMRCS_TOPICS = [
+    'Surgical Technique','Peri-operative Care','Pathology — CVS','Pathology — Respiratory',
+    'Pathology — Endocrine','Pathology — Digestive','Management & Legal','Intraoperative Care',
+    'Burns','Organ Transplantation','Musculoskeletal Pathology','Anatomy — Head & Neck',
+    'Anatomy — Thorax','Anatomy — Abdomen','Anatomy — Pelvis & Perineum','Anatomy — Upper Limb',
+    'Anatomy — Lower Limb','Anatomy — Neuroanatomy','Physiology','GI / Colorectal','HPB','Vascular',
+    'Urology','Orthopaedics','Emergency Medicine','Post-op Management','Skin','Hand Disorders','Breast'
+];
+
+function buildSurgeonPrompt(word, errorContext) {
+    return `You are a senior consultant surgeon and MRCS Part A exam coach.
+
+REFERENCE ANCHORS:
+- Anatomy topics: Last's Anatomy, Gray's Anatomy for Students, Moore's Clinically Oriented Anatomy, Snell's Clinical Anatomy.
+- Surgical & clinical: Bailey & Love, Schwartz, NICE guidelines, RCSEng MRCS Part A curriculum.
+
+TOPIC: "${word}"
+ERROR CONTEXT: ${errorContext}
+
+CLASSIFY this topic into ONE eMRCS label from this exact list:
+${EMRCS_TOPICS.join(' | ')}
+
+INTERNALLY classify risk as RED / YELLOW / GREEN (used internally for color coding only — do not display the word "risk" to the student in the body of the note):
+- RED: surgical technique, peri-op care, pathology (CVS/respiratory/endocrine/digestive), management & legal, intraoperative care, burns, transplant, MSK pathology
+- YELLOW: anatomy, physiology, GI/colorectal, HPB, vascular, urology, orthopaedics
+- GREEN: emergency medicine, post-op management, skin, hand disorders, breast
+
+OUTPUT FORMAT — these two metadata lines MUST be the first two lines, exactly:
+**TOPIC:** <one label from the list>
+**RISK:** RED|YELLOW|GREEN
+
+Then the body. Maximum 14 lines TOTAL including the metadata lines. Bold key terms with **double asterisks**. Plain prose, no preamble.
+
+If the classified topic is an Anatomy — * topic, the body MUST include:
+**APPLIED ANATOMY QUESTION**
+A tough indirect MRCS-style stem (1-2 lines) followed by a single-line answer with reasoning.
+
+If the topic is NOT anatomy, you MAY include:
+**SBA LOGIC**
+1-2 lines on the question pattern and reasoning shortcut — but ONLY if it adds genuine value. Otherwise omit this section entirely.
+
+OPTIONAL for any topic:
+**EXAM TRAP**
+1 line on the common wrong answer — ONLY if high-value. Otherwise omit.
+
+ALWAYS include:
+**CORE FACT**
+2-3 sentences of the key testable facts, with bolded key terms.
+
+Do NOT exceed 14 lines. Do NOT add a preamble. Start directly with the **TOPIC:** line.`;
+}
+
+function parseSurgeonResponse(text) {
+    if(!text) return { topic: '', risk: '', displayNote: '', coreFact: '' };
+    let cleaned = cleanAIPreamble(text);
+    let topic = '';
+    let risk = '';
+    const topicMatch = cleaned.match(/^\s*\*\*TOPIC:\*\*\s*(.+?)\s*$/im);
+    if(topicMatch) topic = topicMatch[1].trim();
+    const riskMatch = cleaned.match(/^\s*\*\*RISK:\*\*\s*\[?(RED|YELLOW|GREEN)\]?\s*$/im);
+    if(riskMatch) risk = riskMatch[1].toLowerCase();
+    // Strip the two metadata lines from displayNote
+    let displayNote = cleaned
+        .replace(/^\s*\*\*TOPIC:\*\*[^\n]*\n?/im, '')
+        .replace(/^\s*\*\*RISK:\*\*[^\n]*\n?/im, '')
+        .trim();
+    // Extract Core Fact body
+    let coreFact = '';
+    const cfMatch = displayNote.match(/\*\*CORE FACT\*\*\s*\n?([\s\S]*?)(?=\n\s*\*\*[A-Z]|$)/i);
+    if(cfMatch) coreFact = cfMatch[1].trim();
+    return { topic, risk, displayNote, coreFact };
+}
+
+// V104: Apply parsed surgeon result to a REVIEW_BANK item, with auto-prepend of Core Fact
+function applySurgeonResult(item, parsed) {
+    if(!item || !parsed) return;
+    if(parsed.displayNote) item.examNote = parsed.displayNote;
+    if(parsed.risk) item.riskLevel = parsed.risk;
+    if(parsed.topic) item.topic = parsed.topic;
+    // Auto-prepend Core Fact into flashcard answer ONLY if answer is empty — never overwrite
+    if(parsed.coreFact && (!item.notes || !item.notes.trim())) {
+        item.notes = '**Core Fact:** ' + parsed.coreFact;
     }
 }
 
@@ -4650,23 +4979,7 @@ async function generateExamNoteForExpand() {
     
     try {
         const errorContext = item.errorType === 'know' ? 'Knowledge gap' : item.errorType === 'retrieval' ? 'Retrieval failure' : item.errorType === 'reasoning' ? 'Reasoning error' : 'General review';
-        const prompt = `You are an MRCS Part A exam coach referencing Bailey & Love, Schwartz, NICE guidelines, RCSEng curriculum. Generate a concise exam note for "${item.word}". Error type: ${errorContext}.
-
-RESPOND IN THIS EXACT FORMAT — never exceed 12 lines total:
-
-**CORE FACT** (2-3 sentences)
-Key testable facts. Bold the most examined detail.
-
-**EXAM TRAP** (1 sentence)
-The common wrong answer and why.
-
-**SBA LOGIC** (1-2 sentences)
-Question pattern and reasoning shortcut.
-
-**RISK FLAG:** [RED|YELLOW|GREEN]
-RED = high-yield surgical/peri-op/pathology. YELLOW = anatomy/physiology/specialty. GREEN = EM/post-op/skin.
-
-RULES: Max 12 lines. Bold key terms. Evidence-based only.`;
+        const prompt = buildSurgeonPrompt(item.word, errorContext);
         
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -4674,14 +4987,14 @@ RULES: Max 12 lines. Bold key terms. Evidence-based only.`;
         });
         const data = await res.json();
         if(data.candidates && data.candidates[0].content.parts[0].text) {
-            const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
-            item.examNote = text;
-            const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
-            if(riskMatch) item.riskLevel = riskMatch[1].toLowerCase();
+            const parsed = parseSurgeonResponse(data.candidates[0].content.parts[0].text);
+            applySurgeonResult(item, parsed);
             persistData(); pushToCloud();
-            examEl.innerHTML = renderMarkdown(text);
-            // Enable edit on the field so user can tweak
+            examEl.innerHTML = renderMarkdown(parsed.displayNote);
             examEl.contentEditable = expandEditActive ? 'true' : 'false';
+            // V104: Re-render notes panel inline if visible
+            const notesEl = document.getElementById('expand-notes');
+            if(notesEl) notesEl.innerHTML = item.notes ? renderMarkdown(item.notes) : '<span style="opacity:0.4;font-style:italic;">No notes yet.</span>';
         } else {
             examEl.innerHTML = '<span style="color:#ff5252;">AI generation failed. Try again.</span>';
         }
@@ -4786,6 +5099,14 @@ function renderGallery() {
     if(galleryRiskFilter !== 'all') {
         itemsToRender = itemsToRender.filter(item => item.riskLevel === galleryRiskFilter);
     }
+    // V104: Error type filter
+    if(galleryErrTypeFilter !== 'all') {
+        itemsToRender = itemsToRender.filter(item => (item.errorType || 'know') === galleryErrTypeFilter);
+    }
+    // V104: Topic filter
+    if(galleryTopicFilter !== 'all') {
+        itemsToRender = itemsToRender.filter(item => (item.topic || '') === galleryTopicFilter);
+    }
     // V84: Date filter
     const dateFromEl = $('fc-date-from');
     const dateToEl = $('fc-date-to');
@@ -4808,6 +5129,16 @@ function renderGallery() {
         itemsToRender = itemsToRender.filter(item => item.word.toLowerCase().includes(fcSearchQuery) || (item.notes && item.notes.toLowerCase().includes(fcSearchQuery)));
     }
     
+    // V104: Build dynamic topic chip list from REVIEW_BANK
+    const allTopics = new Set();
+    REVIEW_BANK.forEach(it => { if(it.topic) allTopics.add(it.topic); });
+    const topicChipsHtml = allTopics.size > 0
+        ? '<div class="gallery-risk-filter" style="margin-bottom:6px; flex-wrap:wrap; justify-content:center;">' +
+          '<button class="risk-filter-btn ' + (galleryTopicFilter==='all'?'active':'') + '" onclick="setGalleryTopicFilter(\'all\')">All Topics</button>' +
+          Array.from(allTopics).sort().map(t => '<button class="risk-filter-btn ' + (galleryTopicFilter===t?'active':'') + '" onclick="setGalleryTopicFilter(' + JSON.stringify(t) + ')">' + t + '</button>').join('') +
+          '</div>'
+        : '';
+    
     grid.innerHTML = `
         <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; max-width: 1200px; flex-wrap:wrap; gap:6px;">
             <div style="font-size:0.8rem; opacity:0.6; padding-left:16px;">${itemsToRender.length} Cards</div>
@@ -4824,8 +5155,27 @@ function renderGallery() {
                 <button class="btn btn-sm btn-ghost" style="border-color:var(--accent); color:var(--accent); font-size:0.55rem; padding:4px 8px;" onclick="addNewCardFromGallery()">+ New</button>
             </div>
         </div>
+        <!-- V104: Error type filter row -->
+        <div class="gallery-risk-filter" style="margin-bottom:6px; justify-content:center;">
+            <button class="risk-filter-btn ${galleryErrTypeFilter==='all'?'active':''}" onclick="setGalleryErrTypeFilter('all')">All Errors</button>
+            <button class="risk-filter-btn ${galleryErrTypeFilter==='know'?'active':''}" onclick="setGalleryErrTypeFilter('know')">🧠 Knowledge</button>
+            <button class="risk-filter-btn ${galleryErrTypeFilter==='retrieval'?'active':''}" onclick="setGalleryErrTypeFilter('retrieval')">🔁 Retrieval</button>
+            <button class="risk-filter-btn ${galleryErrTypeFilter==='reasoning'?'active':''}" onclick="setGalleryErrTypeFilter('reasoning')">⚡ Reasoning</button>
+        </div>
+        ${topicChipsHtml}
+        <!-- V104: Date range pickers -->
+        <div style="display:flex; gap:6px; align-items:center; justify-content:center; margin-bottom:8px; flex-wrap:wrap;">
+            <span style="font-size:0.6rem; opacity:0.6;">From</span>
+            <input type="date" id="fc-date-from" onchange="renderGallery()" style="font-size:0.65rem; padding:3px 6px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:transparent; color:inherit;">
+            <span style="font-size:0.6rem; opacity:0.6;">To</span>
+            <input type="date" id="fc-date-to" onchange="renderGallery()" style="font-size:0.65rem; padding:3px 6px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:transparent; color:inherit;">
+            <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px;" onclick="clearGalleryDates()">Clear Dates</button>
+        </div>
         ${gallerySelectMode ? '<div class="gallery-batch-bar" id="gallery-batch-bar"><span style="font-size:0.7rem; opacity:0.7;">'+gallerySelected.size+' selected</span><button class="btn btn-sm" style="background:#a78bfa; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="batchGenerateAI(\'selected\')">🤖 AI → Exam Notes</button><button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#a78bfa; color:#a78bfa;" onclick="batchGenerateAI(\'empty\')">🤖 All Empty</button><button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-color:#ff5252; color:#ff5252;" onclick="toggleGallerySelectMode()">Cancel</button></div>' : ''}
     `;
+    // V104: Restore date input values after re-render
+    if(dateFromEl && dateFromEl.value) { const el = document.getElementById('fc-date-from'); if(el) el.value = dateFromEl.value; }
+    if(dateToEl && dateToEl.value) { const el = document.getElementById('fc-date-to'); if(el) el.value = dateToEl.value; }
     
     const container = document.createElement('div');
     if (galleryRevealed) container.className = 'mosaic-container';
@@ -5020,6 +5370,11 @@ function exportFlashcardsPDF() {
             .print-header p { font-size: 0.8rem; color: #888; }
             .cornell-card { display: flex; break-inside: avoid; page-break-inside: avoid; -webkit-column-break-inside: avoid;
                 border: 1px solid #ddd; border-radius: 8px; margin-bottom: 16px; background: #fff; overflow: hidden; }
+            .cornell-card-stacked { display: flex; flex-direction: column; break-inside: avoid; page-break-inside: avoid; -webkit-column-break-inside: avoid;
+                border: 1px solid #ddd; border-radius: 8px; margin-bottom: 16px; background: #fff; overflow: hidden; }
+            .cornell-card-stacked .cornell-main { flex: none; padding: 14px 16px; }
+            .cornell-card-stacked .cornell-stacked-exam { padding: 10px 16px; background: #f8f6ff; border-top: 3px solid #7c3aed; font-size: 0.7rem; line-height: 1.55; color: #444; }
+            .cornell-card-stacked .cornell-stacked-exam .sidebar-label { font-size: 0.5rem; text-transform: uppercase; letter-spacing: 1.5px; color: #999; margin-bottom: 4px; font-weight: 700; }
             .cornell-main { flex: 3; padding: 14px 16px; min-width: 0; }
             .cornell-sidebar { flex: 1; min-width: 120px; max-width: 180px; padding: 10px 12px; background: #f8f6ff; border-left: 3px solid #7c3aed; font-size: 0.65rem; line-height: 1.5; color: #555; }
             .cornell-sidebar .sidebar-label { font-size: 0.5rem; text-transform: uppercase; letter-spacing: 1.5px; color: #999; margin-bottom: 4px; font-weight: 700; }
@@ -5041,26 +5396,38 @@ function exportFlashcardsPDF() {
     printContainer.appendChild(header);
 
     exportSet.forEach(item => {
+        // V104: Per-card layout decision — stacked when notes are short and no big content
+        const notesLen = (item.notes || '').length;
+        const hasImage = !!(item.img && item.img.trim() && !item.img.startsWith('data:'));
+        const useStacked = item.examNote && notesLen < 400 && !hasImage;
+        
         const card = document.createElement('div');
-        card.className = 'cornell-card';
+        card.className = useStacked ? 'cornell-card-stacked' : 'cornell-card';
         
         const riskDot = item.riskLevel === 'red' ? '🔴 ' : item.riskLevel === 'yellow' ? '🟡 ' : item.riskLevel === 'green' ? '🟢 ' : '';
         let notesHtml = renderMarkdown(item.notes);
-        let imgHtml = (item.img && item.img.trim() && !item.img.startsWith('data:')) ? '<img class="pc-img" src="' + item.img + '" onerror="this.style.display=\'none\'">' : '';
+        let imgHtml = hasImage ? '<img class="pc-img" src="' + item.img + '" onerror="this.style.display=\'none\'">' : '';
         const riskBadge = item.riskLevel ? '<span style="display:inline-block;font-size:0.55rem;padding:1px 5px;border-radius:3px;margin-left:6px;background:' + (item.riskLevel==='red'?'#ffebee':item.riskLevel==='yellow'?'#fff8e1':'#e8f5e9') + ';color:' + (item.riskLevel==='red'?'#c62828':item.riskLevel==='yellow'?'#f57f17':'#2e7d32') + ';">' + item.riskLevel.toUpperCase() + '</span>' : '';
         
-        // Main content column (larger)
+        // Main content column
         const mainCol = document.createElement('div');
         mainCol.className = 'cornell-main';
         mainCol.innerHTML = '<div class="pc-title">' + riskDot + item.word + riskBadge + '</div><div class="pc-notes">' + notesHtml + '</div>' + imgHtml;
         card.appendChild(mainCol);
 
-        // Exam note sidebar (smaller, Cornell-style margin notes)
+        // V104: Exam note — stacked beneath OR right sidebar based on layout decision
         if(item.examNote) {
-            const sidebar = document.createElement('div');
-            sidebar.className = 'cornell-sidebar';
-            sidebar.innerHTML = '<div class="sidebar-label">Exam Note</div>' + renderMarkdown(item.examNote);
-            card.appendChild(sidebar);
+            if(useStacked) {
+                const stack = document.createElement('div');
+                stack.className = 'cornell-stacked-exam';
+                stack.innerHTML = '<div class="sidebar-label">Exam Note</div>' + renderMarkdown(item.examNote);
+                card.appendChild(stack);
+            } else {
+                const sidebar = document.createElement('div');
+                sidebar.className = 'cornell-sidebar';
+                sidebar.innerHTML = '<div class="sidebar-label">Exam Note</div>' + renderMarkdown(item.examNote);
+                card.appendChild(sidebar);
+            }
         }
         
         printContainer.appendChild(card);
@@ -5388,9 +5755,7 @@ function openSessionSummary(idx) {
         });
     }
     
-    // V84: Render error sparklines
-    renderErrorSparklines();
-    // V82: Render error trend
+    // V104: Sparklines card removed; single error trend chart only
     renderErrorTrendChart();
 
     let affirmation = "";
@@ -5420,7 +5785,6 @@ function openSessionSummary(idx) {
     }
     
     $('ss-affirmation').textContent = affirmation;
-    renderErrorTrendChart();
     show('v-session-summary'); applyTheme();
 }
 
@@ -5898,6 +6262,23 @@ function setGalleryRiskFilter(level) {
     renderGallery();
 }
 
+// V104: Gallery error type / topic / date filter setters
+function setGalleryErrTypeFilter(type) {
+    galleryErrTypeFilter = type;
+    renderGallery();
+}
+function setGalleryTopicFilter(topic) {
+    galleryTopicFilter = topic;
+    renderGallery();
+}
+function clearGalleryDates() {
+    const f = document.getElementById('fc-date-from');
+    const t = document.getElementById('fc-date-to');
+    if(f) f.value = '';
+    if(t) t.value = '';
+    renderGallery();
+}
+
 // V82: Gallery select mode
 function toggleGallerySelectMode() {
     gallerySelectMode = !gallerySelectMode;
@@ -6117,23 +6498,7 @@ async function batchGenerateAI(mode) {
         if(fillEl) fillEl.style.width = Math.round(((i+1)/targets.length)*100) + '%';
         
         try {
-            const prompt = `You are an MRCS Part A exam coach. Generate a concise exam note for "${word}". Error type: ${errorContext}.
-
-RESPOND IN THIS EXACT FORMAT — never exceed 12 lines total:
-
-**CORE FACT** (2-3 sentences)
-Key testable facts. Bold the most examined detail.
-
-**EXAM TRAP** (1 sentence)
-The common wrong answer and why.
-
-**SBA LOGIC** (1-2 sentences)
-Question pattern and reasoning shortcut.
-
-**RISK FLAG:** [RED|YELLOW|GREEN]
-RED = high-yield surgical/peri-op/pathology. YELLOW = anatomy/physiology/specialty. GREEN = EM/post-op/skin.
-
-RULES: Max 12 lines. Bold key terms. Evidence-based only.`;
+            const prompt = buildSurgeonPrompt(word, errorContext);
             
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -6141,12 +6506,10 @@ RULES: Max 12 lines. Bold key terms. Evidence-based only.`;
             });
             const data = await res.json();
             if(data.candidates && data.candidates[0].content.parts[0].text) {
-                const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
+                const parsed = parseSurgeonResponse(data.candidates[0].content.parts[0].text);
                 const globalIdx = REVIEW_BANK.findIndex(b => b.word === word);
                 if(globalIdx > -1) {
-                    REVIEW_BANK[globalIdx].examNote = text;
-                    const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
-                    if(riskMatch) REVIEW_BANK[globalIdx].riskLevel = riskMatch[1].toLowerCase();
+                    applySurgeonResult(REVIEW_BANK[globalIdx], parsed);
                     lastItem = REVIEW_BANK[globalIdx];
                 }
             }
@@ -6195,10 +6558,15 @@ function addPostOpTile(word, examNote, riskLevel) {
     if(riskLevel) tile.classList.add('risk-card-' + riskLevel);
     tile.setAttribute('data-risk', riskLevel || '');
     tile.setAttribute('data-word', word);
+    // V104: Set errtype + topic from REVIEW_BANK item for filtering
+    const bankItem = REVIEW_BANK.find(b => b.word === word);
+    tile.setAttribute('data-errtype', (bankItem && bankItem.errorType) || 'know');
+    tile.setAttribute('data-topic', (bankItem && bankItem.topic) || '');
     refreshPostOpTileContent(tile, word, examNote, riskLevel);
     tile.style.cursor = 'pointer';
     tile.onclick = () => openExpandedCard(word);
     mosaic.appendChild(tile);
+    return tile;
 }
 
 // V103: Re-render a post-op tile's content. Used by addPostOpTile AND by the expand modal save handler
@@ -6244,37 +6612,96 @@ function refreshPostOpTileByWord(word) {
     if(tile) refreshPostOpTileContent(tile, word);
 }
 
+// V104: Compose risk + errtype + topic + search across all post-op tiles
+function applyPostOpFilters() {
+    const q = (document.getElementById('postop-search-input')?.value || '').toLowerCase().trim();
+    document.querySelectorAll('.postop-fact-tile').forEach(tile => {
+        const tileRisk = tile.getAttribute('data-risk') || '';
+        const tileErr = tile.getAttribute('data-errtype') || 'know';
+        const tileTopic = tile.getAttribute('data-topic') || '';
+        const text = tile.textContent.toLowerCase();
+        const riskOK = postOpRiskFilter === 'all' || tileRisk === postOpRiskFilter;
+        const errOK = postOpErrTypeFilter === 'all' || tileErr === postOpErrTypeFilter;
+        const topicOK = postOpTopicFilter === 'all' || tileTopic === postOpTopicFilter;
+        const searchOK = !q || text.includes(q);
+        tile.style.display = (riskOK && errOK && topicOK && searchOK) ? '' : 'none';
+    });
+}
+
 function filterPostOp(level) {
     postOpRiskFilter = level;
     document.querySelectorAll('#postop-risk-filter .risk-filter-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
+    if(typeof event !== 'undefined' && event && event.target) event.target.classList.add('active');
+    applyPostOpFilters();
+}
+
+// V104: Error type filter
+function filterPostOpErrType(type, btn) {
+    postOpErrTypeFilter = type;
+    document.querySelectorAll('#postop-errtype-filter .risk-filter-btn').forEach(b => b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    applyPostOpFilters();
+}
+
+// V104: Topic filter
+function filterPostOpTopic(topic, btn) {
+    postOpTopicFilter = topic;
+    document.querySelectorAll('#postop-topic-filter .risk-filter-btn').forEach(b => b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    applyPostOpFilters();
+}
+
+// V104: Build dynamic topic chip filter row from tile data-topic attrs
+function buildPostOpTopicChips() {
+    const container = document.getElementById('postop-topic-filter');
+    if(!container) return;
+    const topics = new Set();
     document.querySelectorAll('.postop-fact-tile').forEach(tile => {
-        const tileRisk = tile.getAttribute('data-risk');
-        tile.style.display = (level === 'all' || tileRisk === level) ? '' : 'none';
+        const t = tile.getAttribute('data-topic');
+        if(t) topics.add(t);
+    });
+    container.innerHTML = '';
+    if(topics.size === 0) { container.style.display = 'none'; return; }
+    container.style.display = 'flex';
+    const allBtn = document.createElement('button');
+    allBtn.className = 'risk-filter-btn' + (postOpTopicFilter === 'all' ? ' active' : '');
+    allBtn.textContent = 'All Topics';
+    allBtn.onclick = function() { filterPostOpTopic('all', this); };
+    container.appendChild(allBtn);
+    Array.from(topics).sort().forEach(topic => {
+        const btn = document.createElement('button');
+        btn.className = 'risk-filter-btn' + (postOpTopicFilter === topic ? ' active' : '');
+        btn.textContent = topic;
+        btn.onclick = function() { filterPostOpTopic(topic, this); };
+        container.appendChild(btn);
     });
 }
 
 // V103: Search filter for post-op page
 function filterPostOpBySearch() {
-    const q = (document.getElementById('postop-search-input')?.value || '').toLowerCase().trim();
-    document.querySelectorAll('.postop-fact-tile').forEach(tile => {
-        const text = tile.textContent.toLowerCase();
-        const matches = !q || text.includes(q);
-        const tileRisk = tile.getAttribute('data-risk');
-        const riskMatches = postOpRiskFilter === 'all' || tileRisk === postOpRiskFilter;
-        tile.style.display = (matches && riskMatches) ? '' : 'none';
-    });
+    applyPostOpFilters();
 }
 
 function closePostOpReview() {
-    show('v-session-summary');
+    // V104: Re-render session summary so fields don't show stale empty state
+    if(typeof currentSessionIdx === 'number' && sessions[currentSessionIdx]) {
+        openSessionSummary(currentSessionIdx);
+    } else {
+        show('v-session-summary');
+    }
 }
 
 function generateMissingPostOp() {
-    autoPostOpReview(postOpSessionWords.map(function(w) { return { word: w, errorType: 'know' }; }));
+    // V104: Preserve original errorTypes from REVIEW_BANK rather than hardcoding 'know'
+    autoPostOpReview(postOpSessionWords.map(function(w) {
+        const wordStr = typeof w === 'string' ? w : (w && w.word) || '';
+        const bankItem = REVIEW_BANK.find(b => b.word === wordStr);
+        return { word: wordStr, errorType: (bankItem && bankItem.errorType) || 'know' };
+    }));
 }
 
-// V82: Auto-generate post-op review after timer session ends
+// V82/V104: Auto-generate post-op review after timer session ends
+// V104: Pre-create placeholder tiles so cards never visually disappear
 async function autoPostOpReview(sessionWords) {
     if(!sessionWords || sessionWords.length === 0) return;
     const key = GEMINI_KEY || $('gemini-key').value.trim();
@@ -6283,77 +6710,106 @@ async function autoPostOpReview(sessionWords) {
     postOpSessionWords = sessionWords;
     postOpResults = [];
     show('v-postop-review');
-    $('postop-subtitle').textContent = 'Session Debrief • ' + sessionWords.length + ' flashwords';
-    buildPostOpStrip(postOpSessionWords);
+    $('postop-subtitle').textContent = 'Session Debrief \u2022 ' + sessionWords.length + ' flashwords';
+    buildPostOpStrip(postOpSessionWords.map(w => typeof w === 'string' ? w : w.word));
     $('postop-mosaic').innerHTML = '';
     $('postop-progress-wrap').style.display = 'block';
     $('postop-status').textContent = 'Generating AI summaries... 0/' + sessionWords.length;
     $('postop-progress-fill').style.width = '0%';
     
+    // V104: Pre-create placeholder tiles for every word so nothing disappears
+    const tilesByWord = {};
+    for(let i = 0; i < sessionWords.length; i++) {
+        const wordData = sessionWords[i];
+        const word = typeof wordData === 'string' ? wordData : wordData.word;
+        const existing = REVIEW_BANK.find(b => b.word === word);
+        const initRisk = (existing && existing.riskLevel) || '';
+        const initNote = (existing && existing.examNote) || '\u23F3 Pending generation...';
+        const tile = addPostOpTile(word, initNote, initRisk);
+        tilesByWord[word] = tile;
+    }
+    
+    let failedCount = 0;
     for(let i = 0; i < sessionWords.length; i++) {
         const wordData = sessionWords[i];
         const word = typeof wordData === 'string' ? wordData : wordData.word;
         const errorType = typeof wordData === 'object' ? (wordData.errorType || 'know') : 'know';
         const errorContext = errorType === 'know' ? 'Knowledge gap' : errorType === 'retrieval' ? 'Retrieval failure' : 'Reasoning error';
         const existing = REVIEW_BANK.find(b => b.word === word);
+        const tile = tilesByWord[word];
         
         // Skip if already has exam note
         if(existing && existing.examNote && existing.examNote.trim()) {
             postOpResults.push({ word, examNote: existing.examNote, riskLevel: existing.riskLevel || '' });
-            addPostOpTile(word, existing.examNote, existing.riskLevel || '');
+            if(tile) refreshPostOpTileContent(tile, word, existing.examNote, existing.riskLevel || '');
             $('postop-status').textContent = 'Generating AI summaries... ' + (i+1) + '/' + sessionWords.length;
             $('postop-progress-fill').style.width = Math.round(((i+1)/sessionWords.length)*100) + '%';
             continue;
         }
         
         try {
-            const prompt = `You are an MRCS Part A exam coach referencing established surgical and medical evidence (Bailey & Love, Schwartz, NICE guidelines, RCSEng curriculum). Generate a concise exam note for "${word}". Error type: ${errorContext}.
-
-RESPOND IN THIS EXACT FORMAT — never exceed 12 lines total:
-
-**CORE FACT** (2-3 sentences)
-Key testable facts. Bold the most examined detail.
-
-**EXAM TRAP** (1 sentence)
-The common wrong answer and why.
-
-**SBA LOGIC** (1-2 sentences)
-Question pattern and reasoning shortcut.
-
-**RISK FLAG:** [RED|YELLOW|GREEN]
-
-RULES: Max 12 lines. Bold key terms. Evidence-based only.`;
+            const prompt = buildSurgeonPrompt(word, errorContext);
             
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
             });
             const data = await res.json();
-            if(data.candidates && data.candidates[0].content.parts[0].text) {
-                const text = cleanAIPreamble(data.candidates[0].content.parts[0].text);
+            if(data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+                const parsed = parseSurgeonResponse(data.candidates[0].content.parts[0].text);
                 const globalIdx = REVIEW_BANK.findIndex(b => b.word === word);
                 if(globalIdx > -1) {
-                    REVIEW_BANK[globalIdx].examNote = text;
-                    const riskMatch = text.match(/\*\*RISK FLAG:\*\*\s*\[?(RED|YELLOW|GREEN)\]?/i);
-                    if(riskMatch) REVIEW_BANK[globalIdx].riskLevel = riskMatch[1].toLowerCase();
+                    applySurgeonResult(REVIEW_BANK[globalIdx], parsed);
                 }
                 const rl = REVIEW_BANK.find(b=>b.word===word)?.riskLevel || '';
-                postOpResults.push({ word, examNote: text, riskLevel: rl });
-                addPostOpTile(word, text, rl);
+                postOpResults.push({ word, examNote: parsed.displayNote, riskLevel: rl });
+                if(tile) {
+                    refreshPostOpTileContent(tile, word, parsed.displayNote, rl);
+                    // Update topic attribute now that we have it
+                    const bi = REVIEW_BANK.find(b => b.word === word);
+                    if(bi && bi.topic) tile.setAttribute('data-topic', bi.topic);
+                }
+            } else {
+                failedCount++;
+                if(tile) {
+                    tile.setAttribute('data-failed','1');
+                    tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:#ff5252;padding:8px 0;">\u26A0\uFE0F AI generation failed \u2014 click Retry Failed below</div>';
+                }
             }
         } catch(e) {
-            addPostOpTile(word, 'Error: ' + e.message, '');
+            failedCount++;
+            if(tile) {
+                tile.setAttribute('data-failed','1');
+                tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:#ff5252;padding:8px 0;">\u26A0\uFE0F Error: ' + (e.message||'network') + '</div>';
+            }
         }
         
         $('postop-status').textContent = 'Generating AI summaries... ' + (i+1) + '/' + sessionWords.length;
         $('postop-progress-fill').style.width = Math.round(((i+1)/sessionWords.length)*100) + '%';
         persistData();
-        // Small delay to avoid rate limiting
-        await new Promise(r => setTimeout(r, 800));
+        if(i < sessionWords.length - 1) await new Promise(r => setTimeout(r, 800));
     }
     
     pushToCloud();
-    $('postop-status').textContent = '✅ Complete — ' + sessionWords.length + ' exam notes generated';
+    if(failedCount > 0) {
+        $('postop-status').innerHTML = '\u26A0\uFE0F ' + failedCount + ' failed \u2014 <button class="btn btn-sm" style="background:#ff5252;color:#fff;font-size:0.6rem;padding:4px 10px;" onclick="retryFailedPostOp()">\uD83D\uDD01 Retry Failed</button>';
+    } else {
+        $('postop-status').textContent = '\u2705 Complete \u2014 ' + sessionWords.length + ' exam notes generated';
+    }
+    // V104: Build dynamic topic chip filter row from generated tiles
+    if(typeof buildPostOpTopicChips === 'function') buildPostOpTopicChips();
+}
+
+// V104: Retry only failed post-op tiles
+function retryFailedPostOp() {
+    const failed = Array.from(document.querySelectorAll('.postop-fact-tile[data-failed="1"]'))
+        .map(t => t.getAttribute('data-word'))
+        .filter(Boolean);
+    if(failed.length === 0) return;
+    autoPostOpReview(failed.map(w => {
+        const bi = REVIEW_BANK.find(b => b.word === w);
+        return { word: w, errorType: (bi && bi.errorType) || 'know' };
+    }));
 }
 
 // V82: Open post-op from surgeon's report
@@ -6389,6 +6845,8 @@ function openPostOpFromReport() {
     } else {
         $('postop-progress-wrap').style.display = 'none';
     }
+    // V104: Build dynamic topic chip filter row
+    if(typeof buildPostOpTopicChips === 'function') buildPostOpTopicChips();
 }
 
 // V82: Session auto-save to localStorage
@@ -6460,6 +6918,7 @@ function checkSessionRestore() {
 function renderErrorTrendChart() {
     const container = $('error-trend-container');
     if(!container) return;
+    container.innerHTML = ''; // V104: defensive clear to prevent duplicate renders
     
     const recent = sessions.slice(-10);
     if(recent.length < 2) { container.innerHTML = '<div style="font-size:0.7rem; opacity:0.4; text-align:center;">Need 2+ sessions for trends</div>'; return; }
