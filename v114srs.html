@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V114 — Anki SRS</title>
+<title>MRCS QBank Tracker Pro Max V114.1 — Bug Patches</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -598,24 +598,39 @@
            sits inside the flipped card) was inheriting the wrong text color.
            V113.1: There is no `body.dark-theme` class — the app uses a JS
            theme system. Use the --modal-fg CSS variable that applyTheme sets,
-           which is white for dark themes and dark for light themes. */
+           which is white for dark themes and dark for light themes.
+           V114.1: Exam note panels (.sticky-note class, cream/yellow bg) ALWAYS
+           need dark text — they're a Post-It style note, the background is
+           always cream regardless of theme. Excluding them from the modal-fg
+           override here. */
         #incard-expand-notes,
-        #incard-expand-exam-note,
         #incard-expand-word,
-        #fc-notes, #fc-exam-note,
-        #expand-notes, #expand-exam-note {
+        #fc-notes,
+        #expand-notes {
             color: var(--modal-fg, #f5f5f5) !important;
             -webkit-text-fill-color: var(--modal-fg, #f5f5f5) !important;
+        }
+        /* V114.1: Exam note panels — always dark text on cream background */
+        #incard-expand-exam-note,
+        #fc-exam-note,
+        #expand-exam-note,
+        .sticky-note {
+            color: #2c2c2c !important;
+            -webkit-text-fill-color: #2c2c2c !important;
+        }
+        #incard-expand-exam-note *,
+        #fc-exam-note *,
+        #expand-exam-note *,
+        .sticky-note * {
+            color: #2c2c2c !important;
+            -webkit-text-fill-color: #2c2c2c !important;
         }
         /* And ensure all child spans/divs inherit (Safari sometimes ignores
            the parent color when there are nested formatting elements like
            <strong> or <span style="color:...">) */
         #incard-expand-notes *:not([style*="color"]),
-        #incard-expand-exam-note *:not([style*="color"]),
         #fc-notes *:not([style*="color"]),
-        #fc-exam-note *:not([style*="color"]),
-        #expand-notes *:not([style*="color"]),
-        #expand-exam-note *:not([style*="color"]) {
+        #expand-notes *:not([style*="color"]) {
             color: inherit !important;
             -webkit-text-fill-color: inherit !important;
         }
@@ -5738,18 +5753,129 @@ function triggerRename(word) {
 
 function triggerDelete(word) {
     $('action-title').textContent = 'DELETE WORD';
-    $('action-msg').textContent = `Permanently delete "${word}" from your bank?`;
+    $('action-msg').textContent = `Permanently delete "${word}" from your bank? This is irreversible.`;
     $('action-input').style.display = 'none';
     $('action-modal-content').style.maxWidth = '400px';
     $('action-modal').classList.add('active');
     
-    $('btn-action-confirm').onclick = () => {
+    $('btn-action-confirm').onclick = async () => {
+        // V114.1: HARD DELETE — actually remove from Supabase, not just from local memory.
+        // The previous version stripped local but pushToCloud() is a no-op in v110+,
+        // so the cloud copy stayed and the next pull restored the "deleted" card.
+        // 
+        // Sequence:
+        //   1. Cancel any pending per-card upserts for this word (so a stale write
+        //      doesn't re-create the row after we delete it).
+        //   2. Issue DELETE to Supabase. Wait for 204 No Content.
+        //   3. Only THEN strip from local arrays + persist + re-render.
+        //   4. If Supabase is unconfigured, fall back to local-only delete with a warning.
+        
+        // Disable the button while we work, change label
+        const btn = $('btn-action-confirm');
+        const origText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Deleting...';
+        
+        // Step 1: cancel any pending per-card upserts for this word
+        if(typeof _supabasePushQueue !== 'undefined' && _supabasePushQueue.has(word)) {
+            clearTimeout(_supabasePushQueue.get(word));
+            _supabasePushQueue.delete(word);
+        }
+        
+        // Step 2: Supabase DELETE
+        let cloudOk = true;
+        if(typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+            try {
+                const url = SUPABASE_URL + '/rest/v1/mrcs_cards?word=eq.' + encodeURIComponent(word);
+                const res = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_KEY,
+                        'Prefer': 'return=minimal'
+                    }
+                });
+                if(!res.ok) {
+                    cloudOk = false;
+                    const errText = await res.text().catch(() => '');
+                    console.warn('[V114.1] Supabase DELETE failed for', word, res.status, errText.substring(0, 200));
+                    if(typeof setSupabaseStatus === 'function') {
+                        setSupabaseStatus('⚠ Cloud delete failed for "' + word + '" — local kept', '#ff5252');
+                    }
+                    btn.disabled = false;
+                    btn.textContent = origText;
+                    if(!confirm('Cloud delete failed (HTTP ' + res.status + '). Delete from this device only?\n\nWarning: the card will reappear on next sync from another device or after a fresh boot.')) {
+                        $('action-modal').classList.remove('active');
+                        $('action-modal-content').style.maxWidth = '700px';
+                        $('btn-action-confirm').onclick = null;
+                        return;
+                    }
+                }
+            } catch(e) {
+                cloudOk = false;
+                console.warn('[V114.1] Supabase DELETE network error for', word, e);
+                btn.disabled = false;
+                btn.textContent = origText;
+                if(!confirm('Network error during cloud delete. Delete from this device only?\n\nWarning: the card will reappear on next sync.')) {
+                    $('action-modal').classList.remove('active');
+                    $('action-modal-content').style.maxWidth = '700px';
+                    $('btn-action-confirm').onclick = null;
+                    return;
+                }
+            }
+        }
+        
+        // Step 3: strip from all local data structures
         REVIEW_BANK = REVIEW_BANK.filter(item => item.word !== word);
+        if(typeof fcQueue !== 'undefined') {
+            fcQueue = fcQueue.filter(item => item.word !== word);
+            // Adjust fcCurrentIdx if we deleted the current card or one before it
+            if(typeof fcCurrentIdx === 'number' && fcCurrentIdx >= fcQueue.length) {
+                fcCurrentIdx = Math.max(0, fcQueue.length - 1);
+            }
+        }
         sessionScratchpad = sessionScratchpad.filter(item => (typeof item === 'string' ? item : item.word) !== word);
-        persistData(); pushToCloud(); refreshCurrentView();
+        // Wipe any drafts for this word
+        if(typeof _clearDraftsForWord === 'function') {
+            _clearDraftsForWord(word, ['expand-word', 'expand-notes', 'expand-exam-note']);
+            _clearDraftsForWord(word, ['incard-expand-word', 'incard-expand-notes', 'incard-expand-exam-note']);
+        }
+        
+        // Persist locally
+        try { localStorage.setItem(SK_BANK, JSON.stringify(REVIEW_BANK)); } catch(e) {}
+        
+        // If we're in the stack view and the deleted card was the current one,
+        // unflip and re-render the next card
+        if($('v-flashcards') && $('v-flashcards').classList.contains('active')) {
+            const card = $('fc-card');
+            if(card && card.classList.contains('flipped')) {
+                card.classList.remove('flipped');
+                if(card.classList.contains('in-card-modal')) {
+                    card.classList.remove('in-card-modal');
+                    if(typeof removeInCardExpandContent === 'function') removeInCardExpandContent();
+                }
+            }
+            $('srs-btn-group').style.opacity = '0';
+            $('srs-btn-group').style.pointerEvents = 'none';
+            $('fc-nav-group').style.display = 'flex';
+        }
+        
+        refreshCurrentView();
+        
+        // Status feedback
+        if(typeof setSupabaseStatus === 'function') {
+            if(cloudOk) {
+                setSupabaseStatus('✓ Deleted "' + word + '" from cloud', '#4ade80');
+            } else {
+                setSupabaseStatus('⚠ Deleted "' + word + '" locally only', '#ffab00');
+            }
+        }
+        
         $('action-modal').classList.remove('active');
         $('action-modal-content').style.maxWidth = '700px';
         $('btn-action-confirm').onclick = null;
+        $('btn-action-confirm').disabled = false;
+        $('btn-action-confirm').textContent = origText;
     };
 }
 
@@ -5782,7 +5908,12 @@ function showGlobalMenu(e, word, context) {
     
     // V103: In expand context, skip Edit Flashcard/Exam Note since the modal already does it
     // V104: incard-expand context same as expand — skip Edit Flashcard
-    if(context !== 'expand' && context !== 'incard-expand') {
+    // V114.1: incard-expand now needs Edit Flashcard back, because the in-card view
+    //         is read-only by default and the menu is the only way to enter edit mode.
+    if(context === 'incard-expand') {
+        createOpt('🤖 Ask Consultant', () => askConsultant(word));
+        createOpt('✏️ Edit Flashcard', () => { if(typeof toggleExpandEdit === 'function') toggleExpandEdit('incard-expand-'); });
+    } else if(context !== 'expand') {
         createOpt('🤖 Ask Consultant', () => askConsultant(word));
         // V103: Edit Flashcard now opens the unified expand modal everywhere
         createOpt('✏️ Edit Flashcard', () => openExpandedCard(word));
@@ -6633,20 +6764,27 @@ function injectInCardExpandContent(item) {
     const notesHtml = item.notes ? renderMarkdown(item.notes) : '<span style="opacity:0.4;font-style:italic;">No notes yet.</span>';
     const examHtml = item.examNote ? renderMarkdown(item.examNote) : '<span style="opacity:0.5;font-style:italic;">No exam note yet.</span>';
     
+    // V114.1: Read-only by default. Format toolbar, AI bars, image URL field,
+    // and save row are all DISPLAY:NONE on initial render. They're revealed by
+    // toggleExpandEdit('incard-expand-') when the user opens the ⋮ menu and
+    // chooses Edit Flashcard. This makes flipping a card a pure study action,
+    // editing a separate explicit intent.
+    // Format toolbar buttons get explicit inline styles so they're visible
+    // even before applyTheme runs against them (the v114 CSS-only fix lost
+    // the cascade race against btn-ghost defaults).
     wrap.innerHTML = `
         <div class="row" style="justify-content:space-between; align-items:flex-start; margin-bottom:6px; gap:8px;">
             <div id="incard-expand-word" contenteditable="false" style="font-family:'Bebas Neue', sans-serif; font-size:2.2rem; color:var(--accent2); line-height:1; flex:1; outline:none;">${item.word}</div>
             <div style="display:flex; gap:4px; flex-shrink:0;">
-                <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 8px;" id="btn-incard-expand-edit" onclick="event.stopPropagation(); toggleExpandEdit('incard-expand-')">✏️ Edit</button>
-                <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 8px;" id="btn-incard-expand-action" onclick="event.stopPropagation(); incardExpandAction()">⋮</button>
+                <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 8px;" id="btn-incard-expand-action" onclick="event.stopPropagation(); incardExpandAction(event)">⋮</button>
             </div>
         </div>
         <div id="incard-expand-format-toolbar" style="display:none; gap:4px; margin-bottom:8px; flex-wrap:wrap;">
-            <button class="btn btn-sm btn-ghost" onclick="execFormat('bold')" style="padding:3px 10px;font-size:0.7rem;font-weight:900;min-height:28px;">B</button>
-            <button class="btn btn-sm btn-ghost" onclick="execFormat('italic')" style="padding:3px 10px;font-size:0.7rem;font-style:italic;min-height:28px;">I</button>
-            <button class="btn btn-sm btn-ghost" onclick="execFormat('underline')" style="padding:3px 10px;font-size:0.7rem;text-decoration:underline;min-height:28px;">U</button>
-            <button class="btn btn-sm btn-ghost" onclick="execFormat('hiliteColor','#ffe066')" style="padding:3px 8px;font-size:0.65rem;background:#ffe066;color:#1a1a1a;font-weight:700;min-height:28px;border-color:#e6c54b;">🖍️ Hi</button>
-            <button class="btn btn-sm btn-ghost" onclick="execFormat('removeFormat')" style="padding:3px 8px;font-size:0.6rem;min-height:28px;opacity:0.7;">✕ Clear</button>
+            <button class="btn btn-sm" onclick="execFormat('bold')" style="padding:4px 12px;font-size:0.75rem;font-weight:900;min-height:30px;background:rgba(255,171,0,0.15);color:#ffab00;border:1px solid #ffab00;border-radius:6px;">B</button>
+            <button class="btn btn-sm" onclick="execFormat('italic')" style="padding:4px 12px;font-size:0.75rem;font-style:italic;min-height:30px;background:rgba(255,171,0,0.15);color:#ffab00;border:1px solid #ffab00;border-radius:6px;">I</button>
+            <button class="btn btn-sm" onclick="execFormat('underline')" style="padding:4px 12px;font-size:0.75rem;text-decoration:underline;min-height:30px;background:rgba(255,171,0,0.15);color:#ffab00;border:1px solid #ffab00;border-radius:6px;">U</button>
+            <button class="btn btn-sm" onclick="execFormat('hiliteColor','#ffe066')" style="padding:4px 10px;font-size:0.7rem;background:#ffe066;color:#1a1a1a;font-weight:700;min-height:30px;border:1px solid #e6c54b;border-radius:6px;">🖍️ Hi</button>
+            <button class="btn btn-sm" onclick="execFormat('removeFormat')" style="padding:4px 10px;font-size:0.65rem;min-height:30px;background:rgba(128,128,128,0.15);color:#aaa;border:1px solid #888;border-radius:6px;">✕ Clear</button>
         </div>
         <div style="display:grid; grid-template-columns: ${hasImg ? 'minmax(0,1fr) minmax(0,1.1fr)' : '1fr'}; gap:20px; align-items:start; flex:1; min-height:0;">
             ${hasImg ? `<div style="display:flex; flex-direction:column; gap:6px; min-width:0;"><img src="${imgSrc}" style="max-width:100%; width:100%; max-height:70vh; object-fit:contain; border-radius:8px;"></div>` : ''}
@@ -6654,8 +6792,8 @@ function injectInCardExpandContent(item) {
                 <div>
                     <div class="dash-lbl" style="color:var(--accent2); margin-bottom:4px;">FLASHCARD ANSWER</div>
                     <div id="incard-expand-notes" contenteditable="false" style="line-height:1.6; padding:12px; word-wrap:break-word; border:1px solid rgba(128,128,128,0.15); border-radius:8px; outline:none; background:rgba(128,128,128,0.04);">${notesHtml}</div>
-                    <!-- V107: AI add/refine row for the flashcard answer -->
-                    <div id="incard-ai-answer-row" class="row" style="margin-top:6px; gap:4px;">
+                    <!-- V107: AI add/refine row for the flashcard answer — hidden until edit mode -->
+                    <div id="incard-ai-answer-row" class="row" style="display:none; margin-top:6px; gap:4px;">
                         <button class="btn btn-sm btn-ghost" id="btn-incard-gen-answer" onclick="event.stopPropagation(); incardGenAnswer()" style="border-color:#00f2fe; color:#00f2fe; font-size:0.55rem; padding:5px 9px; flex-shrink:0;">🤖 AI Answer</button>
                         <input type="text" id="incard-refine-answer-input" placeholder="🪄 Refine answer..." onclick="event.stopPropagation()" style="font-size:0.6rem; padding:5px 8px; flex:1; border-radius:6px; border:1px solid rgba(128,128,128,0.25); background:rgba(128,128,128,0.08); color:inherit; font-family:'JetBrains Mono',monospace; outline:none; min-width:0;">
                         <button class="btn btn-sm" id="btn-incard-refine-answer" onclick="event.stopPropagation(); incardRefineAnswer()" style="background:#00f2fe; color:#111; font-size:0.55rem; padding:5px 10px; flex-shrink:0;">Send</button>
@@ -6664,14 +6802,14 @@ function injectInCardExpandContent(item) {
                 <div>
                     <div class="dash-lbl" style="color:#8b6914; margin-bottom:4px;">📌 EXAM NOTE</div>
                     <div id="incard-expand-exam-note" class="sticky-note" contenteditable="false" style="outline:none; padding:12px;">${examHtml}</div>
-                    <!-- V107: AI add/refine row for the exam note -->
-                    <div id="incard-ai-exam-row" class="row" style="margin-top:6px; gap:4px;">
+                    <!-- V107: AI add/refine row for the exam note — hidden until edit mode -->
+                    <div id="incard-ai-exam-row" class="row" style="display:none; margin-top:6px; gap:4px;">
                         <button class="btn btn-sm btn-ghost" id="btn-incard-gen-exam" onclick="event.stopPropagation(); incardGenExam()" style="border-color:#a78bfa; color:#a78bfa; font-size:0.55rem; padding:5px 9px; flex-shrink:0;">🤖 AI Exam</button>
                         <input type="text" id="incard-refine-exam-input" placeholder="🪄 Refine exam note..." onclick="event.stopPropagation()" style="font-size:0.6rem; padding:5px 8px; flex:1; border-radius:6px; border:1px solid rgba(128,128,128,0.25); background:rgba(128,128,128,0.08); color:inherit; font-family:'JetBrains Mono',monospace; outline:none; min-width:0;">
                         <button class="btn btn-sm" id="btn-incard-refine-exam" onclick="event.stopPropagation(); incardRefineExam()" style="background:#a78bfa; color:#111; font-size:0.55rem; padding:5px 10px; flex-shrink:0;">Send</button>
                     </div>
                 </div>
-                <input type="text" id="incard-expand-img-url" disabled placeholder="📷 Image URL" style="width:100%; padding:8px 10px; font-size:0.7rem; background:rgba(128,128,128,0.08); border:1px solid rgba(128,128,128,0.15); border-radius:6px; color:inherit; font-family:'JetBrains Mono',monospace; outline:none;" value="${item.img && !item.img.startsWith('data:') ? item.img : ''}">
+                <input type="text" id="incard-expand-img-url" disabled placeholder="📷 Image URL" style="display:none; width:100%; padding:8px 10px; font-size:0.7rem; background:rgba(128,128,128,0.08); border:1px solid rgba(128,128,128,0.15); border-radius:6px; color:inherit; font-family:'JetBrains Mono',monospace; outline:none;" value="${item.img && !item.img.startsWith('data:') ? item.img : ''}">
             </div>
         </div>
         <div class="row" id="incard-expand-save-row" style="justify-content:center; margin-top:10px; display:none; gap:8px;">
@@ -6681,10 +6819,9 @@ function injectInCardExpandContent(item) {
         <div class="incard-srs-anchor"></div>
     `;
     fcBack.appendChild(wrap);
-    // V113 item 10: Tap any text field to enter edit mode with caret at click point.
-    _attachClickToEdit('incard-expand-', ['incard-expand-word', 'incard-expand-notes', 'incard-expand-exam-note']);
-    // V113: Offer to restore unsaved drafts if any
-    setTimeout(() => _checkForUnsavedDrafts(item.word, ['incard-expand-word', 'incard-expand-notes', 'incard-expand-exam-note']), 100);
+    // V114.1: Click-to-edit and draft autosave are NOT attached on initial render
+    // because the view is read-only. They get attached when toggleExpandEdit is
+    // called from the action menu's Edit Flashcard option.
 }
 
 // V104: Tear down injected in-card expand content and restore original fc-back
@@ -7209,7 +7346,7 @@ function toggleExpandEdit(prefix) {
         if(wordEl) wordEl.contentEditable = 'true';
         if(notesEl) notesEl.contentEditable = 'true';
         if(examEl) examEl.contentEditable = 'true';
-        if(imgUrlEl) imgUrlEl.disabled = false;
+        if(imgUrlEl) { imgUrlEl.disabled = false; imgUrlEl.style.display = ''; }
         // If exam note placeholder, clear it
         if(!item.examNote && examEl) examEl.innerHTML = '';
         if(!item.notes && notesEl) notesEl.innerHTML = '';
@@ -7221,6 +7358,18 @@ function toggleExpandEdit(prefix) {
         if(sr) sr.style.display = 'flex';
         if(addBtn) addBtn.style.display = 'inline-flex';
         if(editBtn) editBtn.textContent = '👁️ View';
+        // V114.1: For the in-card prefix, also unhide AI rows that v114.1 hides
+        // by default in the read-only view.
+        if(prefix === 'incard-expand-') {
+            const aiAns = document.getElementById('incard-ai-answer-row');
+            const aiExm = document.getElementById('incard-ai-exam-row');
+            if(aiAns) aiAns.style.display = 'flex';
+            if(aiExm) aiExm.style.display = 'flex';
+            // Attach click-to-edit and draft autosave NOW (deferred from inject)
+            if(typeof _attachClickToEdit === 'function') {
+                _attachClickToEdit('incard-expand-', ['incard-expand-word', 'incard-expand-notes', 'incard-expand-exam-note']);
+            }
+        }
         if(notesEl) notesEl.focus();
     } else {
         // Toggle back to view
@@ -7269,7 +7418,7 @@ function saveExpandAllEdits(prefix) {
     if(wordEl) wordEl.contentEditable = 'false';
     if(notesEl) notesEl.contentEditable = 'false';
     if(examEl) examEl.contentEditable = 'false';
-    if(imgUrlEl) imgUrlEl.disabled = true;
+    if(imgUrlEl) { imgUrlEl.disabled = true; if(prefix === 'incard-expand-') imgUrlEl.style.display = 'none'; }
     const tb = document.getElementById(prefix + 'format-toolbar');
     const sr = document.getElementById(prefix + 'save-row');
     const addBtn = document.getElementById('btn-' + prefix + 'add-selected');
@@ -7278,6 +7427,13 @@ function saveExpandAllEdits(prefix) {
     if(sr) sr.style.display = 'none';
     if(addBtn) addBtn.style.display = 'none';
     if(editBtn) editBtn.textContent = '✏️ Edit';
+    // V114.1: For in-card prefix, also re-hide the AI rows after save
+    if(prefix === 'incard-expand-') {
+        const aiAns = document.getElementById('incard-ai-answer-row');
+        const aiExm = document.getElementById('incard-ai-exam-row');
+        if(aiAns) aiAns.style.display = 'none';
+        if(aiExm) aiExm.style.display = 'none';
+    }
     
     refreshCurrentView();
 }
@@ -7293,7 +7449,7 @@ function cancelExpandAllEdits(prefix) {
     if(wordEl) wordEl.contentEditable = 'false';
     if(notesEl) notesEl.contentEditable = 'false';
     if(examEl) examEl.contentEditable = 'false';
-    if(imgUrlEl) imgUrlEl.disabled = true;
+    if(imgUrlEl) { imgUrlEl.disabled = true; if(prefix === 'incard-expand-') imgUrlEl.style.display = 'none'; }
     const tb = document.getElementById(prefix + 'format-toolbar');
     const sr = document.getElementById(prefix + 'save-row');
     const addBtn = document.getElementById('btn-' + prefix + 'add-selected');
@@ -7302,6 +7458,13 @@ function cancelExpandAllEdits(prefix) {
     if(sr) sr.style.display = 'none';
     if(addBtn) addBtn.style.display = 'none';
     if(editBtn) editBtn.textContent = '✏️ Edit';
+    // V114.1: For in-card prefix, also re-hide the AI rows
+    if(prefix === 'incard-expand-') {
+        const aiAns = document.getElementById('incard-ai-answer-row');
+        const aiExm = document.getElementById('incard-ai-exam-row');
+        if(aiAns) aiAns.style.display = 'none';
+        if(aiExm) aiExm.style.display = 'none';
+    }
     if(item) {
         if(wordEl) wordEl.textContent = item.word;
         if(notesEl) notesEl.innerHTML = renderMarkdown(item.notes);
