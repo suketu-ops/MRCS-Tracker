@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V113 — Mobile UX Pass</title>
+<title>MRCS QBank Tracker Pro Max V113.1 — Mobile Patch</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -523,6 +523,26 @@
         #manual-pt, #manual-em, #score-in, #qs-done-in {
             font-size: 16px !important;
         }
+        /* V113.1: Belt-and-braces — bump ALL inputs and contenteditables to
+           16px on focus state. iOS Safari uses focus-time font-size to decide
+           whether to zoom, and a previous inline style of 0.8rem was beating
+           our @media rule. This focus-state rule is even more specific. */
+        input:focus, textarea:focus, [contenteditable="true"]:focus,
+        [contenteditable=""]:focus {
+            font-size: 16px !important;
+        }
+        /* V113.1: Sweep — every text-type input AND every input with .input-field
+           class gets bumped to 16px on mobile. Wins over inline font-size because
+           !important in CSS beats inline non-!important. */
+        input.input-field,
+        input[type="text"],
+        input[type="search"],
+        input[type="password"],
+        input[type="email"],
+        input[type="url"],
+        textarea {
+            font-size: 16px !important;
+        }
         /* Small tracker edit inputs: keep compact, prevent double-tap zoom */
         .edit-in, .edit-wgt, input[type="number"].edit-in,
         input[type="number"].edit-wgt {
@@ -536,18 +556,29 @@
         }
         
         /* V113 item 12: Mobile stack inline modal (the in-card editor that
-           sits inside the flipped card) was inheriting the light-theme
-           contenteditable default. Force light text on dark background. */
-        body.dark-theme #incard-expand-notes,
-        body.dark-theme #incard-expand-exam-note,
-        body.dark-theme #incard-expand-word {
-            color: #f5f5f5 !important;
-            -webkit-text-fill-color: #f5f5f5 !important;
-            background: rgba(20, 0, 28, 0.85) !important;
+           sits inside the flipped card) was inheriting the wrong text color.
+           V113.1: There is no `body.dark-theme` class — the app uses a JS
+           theme system. Use the --modal-fg CSS variable that applyTheme sets,
+           which is white for dark themes and dark for light themes. */
+        #incard-expand-notes,
+        #incard-expand-exam-note,
+        #incard-expand-word,
+        #fc-notes, #fc-exam-note,
+        #expand-notes, #expand-exam-note {
+            color: var(--modal-fg, #f5f5f5) !important;
+            -webkit-text-fill-color: var(--modal-fg, #f5f5f5) !important;
         }
-        body.dark-theme #fc-notes, body.dark-theme #fc-exam-note {
-            color: #f5f5f5 !important;
-            -webkit-text-fill-color: #f5f5f5 !important;
+        /* And ensure all child spans/divs inherit (Safari sometimes ignores
+           the parent color when there are nested formatting elements like
+           <strong> or <span style="color:...">) */
+        #incard-expand-notes *:not([style*="color"]),
+        #incard-expand-exam-note *:not([style*="color"]),
+        #fc-notes *:not([style*="color"]),
+        #fc-exam-note *:not([style*="color"]),
+        #expand-notes *:not([style*="color"]),
+        #expand-exam-note *:not([style*="color"]) {
+            color: inherit !important;
+            -webkit-text-fill-color: inherit !important;
         }
         
         /* V113 item 11: Stop line-squeeze on save. The contenteditable
@@ -568,17 +599,52 @@
             align-items: center;
             gap: 6px;
         }
+        /* V113.1 item 9 part 2: Hide the on-card ⋮ buttons on mobile entirely.
+           User only wants the one beside the search bar. */
+        .fc-edit-btn { display: none !important; }
+        
+        /* V113.1: Top bar sync indicator on mobile — constrain its width and
+           font so it doesn't crowd the themes/A+/A- buttons. */
+        #topbar-sync-indicator {
+            font-size: 0.55rem !important;
+            margin-left: 4px !important;
+            margin-right: 4px !important;
+            max-width: 45vw;
+        }
+        #topbar-sync-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 35vw;
+        }
+        #topbar-sync-btn {
+            width: 22px !important;
+            height: 22px !important;
+            font-size: 0.75rem !important;
+            min-width: 22px;
+            flex-shrink: 0;
+        }
         
         /* V113 item 17: Mobile performance view — let the date column
-           breathe so dates aren't cut off. */
+           breathe so dates aren't cut off.
+           V113.1: Just widening wasn't enough — too many columns competing for
+           the narrow phone width. Stack the row contents vertically: date+phase
+           on top, qcount and score on bottom. Eliminates cropping entirely. */
         #hist-list .hist-row {
-            font-size: 0.68rem !important;
-            padding: 8px 4px !important;
+            font-size: 0.7rem !important;
+            padding: 10px 6px !important;
+            display: block !important;
+        }
+        #hist-list .hist-row > span:first-child {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 6px 10px !important;
+            justify-content: flex-start !important;
         }
         #hist-list .hist-date {
-            min-width: 72px !important;
             white-space: nowrap;
             overflow: visible;
+            font-weight: 700;
         }
         
         /* V113 item 15: Postop filter collapsible on mobile, same pattern
@@ -1029,6 +1095,13 @@
         <button class="fs-btn" id="btn-topbar-export" onclick="exportFlashcardsPDF()" style="font-size:0.75rem; padding:6px 12px;">📄 PDF</button>
         <button class="fs-btn" id="btn-topbar-home" onclick="goToHome()" style="font-size:0.75rem; padding:6px 14px; background:var(--accent2); color:#111;">⌂ HOME</button>
     </div>
+    <!-- V113.1: Persistent sync indicator + manual sync button. Always visible.
+         Shows last sync time + status. Tapping the ⟳ button triggers an immediate
+         supabasePullEverything (which also pushes any pending writes). -->
+    <div id="topbar-sync-indicator" style="display:flex; align-items:center; gap:6px; font-size:0.6rem; opacity:0.85; margin-right:auto; margin-left:8px;">
+        <span id="topbar-sync-text" style="white-space:nowrap; font-family:'JetBrains Mono',monospace; color:#4ade80;">☁ idle</span>
+        <button id="topbar-sync-btn" onclick="manualSyncFromTopBar()" title="Sync now" style="background:transparent; border:1px solid #4ade80; color:#4ade80; border-radius:50%; width:24px; height:24px; padding:0; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; justify-content:center; line-height:1;">⟳</button>
+    </div>
     <div class="th-bar" id="themes"></div>
   </div>
 
@@ -1380,7 +1453,7 @@
     </div>
 
     <div style="width: 100%; display: flex; justify-content: center; align-items:center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap;">
-        <input type="text" id="fc-search-input" class="input-field" placeholder="🔍 Search notes or words..." style="padding: 8px; font-size: 0.8rem; max-width: 320px; border-radius: 20px; flex:1;" oninput="applyFlashcardSearch()">
+        <input type="text" id="fc-search-input" class="input-field" placeholder="🔍 Search notes or words..." style="padding: 8px; font-size: 16px; max-width: 320px; border-radius: 20px; flex:1;" oninput="applyFlashcardSearch()">
         <!-- V113 item 9: Mobile-only action button beside the search bar. On mobile the
              stack edit toolbar is hidden, so this is the only quick-access to the
              current card's ⋮ menu without having to tap the card body. -->
@@ -1787,7 +1860,7 @@ logDebug("V103 Script execution started.");
 let activeSelection = "";
 document.addEventListener("selectionchange", () => { const sel = window.getSelection().toString().trim(); if (sel) activeSelection = sel; });
 
-const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar','incard-expand-wrapper','incard-expand-word','incard-expand-notes','incard-expand-exam-note','incard-expand-img-url','incard-expand-format-toolbar','incard-expand-save-row','btn-incard-expand-edit','btn-incard-expand-action','postop-errtype-filter','postop-topic-filter','postop-select-bar','postop-select-count','btn-sync-now','gallery-filters-collapsible','btn-toggle-gallery-filters','incard-ai-answer-row','incard-ai-exam-row','btn-incard-gen-answer','btn-incard-refine-answer','incard-refine-answer-input','btn-incard-gen-exam','btn-incard-refine-exam','incard-refine-exam-input','supabase-url','supabase-key','btn-sb-save','btn-sb-pull','btn-sb-seed','supabase-status','sb-import-file','btn-sb-show-sql','btn-sb-push-local','fc-mobile-action-bar','btn-fc-mobile-action','postop-mobile-filter-toggle','postop-filters-collapsible']);
+const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar','incard-expand-wrapper','incard-expand-word','incard-expand-notes','incard-expand-exam-note','incard-expand-img-url','incard-expand-format-toolbar','incard-expand-save-row','btn-incard-expand-edit','btn-incard-expand-action','postop-errtype-filter','postop-topic-filter','postop-select-bar','postop-select-count','btn-sync-now','gallery-filters-collapsible','btn-toggle-gallery-filters','incard-ai-answer-row','incard-ai-exam-row','btn-incard-gen-answer','btn-incard-refine-answer','incard-refine-answer-input','btn-incard-gen-exam','btn-incard-refine-exam','incard-refine-exam-input','supabase-url','supabase-key','btn-sb-save','btn-sb-pull','btn-sb-seed','supabase-status','sb-import-file','btn-sb-show-sql','btn-sb-push-local','fc-mobile-action-bar','btn-fc-mobile-action','postop-mobile-filter-toggle','postop-filters-collapsible','topbar-sync-indicator','topbar-sync-text','topbar-sync-btn']);
 const $ = id => { const el = document.getElementById(id); if (!el) { if(!_optionalIds.has(id)) logDebug(`WARNING: Element '${id}' not found.`); return document.createElement('div'); } return el; };
 const EXAM_DATE = new Date(2026, 3, 22);
 
@@ -2821,11 +2894,91 @@ let _supabaseSeeded = localStorage.getItem('mrcs-supabase-seeded') === '1';
 const _supabasePushQueue = new Map(); // word -> timeoutId
 const SUPABASE_PUSH_DEBOUNCE_MS = 800;
 
+// V113.1: Top bar sync indicator state — last successful sync time, and a
+// transient "in flight" flag. The indicator updates whenever setSupabaseStatus
+// fires AND on a 10-second tick that just refreshes the relative time string.
+let _lastSuccessfulSyncAt = 0;
+let _topbarSyncTickerStarted = false;
+
 function setSupabaseStatus(msg, color) {
     const el = document.getElementById('supabase-status');
     if(el) {
         el.textContent = msg;
         if(color) el.style.color = color;
+    }
+    // V113.1: Mirror to top bar
+    _updateTopBarSync(msg, color);
+}
+
+function _updateTopBarSync(msg, color) {
+    const txt = document.getElementById('topbar-sync-text');
+    const btn = document.getElementById('topbar-sync-btn');
+    if(!txt) return;
+    if(!isSupabaseConfigured()) {
+        txt.textContent = '☁ off';
+        txt.style.color = '#888';
+        if(btn) btn.style.borderColor = '#888', btn.style.color = '#888';
+        return;
+    }
+    // Categorize the message
+    msg = msg || '';
+    const lower = msg.toLowerCase();
+    let label, c;
+    if(lower.includes('pulling') || lower.includes('pushing') || lower.includes('importing') || lower.includes('seeded') || lower.includes('step ')) {
+        label = '⟳ syncing';
+        c = '#ffab00';
+    } else if(lower.includes('failed') || lower.includes('error') || msg.startsWith('⚠') || msg.startsWith('\u26A0')) {
+        label = '⚠ error';
+        c = '#ff5252';
+    } else if(msg.startsWith('✓') || msg.startsWith('\u2713') || msg.startsWith('✅') || lower.includes('connected') || lower.includes('synced')) {
+        _lastSuccessfulSyncAt = Date.now();
+        label = '✓ just now';
+        c = '#4ade80';
+    } else if(lower.includes('not connected')) {
+        label = '☁ idle';
+        c = '#888';
+    } else {
+        label = '☁ ' + (msg.length > 18 ? msg.substring(0, 18) + '…' : msg);
+        c = color || '#4ade80';
+    }
+    txt.textContent = label;
+    txt.style.color = c;
+    if(btn) {
+        btn.style.borderColor = c;
+        btn.style.color = c;
+    }
+    // Start the relative-time ticker once
+    if(!_topbarSyncTickerStarted) {
+        _topbarSyncTickerStarted = true;
+        setInterval(_tickTopBarSyncRelativeTime, 10000);
+    }
+}
+
+function _tickTopBarSyncRelativeTime() {
+    const txt = document.getElementById('topbar-sync-text');
+    if(!txt || !_lastSuccessfulSyncAt) return;
+    // Don't overwrite an in-flight or error label
+    const cur = txt.textContent || '';
+    if(cur.startsWith('⟳') || cur.startsWith('⚠')) return;
+    const ageS = Math.round((Date.now() - _lastSuccessfulSyncAt) / 1000);
+    let rel;
+    if(ageS < 15) rel = 'just now';
+    else if(ageS < 60) rel = ageS + 's ago';
+    else if(ageS < 3600) rel = Math.round(ageS / 60) + 'm ago';
+    else if(ageS < 86400) rel = Math.round(ageS / 3600) + 'h ago';
+    else rel = Math.round(ageS / 86400) + 'd ago';
+    txt.textContent = '✓ ' + rel;
+}
+
+// Manual sync from the top bar — same as the green section's ⬇ Pull All
+function manualSyncFromTopBar() {
+    if(!isSupabaseConfigured()) {
+        alert('Supabase not configured. Open settings to set it up.');
+        return;
+    }
+    if(typeof supabaseFlushAllPendingV111 === 'function') supabaseFlushAllPendingV111();
+    if(typeof supabasePullEverything === 'function') {
+        setTimeout(() => supabasePullEverything(true), 300);
     }
 }
 
@@ -6680,38 +6833,48 @@ function openExpandedCard(word) {
     setTimeout(() => _checkForUnsavedDrafts(word, ['expand-word', 'expand-notes', 'expand-exam-note']), 100);
 }
 
-// V113: Shared helper — attach a mousedown listener on each field ID that, when
-// the user taps while NOT in edit mode, enters edit mode and preserves the caret
-// position at the click point. Mousedown (not click) is critical because the
-// browser's native caret placement happens on mousedown, and by the time click
-// fires the caret has already been placed — so we catch mousedown, call
-// toggleExpandEdit synchronously (which flips contentEditable to true), and the
-// native caret placement proceeds naturally.
+// V113.1: Shared helper — attach a click-to-edit listener that ONLY triggers
+// if the user actually clicked on visible text content, not the padding/empty
+// space around it. Uses caretRangeFromPoint to check whether the click point
+// resolves to a real caret position inside a text node. If it doesn't (e.g.,
+// the user tapped the padding area of a mostly-empty field), we ignore the
+// click — preventing accidental edit-mode entry on iPhone where fields are
+// often much larger than their content.
 function _attachClickToEdit(prefix, fieldIds) {
     fieldIds.forEach(id => {
         const el = document.getElementById(id);
         if(!el) return;
-        // Remove any previous handler so we don't stack
         if(el._v113ClickEditHandler) {
             el.removeEventListener('mousedown', el._v113ClickEditHandler);
             el.removeEventListener('touchstart', el._v113ClickEditHandler);
         }
         const handler = function(ev) {
-            // If already in edit mode, do nothing — let the normal caret placement happen
             if(expandEditActive) return;
-            // If this is a touch event, we want the default behavior to still place
-            // the caret, so we do NOT preventDefault. We just flip the state.
+            // V113.1: Check if the click landed on actual text content
+            let hitText = false;
+            const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+            const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
+            try {
+                let range = null;
+                if(document.caretRangeFromPoint) {
+                    range = document.caretRangeFromPoint(cx, cy);
+                } else if(document.caretPositionFromPoint) {
+                    const pos = document.caretPositionFromPoint(cx, cy);
+                    if(pos) range = { startContainer: pos.offsetNode };
+                }
+                if(range && range.startContainer && range.startContainer.nodeType === 3) {
+                    // Node type 3 = text node — clicked on actual text content
+                    const textContent = range.startContainer.textContent || '';
+                    if(textContent.trim().length > 0) hitText = true;
+                }
+            } catch(e) {}
+            if(!hitText) return; // Clicked padding/empty area, don't enter edit mode
             toggleExpandEdit(prefix);
-            // Focus this specific field after the toggle so the caret lands here.
-            // Use setTimeout 0 so the contentEditable flip has applied.
-            setTimeout(() => {
-                el.focus();
-            }, 0);
+            setTimeout(() => { el.focus(); }, 0);
         };
         el._v113ClickEditHandler = handler;
         el.addEventListener('mousedown', handler);
         el.addEventListener('touchstart', handler, { passive: true });
-        // V113: Attach draft autosave for this field
         _attachDraftAutosave(el, id);
     });
 }
@@ -7668,6 +7831,11 @@ function renderGallery() {
              // V113 item 16: Stripped the direct title-link hyperlink that let the
              //   word text jump straight to expand modal. The whole card body now
              //   uses the two-state pattern uniformly.
+             // V113.1: BUG FIX — showGalleryAnswerPopup internally calls
+             //   hideGalleryCloudPopup() which clears _armedCompactWord. So setting
+             //   the arm BEFORE the popup call meant the arm got wiped immediately.
+             //   Fix: set the arm AFTER the popup is shown so the dismiss inside
+             //   doesn't clobber it.
              card.onclick = (e) => { 
                  if(gallerySelectMode) { toggleGalleryCardSelect(item.word, card); return; }
                  if(e.target.classList.contains('reveal-action-btn')) return;
@@ -7677,8 +7845,8 @@ function renderGallery() {
                      hideGalleryCloudPopup();
                      openExpandedCard(item.word);
                  } else {
-                     _armedCompactWord = item.word;
                      showGalleryAnswerPopup(card, item);
+                     _armedCompactWord = item.word; // V113.1: arm AFTER show
                  }
              };
             card.classList.remove('revealed');
@@ -10281,6 +10449,8 @@ function initApp() {
 
     // V110: On boot, pull cards from Supabase if configured. Never auto-pull from JSONBin.
     // V111: Pulls EVERYTHING — cards, tracker, sessions, settings — in one shot.
+    // V113.1: Prime the top bar sync indicator with the initial state
+    if(typeof _updateTopBarSync === 'function') _updateTopBarSync('', null);
     if(isSupabaseConfigured()) {
         // Pre-fill the input fields so the user can see what's connected
         if($('supabase-url')) $('supabase-url').value = SUPABASE_URL;
