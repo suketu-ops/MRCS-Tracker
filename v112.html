@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V112 — First-Boot Migration Fix</title>
+<title>MRCS QBank Tracker Pro Max V113 — Mobile UX Pass</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -367,7 +367,7 @@
 
     /* --- Small phones (≤480px) --- */
     @media (max-width: 480px) {
-        #app { padding-left: 10px; padding-right: 10px; padding-bottom: 120px; /* V107: extra space so gallery cards aren't cut off at bottom */ }
+        #app { padding-left: 10px; padding-right: 10px; padding-bottom: 60px; /* V113: trimmed from 120px; v113 safe-area override below adds dynamic bottom */ }
         /* V107: ensure flashcard gallery itself has scroll-bottom breathing room */
         #fc-gallery-state { padding-bottom: 80px !important; }
         /* V111: Hide the dedicated stack edit toolbar on mobile — the ⋮ action menu on
@@ -476,16 +476,122 @@
         /* V103: Mobile gallery panel — full screen takeover */
         .gallery-exam-panel { width: 100vw !important; max-width: 100vw !important; left: 0 !important; right: 0 !important; padding: 60px 18px 24px !important; }
         /* V103: Expand modal full screen on mobile, single column, hide image */
-        #expand-modal-content { width: 100vw !important; max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; padding: 60px 16px 20px !important; border-radius: 0 !important; border-left: none !important; border-right: none !important; }
+        #expand-modal-content { width: 100vw !important; max-width: 100vw !important; max-height: 100dvh !important; height: 100dvh !important; padding: 60px 16px 20px !important; border-radius: 0 !important; border-left: none !important; border-right: none !important; }
         #expand-modal-content #expand-word { font-size: 1.6rem !important; }
         #expand-body-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
         #expand-img-col { display: none !important; }
         #expand-modal-content #expand-notes { font-size: 0.9rem !important; }
+        
+        /* =====================================================================
+           V113 MOBILE UX FIXES — grouped below, all scoped to <=480px.
+           Items addressed: 9, 10, 11, 12, 13, 14, 15, 16, 17, 18.
+           ===================================================================== */
+        
+        /* V113 item 14: Reduce the giant bottom padding that was cutting off
+           the SRS buttons on iPhone 14 (viewport ~844px tall, home indicator
+           eats ~34px, bottom Safari bar eats more). Use 100dvh for #app so
+           the height tracks the visible viewport as the browser chrome shows/
+           hides. Account for the safe area so buttons clear the home indicator. */
+        #app {
+            min-height: 100dvh;
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 60px) !important;
+        }
+        /* Stack view (v-flashcards when not in gallery) needs MORE space at
+           the bottom for the SRS grading buttons, but not the massive 120px
+           that was there before. 80px plus safe area is enough. */
+        #v-flashcards:not(.gallery-mode) {
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
+        }
+        /* The stack layout itself must never exceed visible height, so the
+           SRS button row stays visible above the bottom edge. */
+        #fc-stack-layout {
+            max-height: calc(100dvh - 140px) !important;
+            overflow-y: auto;
+        }
+        
+        /* V113 item 18: Kill auto-zoom on focus. Safari zooms any text input
+           with font-size < 16px. Bump long-text fields to 16px. Short fields
+           (tracker edit grid, filter dropdowns) stay small but get
+           touch-action:manipulation to avoid double-tap zoom. */
+        input[type="text"], input[type="password"], input[type="email"],
+        input[type="search"], input[type="url"], textarea,
+        [contenteditable="true"], .modal-textarea, .ce-field,
+        #fc-notes, #fc-exam-note, #expand-notes, #expand-exam-note,
+        #incard-expand-notes, #incard-expand-exam-note, #incard-expand-word,
+        #fc-search-input, #gallery-search, #gemini-key, #cloud-key,
+        #cloud-bin, #supabase-url, #supabase-key,
+        #manual-pt, #manual-em, #score-in, #qs-done-in {
+            font-size: 16px !important;
+        }
+        /* Small tracker edit inputs: keep compact, prevent double-tap zoom */
+        .edit-in, .edit-wgt, input[type="number"].edit-in,
+        input[type="number"].edit-wgt {
+            touch-action: manipulation;
+        }
+        /* Prevent pinch-zoom capture on modals themselves (fixes item 13
+           partially — the expand modal being misinterpreted as the stack
+           card underneath when you pinch) */
+        #expand-modal, #incard-expand-wrapper, #action-modal {
+            touch-action: manipulation;
+        }
+        
+        /* V113 item 12: Mobile stack inline modal (the in-card editor that
+           sits inside the flipped card) was inheriting the light-theme
+           contenteditable default. Force light text on dark background. */
+        body.dark-theme #incard-expand-notes,
+        body.dark-theme #incard-expand-exam-note,
+        body.dark-theme #incard-expand-word {
+            color: #f5f5f5 !important;
+            -webkit-text-fill-color: #f5f5f5 !important;
+            background: rgba(20, 0, 28, 0.85) !important;
+        }
+        body.dark-theme #fc-notes, body.dark-theme #fc-exam-note {
+            color: #f5f5f5 !important;
+            -webkit-text-fill-color: #f5f5f5 !important;
+        }
+        
+        /* V113 item 11: Stop line-squeeze on save. The contenteditable
+           round-trip was collapsing blank lines. Preserve whitespace both
+           in view and edit modes. */
+        #fc-notes, #fc-exam-note, #expand-notes, #expand-exam-note,
+        #incard-expand-notes, #incard-expand-exam-note {
+            white-space: pre-wrap !important;
+            word-break: break-word;
+        }
+        
+        /* V113 item 9: Move the card action (⋮) button up next to the
+           search bar on mobile, so it's reachable without going to the
+           card itself. Implemented by showing a mirrored action button
+           in the search row; the original on-card ⋮ stays too. */
+        #fc-mobile-action-bar {
+            display: flex !important;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        /* V113 item 17: Mobile performance view — let the date column
+           breathe so dates aren't cut off. */
+        #hist-list .hist-row {
+            font-size: 0.68rem !important;
+            padding: 8px 4px !important;
+        }
+        #hist-list .hist-date {
+            min-width: 72px !important;
+            white-space: nowrap;
+            overflow: visible;
+        }
+        
+        /* V113 item 15: Postop filter collapsible on mobile, same pattern
+           as v107 gallery filters. */
+        #postop-mobile-filter-toggle { display: flex !important; }
+        #postop-filters-collapsible.collapsed {
+            display: none !important;
+        }
     }
 
     /* --- Medium phones (481-640px) --- */
     @media (min-width: 481px) and (max-width: 640px) {
-        #app { padding: 75px 14px 110px; /* V107: extra bottom for gallery scroll */ }
+        #app { padding: 75px 14px 50px; /* V113: trimmed from 110px */ min-height: 100dvh; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 50px); }
         #fc-gallery-state { padding-bottom: 80px !important; }
         .stat-val { font-size: 2rem; }
         .clock { font-size: min(11vw, 4rem); }
@@ -1275,6 +1381,12 @@
 
     <div style="width: 100%; display: flex; justify-content: center; align-items:center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap;">
         <input type="text" id="fc-search-input" class="input-field" placeholder="🔍 Search notes or words..." style="padding: 8px; font-size: 0.8rem; max-width: 320px; border-radius: 20px; flex:1;" oninput="applyFlashcardSearch()">
+        <!-- V113 item 9: Mobile-only action button beside the search bar. On mobile the
+             stack edit toolbar is hidden, so this is the only quick-access to the
+             current card's ⋮ menu without having to tap the card body. -->
+        <div id="fc-mobile-action-bar" style="display:none; gap:6px; align-items:center;">
+            <button class="btn btn-sm btn-ghost" id="btn-fc-mobile-action" onclick="event.stopPropagation(); fcMobileActionClick(event)" style="font-size:1rem; padding:6px 12px; min-height:36px; border-color:var(--accent2); color:var(--accent2);" title="Actions for current card">⋮</button>
+        </div>
         <!-- V103: Stack edit toolbar — single button reveals all field edit functions -->
         <div id="stack-edit-toolbar" style="display:flex; gap:4px; align-items:center;">
             <button class="btn btn-sm btn-ghost" id="btn-stack-edit-toggle" onclick="toggleStackFullEdit()" style="font-size:0.6rem; padding:5px 10px; border-style:dashed; border-color:var(--accent2); color:var(--accent2);">✏️ Edit</button>
@@ -1598,6 +1710,11 @@
         <div class="postop-progress-bar"><div class="postop-progress-fill" id="postop-progress-fill" style="width:0%"></div></div>
         <div class="postop-generating" id="postop-status">Generating AI summaries...</div>
     </div>
+    <!-- V113 item 15: Mobile-only toggle to hide/show the postop filters. Same
+         pattern as v107 gallery filters — on desktop, the wrapper is always
+         visible and the toggle is hidden. -->
+    <button id="postop-mobile-filter-toggle" class="btn btn-sm btn-ghost" style="display:none; width:100%; margin-bottom:8px; border-style:dashed; border-color:var(--accent2); color:var(--accent2); font-size:0.65rem; padding:6px;" onclick="togglePostopFilters()">▼ Filters & Tools</button>
+    <div id="postop-filters-collapsible">
     <div class="gallery-risk-filter" id="postop-risk-filter" style="justify-content:center; margin-bottom:8px;">
         <button class="risk-filter-btn active" onclick="filterPostOp('all')">All</button>
         <button class="risk-filter-btn" onclick="filterPostOp('red')">🔴 High</button>
@@ -1624,6 +1741,7 @@
         <button class="btn btn-sm" style="background:#ffab00; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="postopCleanupDuplication('selected')">🧹 Clean Selected</button>
         <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-color:#ff5252; color:#ff5252;" onclick="togglePostopSelectMode()">Cancel</button>
     </div>
+    </div><!-- end #postop-filters-collapsible -->
     <div class="postop-fact-mosaic" id="postop-mosaic"></div>
     <div class="row" style="justify-content:center; gap:8px; margin-top:16px;">
         <button class="btn btn-sm btn-ghost" id="btn-postop-close" onclick="closePostOpReview()">Close Post-Op Review</button>
@@ -1669,7 +1787,7 @@ logDebug("V103 Script execution started.");
 let activeSelection = "";
 document.addEventListener("selectionchange", () => { const sel = window.getSelection().toString().trim(); if (sel) activeSelection = sel; });
 
-const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar','incard-expand-wrapper','incard-expand-word','incard-expand-notes','incard-expand-exam-note','incard-expand-img-url','incard-expand-format-toolbar','incard-expand-save-row','btn-incard-expand-edit','btn-incard-expand-action','postop-errtype-filter','postop-topic-filter','postop-select-bar','postop-select-count','btn-sync-now','gallery-filters-collapsible','btn-toggle-gallery-filters','incard-ai-answer-row','incard-ai-exam-row','btn-incard-gen-answer','btn-incard-refine-answer','incard-refine-answer-input','btn-incard-gen-exam','btn-incard-refine-exam','incard-refine-exam-input','supabase-url','supabase-key','btn-sb-save','btn-sb-pull','btn-sb-seed','supabase-status','sb-import-file','btn-sb-show-sql','btn-sb-push-local']);
+const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar','incard-expand-wrapper','incard-expand-word','incard-expand-notes','incard-expand-exam-note','incard-expand-img-url','incard-expand-format-toolbar','incard-expand-save-row','btn-incard-expand-edit','btn-incard-expand-action','postop-errtype-filter','postop-topic-filter','postop-select-bar','postop-select-count','btn-sync-now','gallery-filters-collapsible','btn-toggle-gallery-filters','incard-ai-answer-row','incard-ai-exam-row','btn-incard-gen-answer','btn-incard-refine-answer','incard-refine-answer-input','btn-incard-gen-exam','btn-incard-refine-exam','incard-refine-exam-input','supabase-url','supabase-key','btn-sb-save','btn-sb-pull','btn-sb-seed','supabase-status','sb-import-file','btn-sb-show-sql','btn-sb-push-local','fc-mobile-action-bar','btn-fc-mobile-action','postop-mobile-filter-toggle','postop-filters-collapsible']);
 const $ = id => { const el = document.getElementById(id); if (!el) { if(!_optionalIds.has(id)) logDebug(`WARNING: Element '${id}' not found.`); return document.createElement('div'); } return el; };
 const EXAM_DATE = new Date(2026, 3, 22);
 
@@ -3978,6 +4096,127 @@ function supabaseFlushAllPendingV111() {
 // END SUPABASE CLIENT
 // ============================================================================
 
+// ============================================================================
+// V113: DRAFT AUTOSAVE SAFETY NET
+// ----------------------------------------------------------------------------
+// While editing a card's notes or exam note, we save a local draft to
+// localStorage every 2 seconds. If the user accidentally navigates back,
+// reloads, or has their browser crash, the draft survives. When they open
+// the same card again within 10 minutes, we offer to restore the draft.
+// 
+// Drafts are keyed by "word|field" so they don't collide. They're cleared
+// on successful save. They never leave the device (localStorage only).
+// This is NOT synced to Supabase — it's a last-mile local safety net only.
+// ============================================================================
+const DRAFT_KEY_PREFIX = 'mrcs-draft-v113-';
+const DRAFT_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes
+let _draftAutosaveTimer = null;
+
+function _draftKey(word, field) {
+    return DRAFT_KEY_PREFIX + field + '|' + word;
+}
+
+function saveDraft(word, field, content) {
+    if(!word || !field) return;
+    try {
+        localStorage.setItem(_draftKey(word, field), JSON.stringify({
+            content: content,
+            savedAt: Date.now()
+        }));
+    } catch(e) { /* quota or unavailable — best-effort */ }
+}
+
+function getDraft(word, field) {
+    if(!word || !field) return null;
+    try {
+        const raw = localStorage.getItem(_draftKey(word, field));
+        if(!raw) return null;
+        const draft = JSON.parse(raw);
+        if(!draft || typeof draft.content !== 'string') return null;
+        if(Date.now() - (draft.savedAt || 0) > DRAFT_MAX_AGE_MS) {
+            localStorage.removeItem(_draftKey(word, field));
+            return null;
+        }
+        return draft;
+    } catch(e) { return null; }
+}
+
+function clearDraft(word, field) {
+    if(!word || !field) return;
+    try { localStorage.removeItem(_draftKey(word, field)); } catch(e) {}
+}
+
+// Call from the expand/inline edit modals while the user is typing.
+// Schedules a single write 2 seconds after the last keystroke (debounced).
+function scheduleDraftSave(word, field, getContentFn) {
+    if(_draftAutosaveTimer) clearTimeout(_draftAutosaveTimer);
+    _draftAutosaveTimer = setTimeout(() => {
+        _draftAutosaveTimer = null;
+        try {
+            const content = getContentFn();
+            if(typeof content === 'string') saveDraft(word, field, content);
+        } catch(e) {}
+    }, 2000);
+}
+
+// Wire draft autosave to a contenteditable element. Fires on input events
+// while the element is in edit mode. Cleans up prior handler if re-wired.
+function attachDraftAutosave(el, word, field) {
+    if(!el) return;
+    if(el._v113DraftHandler) el.removeEventListener('input', el._v113DraftHandler);
+    const handler = () => {
+        scheduleDraftSave(word, field, () => el.innerHTML);
+    };
+    el._v113DraftHandler = handler;
+    el.addEventListener('input', handler);
+}
+
+// After opening a card, check if a fresh draft exists that's newer than the
+// saved content. If so, offer to restore it. Called from openExpandedCard
+// and from the in-card modal open path.
+function maybeOfferDraftRestore(word, prefix) {
+    const notesDraft = getDraft(word, 'notes');
+    const examDraft = getDraft(word, 'examNote');
+    if(!notesDraft && !examDraft) return;
+    const item = REVIEW_BANK.find(b => b.word === word);
+    if(!item) return;
+    // Only offer if the draft is different from the current saved content
+    const notesNow = item.notes || '';
+    const examNow = item.examNote || '';
+    const notesDrifted = notesDraft && notesDraft.content &&
+                          notesDraft.content.replace(/<[^>]+>/g, '').trim() !== notesNow.trim();
+    const examDrifted = examDraft && examDraft.content &&
+                         examDraft.content.replace(/<[^>]+>/g, '').trim() !== examNow.trim();
+    if(!notesDrifted && !examDrifted) {
+        // Drafts exist but match current saved — just clean them up
+        clearDraft(word, 'notes');
+        clearDraft(word, 'examNote');
+        return;
+    }
+    const age = Math.min(
+        notesDraft ? Date.now() - notesDraft.savedAt : Infinity,
+        examDraft ? Date.now() - examDraft.savedAt : Infinity
+    );
+    const ageMin = Math.round(age / 60000);
+    const msg = 'An unsaved draft exists for "' + word + '" from ' +
+                (ageMin < 1 ? 'less than a minute ago' : (ageMin + ' minute' + (ageMin !== 1 ? 's' : '') + ' ago')) +
+                '.\n\nRestore the draft? (Cancel to keep the saved version.)';
+    if(confirm(msg)) {
+        const notesEl = document.getElementById(prefix + 'notes');
+        const examEl = document.getElementById(prefix + 'exam-note');
+        if(notesDrifted && notesEl) notesEl.innerHTML = notesDraft.content;
+        if(examDrifted && examEl) examEl.innerHTML = examDraft.content;
+        // Automatically enter edit mode so the user can review/save
+        if(typeof toggleExpandEdit === 'function' && !expandEditActive) toggleExpandEdit(prefix);
+    } else {
+        // User declined — clear the drafts
+        clearDraft(word, 'notes');
+        clearDraft(word, 'examNote');
+    }
+}
+// ============================================================================
+// END DRAFT AUTOSAVE
+// ============================================================================
 
 function getLogToday() { return TRACKER_DATA.find(r=>r.d===logTodayStr()); }
 function daysToExam() { const now=new Date(); now.setHours(0,0,0,0); return Math.max(0,Math.ceil((EXAM_DATE-now)/(1000*60*60*24))); }
@@ -5172,7 +5411,13 @@ function showHistoryView() {
         return;
     }
     
-    const validSessions = sessions;
+    const validSessions = sessions.slice().sort((a, b) => {
+        // V113 item 17: Guarantee newest-first regardless of what was in localStorage.
+        // Use startIso where present, fall back to Date.parse(date).
+        const aT = typeof a.startIso === 'number' ? a.startIso : (a.date ? Date.parse(a.date) || 0 : 0);
+        const bT = typeof b.startIso === 'number' ? b.startIso : (b.date ? Date.parse(b.date) || 0 : 0);
+        return bT - aT;
+    });
     // V79: Only MCQ sessions count for score stats
     const mcqSessions = validSessions.filter(s => (s.qbank||'').toUpperCase() !== 'FC');
     const sc = mcqSessions.map(s => Number(s.score) || 0);
@@ -5193,13 +5438,17 @@ function showHistoryView() {
     // V79: Render new analytics
     renderHeatmap(); renderQbankBreakdown(); calcReadiness();
     
-    $('hist-list').innerHTML = validSessions.slice().reverse().map((s, reversedIdx) => {
-        const realIdx = validSessions.length - 1 - reversedIdx;
+    // V113 item 17: History shows newest session at the top, oldest at the bottom.
+    // validSessions is now sorted newest-first. realIdx must still point at the
+    // ORIGINAL sessions array so openSessionSummary/deleteSession target the right row.
+    $('hist-list').innerHTML = validSessions.map((s, sortedIdx) => {
+        // Find this session in the original sessions array by identity
+        const realIdx = sessions.indexOf(s);
         const ds = s.date ? getAdjustedDate(new Date(s.date)).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : 'N/A';
         const scCol = Number(s.score) >= 70 ? T().alertOk : Number(s.score) >= 50 ? T().accent2 : '#ff5252';
         return `<div class="hist-row clickable" style="position:relative;">
             <span onclick="openSessionSummary(${realIdx})" style="flex:1;display:flex;justify-content:space-between;align-items:center;gap:8px;">
-                <span>${ds} <span style="font-size:0.6rem;opacity:0.5;background:${T().barBg};padding:2px 4px;border-radius:4px;">${s.phase||'1ST'} ${s.qbank||'PT'}</span></span>
+                <span class="hist-date">${ds} <span style="font-size:0.6rem;opacity:0.5;background:${T().barBg};padding:2px 4px;border-radius:4px;">${s.phase||'1ST'} ${s.qbank||'PT'}</span></span>
                 <span>${s.done||0}/${s.totalQs||120} (${s.usedMin||0}m)</span>
                 <span style="font-weight:700;color:${scCol}">${s.score?s.score+'%':'0%'}</span>
             </span>
@@ -6050,6 +6299,10 @@ function injectInCardExpandContent(item) {
         <div class="incard-srs-anchor"></div>
     `;
     fcBack.appendChild(wrap);
+    // V113 item 10: Tap any text field to enter edit mode with caret at click point.
+    _attachClickToEdit('incard-expand-', ['incard-expand-word', 'incard-expand-notes', 'incard-expand-exam-note']);
+    // V113: Offer to restore unsaved drafts if any
+    setTimeout(() => _checkForUnsavedDrafts(item.word, ['incard-expand-word', 'incard-expand-notes', 'incard-expand-exam-note']), 100);
 }
 
 // V104: Tear down injected in-card expand content and restore original fc-back
@@ -6341,6 +6594,19 @@ function toggleGalleryFiltersCollapsed() {
     if(btn) btn.textContent = galleryFiltersOpen ? '\u25B2 Hide Filters' : '\u25BC Filters & Tools';
 }
 
+// V113 item 15: Postop filter collapsible — same pattern as gallery, mobile only
+let postopFiltersOpen = true;
+function togglePostopFilters() {
+    postopFiltersOpen = !postopFiltersOpen;
+    const wrap = document.getElementById('postop-filters-collapsible');
+    const btn = document.getElementById('postop-mobile-filter-toggle');
+    if(wrap) {
+        if(postopFiltersOpen) wrap.classList.remove('collapsed');
+        else wrap.classList.add('collapsed');
+    }
+    if(btn) btn.textContent = postopFiltersOpen ? '\u25B2 Hide Filters & Tools' : '\u25BC Filters & Tools';
+}
+
 // V107: Desktop tool dropdown menu
 function toggleGalleryToolMenu() {
     const m = document.getElementById('gallery-tool-menu');
@@ -6405,6 +6671,133 @@ function openExpandedCard(word) {
     // V103: Close the gallery exam panel and any floating cloud popup
     if($('gallery-exam-panel')) closeGalleryExamPanel();
     if(typeof hideGalleryCloudPopup === 'function') hideGalleryCloudPopup();
+    
+    // V113 item 10: Click any text field while in view mode → enter edit mode
+    // and place the caret where the user clicked. We rebind each time the modal
+    // opens so the listeners reference the fresh expandEditingWord.
+    _attachClickToEdit('expand-', ['expand-word', 'expand-notes', 'expand-exam-note']);
+    // V113: Offer to restore unsaved drafts if any
+    setTimeout(() => _checkForUnsavedDrafts(word, ['expand-word', 'expand-notes', 'expand-exam-note']), 100);
+}
+
+// V113: Shared helper — attach a mousedown listener on each field ID that, when
+// the user taps while NOT in edit mode, enters edit mode and preserves the caret
+// position at the click point. Mousedown (not click) is critical because the
+// browser's native caret placement happens on mousedown, and by the time click
+// fires the caret has already been placed — so we catch mousedown, call
+// toggleExpandEdit synchronously (which flips contentEditable to true), and the
+// native caret placement proceeds naturally.
+function _attachClickToEdit(prefix, fieldIds) {
+    fieldIds.forEach(id => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        // Remove any previous handler so we don't stack
+        if(el._v113ClickEditHandler) {
+            el.removeEventListener('mousedown', el._v113ClickEditHandler);
+            el.removeEventListener('touchstart', el._v113ClickEditHandler);
+        }
+        const handler = function(ev) {
+            // If already in edit mode, do nothing — let the normal caret placement happen
+            if(expandEditActive) return;
+            // If this is a touch event, we want the default behavior to still place
+            // the caret, so we do NOT preventDefault. We just flip the state.
+            toggleExpandEdit(prefix);
+            // Focus this specific field after the toggle so the caret lands here.
+            // Use setTimeout 0 so the contentEditable flip has applied.
+            setTimeout(() => {
+                el.focus();
+            }, 0);
+        };
+        el._v113ClickEditHandler = handler;
+        el.addEventListener('mousedown', handler);
+        el.addEventListener('touchstart', handler, { passive: true });
+        // V113: Attach draft autosave for this field
+        _attachDraftAutosave(el, id);
+    });
+}
+
+// V113: Per-field draft autosave. While the user is editing, we snapshot the
+// field's HTML to localStorage under a key derived from the editing word and
+// field ID, every 2 seconds AND on blur. If the page reloads or the user
+// navigates away accidentally, the next time they open the same card we offer
+// to restore the draft. Drafts older than 10 minutes are silently discarded.
+const _DRAFT_TTL_MS = 10 * 60 * 1000;
+const _draftSaveTimers = new Map();
+
+function _draftKey(word, fieldId) {
+    return 'mrcs-draft-' + (word || '') + '-' + fieldId;
+}
+
+function _attachDraftAutosave(el, fieldId) {
+    if(!el || el._v113DraftAttached) return;
+    el._v113DraftAttached = true;
+    const flush = () => {
+        const w = expandEditingWord || '';
+        if(!w) return;
+        const key = _draftKey(w, fieldId);
+        try {
+            localStorage.setItem(key, JSON.stringify({
+                html: el.innerHTML,
+                ts: Date.now()
+            }));
+        } catch(e) {}
+    };
+    el.addEventListener('input', () => {
+        if(_draftSaveTimers.has(fieldId)) clearTimeout(_draftSaveTimers.get(fieldId));
+        _draftSaveTimers.set(fieldId, setTimeout(flush, 2000));
+    });
+    el.addEventListener('blur', () => {
+        if(_draftSaveTimers.has(fieldId)) clearTimeout(_draftSaveTimers.get(fieldId));
+        _draftSaveTimers.delete(fieldId);
+        flush();
+    });
+}
+
+// Called from openExpandedCard / injectInCardExpandContent: check if there's a
+// recent unsaved draft for this word and offer to restore it.
+function _checkForUnsavedDrafts(word, fieldIds) {
+    if(!word) return;
+    const found = [];
+    fieldIds.forEach(id => {
+        const key = _draftKey(word, id);
+        try {
+            const raw = localStorage.getItem(key);
+            if(!raw) return;
+            const obj = JSON.parse(raw);
+            if(!obj || !obj.html || !obj.ts) return;
+            if(Date.now() - obj.ts > _DRAFT_TTL_MS) {
+                localStorage.removeItem(key);
+                return;
+            }
+            found.push({ id, html: obj.html, ts: obj.ts });
+        } catch(e) {}
+    });
+    if(found.length === 0) return;
+    const ageS = Math.round((Date.now() - found[0].ts) / 1000);
+    if(!confirm('Found ' + found.length + ' unsaved draft' + (found.length>1?'s':'') + ' for "' + word + '" from ' + ageS + 's ago. Restore?')) {
+        // User said no — wipe the drafts
+        found.forEach(f => { try { localStorage.removeItem(_draftKey(word, f.id)); } catch(e) {} });
+        return;
+    }
+    // Restore the drafts into the fields
+    found.forEach(f => {
+        const el = document.getElementById(f.id);
+        if(el) el.innerHTML = f.html;
+    });
+    // Auto-enter edit mode so the user can continue
+    if(!expandEditActive) {
+        // Determine prefix from the first id
+        const prefix = found[0].id.startsWith('incard-expand-') ? 'incard-expand-' : 'expand-';
+        toggleExpandEdit(prefix);
+    }
+}
+
+// Clear drafts for a word — called on successful save
+function _clearDraftsForWord(word, fieldIds) {
+    if(!word) return;
+    fieldIds.forEach(id => {
+        try { localStorage.removeItem(_draftKey(word, id)); } catch(e) {}
+    });
 }
 
 let expandEditingWord = '';
@@ -6467,6 +6860,10 @@ function saveExpandAllEdits(prefix) {
     markBankItem(item); // V107
     persistData(); pushToCloud();
     
+    // V113: Drafts cleared after successful save
+    _clearDraftsForWord(item.word, ['expand-word', 'expand-notes', 'expand-exam-note']);
+    _clearDraftsForWord(item.word, ['incard-expand-word', 'incard-expand-notes', 'incard-expand-exam-note']);
+    
     // V103: Auto-update matching post-op tile if it exists
     if(typeof refreshPostOpTileByWord === 'function') refreshPostOpTileByWord(item.word);
     
@@ -6527,14 +6924,26 @@ function execFormat(cmd, val) {
 
 function htmlToPlain(html) {
     // V103: Convert HTML back to markdown-ish plain text — preserve paragraph spacing
+    // V113 item 11: Fix aggressive line squeeze. Safari mobile wraps each line in
+    // <div>, and an "empty paragraph" in contenteditable produces <div><br></div>.
+    // The old code converted </div> → \n (single) and collapsed 3+ newlines to 2,
+    // which ate any blank line the user typed. New rules:
+    //   - <div><br></div> (empty line) → \n\n
+    //   - <div>content</div>          → content + \n
+    //   - <p>                          → \n\n separator
+    //   - Lone <br>                    → \n
+    //   - We do NOT collapse 3+ newlines any more — the user's whitespace is theirs
     return html
         .replace(/<strong>/gi, '**').replace(/<\/strong>/gi, '**')
         .replace(/<b>/gi, '**').replace(/<\/b>/gi, '**')
         .replace(/<em>/gi, '*').replace(/<\/em>/gi, '*')
         .replace(/<i>/gi, '*').replace(/<\/i>/gi, '*')
         .replace(/<u>/gi, '__').replace(/<\/u>/gi, '__')
-        // Block-level closes become double newline (paragraph break)
+        // Empty line pattern first: <div><br></div> → blank line marker
+        .replace(/<div>\s*<br\s*\/?>\s*<\/div>/gi, '\n\n')
+        // Other block opens/closes
         .replace(/<\/p>/gi, '\n\n')
+        .replace(/<div>/gi, '')
         .replace(/<\/div>/gi, '\n')
         .replace(/<\/h[1-6]>/gi, '\n\n')
         .replace(/<\/li>/gi, '\n')
@@ -6543,9 +6952,12 @@ function htmlToPlain(html) {
         .replace(/<[^>]+>/g, '')
         .replace(/&nbsp;/g, ' ')
         .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-        // Collapse 3+ newlines to 2 (= one blank line)
-        .replace(/\n{3,}/g, '\n\n')
-        .trim();
+        // V113: Cap runs of 4+ newlines at 3 (one blank + one blank, extreme cases
+        // from repeated empty divs), but preserve 2- and 3-newline blocks as the
+        // user typed them. This is MUCH less aggressive than the old /\n{3,}/→\n\n.
+        .replace(/\n{5,}/g, '\n\n\n\n')
+        .replace(/^\n+/, '')  // strip only leading blank lines
+        .replace(/\n+$/, ''); // strip only trailing blank lines
 }
 
 // V103: Generate AI exam note for stack view
@@ -7249,18 +7661,15 @@ function renderGallery() {
              
         } else {
              // V103: Compact (un-revealed) gallery card — only name + action button
-             // Click behaviour:
-             //   - Click on title (.card-title-link) → expand modal (handled by title onclick)
-             //   - Mobile: click body → fullscreen image if image exists, else nothing
-             //   - Desktop: click body → cloud popup if exam note exists, else nothing
              // V111: Two-state click on compact cards.
              //   First click on a card: show the answer popup (and "arm" the card).
              //   Second click on the SAME armed card: escalate to the expand modal.
              //   Click anywhere else: dismiss the popup, no expand.
-             // This applies on both mobile and desktop so the behavior is consistent.
+             // V113 item 16: Stripped the direct title-link hyperlink that let the
+             //   word text jump straight to expand modal. The whole card body now
+             //   uses the two-state pattern uniformly.
              card.onclick = (e) => { 
                  if(gallerySelectMode) { toggleGalleryCardSelect(item.word, card); return; }
-                 if(e.target.classList.contains('card-title-link')) return;
                  if(e.target.classList.contains('reveal-action-btn')) return;
                  if(_armedCompactWord === item.word) {
                      // Second tap on the same card → expand modal
@@ -7273,17 +7682,8 @@ function renderGallery() {
                  }
              };
             card.classList.remove('revealed');
-            // V103: Compact card content — name only, no answer text
-            card.innerHTML = `<b class="card-title-link" style="margin-bottom:0;" title="Open full editor">${item.word}</b>`;
-            // Bind title link
-            const titleEl = card.querySelector('.card-title-link');
-            if(titleEl) {
-                titleEl.onclick = (e) => {
-                    e.stopPropagation();
-                    hideGalleryCloudPopup();
-                    openExpandedCard(item.word);
-                };
-            }
+            // V113 item 16: Plain word — no link styling, no separate title onclick
+            card.innerHTML = `<b style="margin-bottom:0; user-select:none;">${item.word}</b>`;
             // Action button on compact cards too
             const actionBtn = document.createElement('div');
             actionBtn.className = 'reveal-action-btn';
@@ -8008,8 +8408,26 @@ function haptic(ms = 10) { try { navigator.vibrate(ms); } catch(e) {} }
 
 // V106: Transient toast shown when navigation is blocked because the card is flipped.
 // Forces the user to grade with SRS keys (1-4) before the next card.
+// V113 item 13: gate against open expand/edit modals. If any modal is open,
+// the flipped card behind it is NOT the one being interacted with, so the
+// lock toast must not fire.
+function _anyEditModalOpen() {
+    const em = document.getElementById('expand-modal');
+    if(em && em.classList.contains('active')) return true;
+    const iw = document.getElementById('incard-expand-wrapper');
+    if(iw && iw.style.display && iw.style.display !== 'none') return true;
+    const am = document.getElementById('action-modal');
+    if(am && am.classList.contains('active')) return true;
+    // A content-editable field is focused → user is typing, don't interrupt
+    if(document.activeElement && document.activeElement.isContentEditable) return true;
+    if(document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return true;
+    return false;
+}
+
 let _flipLockToastTimer = null;
 function showFlipLockToast() {
+    // V113: skip entirely when an edit modal is on top of the flipped card
+    if(_anyEditModalOpen()) return;
     let t = document.getElementById('flip-lock-toast');
     if(!t) {
         t = document.createElement('div');
@@ -8048,6 +8466,8 @@ document.addEventListener('keydown', function(e) {
     if(document.activeElement.isContentEditable) return;
     if(typeof stackFullEditActive !== 'undefined' && stackFullEditActive) return;
     if(typeof expandEditActive !== 'undefined' && expandEditActive) return;
+    // V113 item 13: Don't intercept navigation/grading keys while an edit modal is open
+    if(_anyEditModalOpen()) return;
     
     const card = $('fc-card');
     const isFlipped = card.classList.contains('flipped');
@@ -8071,6 +8491,8 @@ document.addEventListener('touchstart', function(e) {
     if(e.target.closest('#fc-exam-sidebar') || e.target.closest('#fc-notes') || e.target.closest('#fc-back-img-bar') || e.target.closest('#stack-edit-tools')) {
         touchStartX = -1; return;
     }
+    // V113 item 13: Skip entirely if any edit modal is open
+    if(_anyEditModalOpen()) { touchStartX = -1; return; }
     const t = e.touches[0]; touchStartX = t.clientX; touchStartY = t.clientY; touchStartTime = Date.now();
 }, { passive: true });
 
@@ -9051,6 +9473,13 @@ async function autoPostOpReview(sessionWords) {
     postOpSessionWords = sessionWords;
     postOpResults = [];
     show('v-postop-review');
+    // V113 item 15: Start filters collapsed on mobile so the mosaic is visible first.
+    if(window.innerWidth <= 480) {
+        const wrap = document.getElementById('postop-filters-collapsible');
+        const btn = document.getElementById('postop-mobile-filter-toggle');
+        if(wrap) wrap.classList.add('collapsed');
+        if(btn) btn.textContent = '▼ Filters & Tools';
+    }
     $('postop-subtitle').textContent = 'Session Debrief \u2022 ' + sessionWords.length + ' flashwords';
     buildPostOpStrip(postOpSessionWords.map(w => typeof w === 'string' ? w : w.word));
     $('postop-mosaic').innerHTML = '';
@@ -9191,6 +9620,13 @@ function openPostOpFromReport() {
     postOpSessionWords = sTyped.map(s => typeof s === 'string' ? s : sanitizeWord(s)).filter(w => w && w !== '[object Object]');
     postOpResults = [];
     show('v-postop-review');
+    // V113 item 15: Start filters collapsed on mobile
+    if(window.innerWidth <= 480) {
+        const wrap = document.getElementById('postop-filters-collapsible');
+        const btn = document.getElementById('postop-mobile-filter-toggle');
+        if(wrap) wrap.classList.add('collapsed');
+        if(btn) btn.textContent = '▼ Filters & Tools';
+    }
     $('postop-subtitle').textContent = 'Session Post-Op • ' + postOpSessionWords.length + ' flashwords';
     buildPostOpStrip(postOpSessionWords);
     $('postop-mosaic').innerHTML = '';
@@ -9375,6 +9811,36 @@ document.addEventListener('touchend', function(e) {
 
 // V103: Stack full edit — single toolbar at top, edits notes, image URL, exam note all in place
 let stackFullEditActive = false;
+// V113 item 15: Mobile-only collapse of postop filter block. Start collapsed
+// on mobile so cards are the first thing the user sees. Tap the toggle to show
+// filters, tap again to hide. Desktop is unaffected (button hidden via CSS).
+function togglePostopFilters() {
+    const wrap = document.getElementById('postop-filters-collapsible');
+    const btn = document.getElementById('postop-mobile-filter-toggle');
+    if(!wrap || !btn) return;
+    const collapsed = wrap.classList.toggle('collapsed');
+    btn.textContent = collapsed ? '▼ Filters & Tools' : '▲ Hide Filters';
+}
+
+// V113 item 9: Mobile action button beside search bar opens the current card's ⋮ menu.
+// Uses the same global context menu as the on-card ⋮ button, so it has the exact
+// same options. If there's no current card (empty queue), does nothing.
+function fcMobileActionClick(ev) {
+    if(!fcQueue || !fcQueue[fcCurrentIdx]) return;
+    const currentItem = fcQueue[fcCurrentIdx];
+    const word = currentItem.word;
+    if(!word) return;
+    // Use a synthetic event object anchored on the button so the menu positions near it
+    const btn = document.getElementById('btn-fc-mobile-action');
+    const rect = btn ? btn.getBoundingClientRect() : { left: 20, top: 60, width: 40, height: 30 };
+    const synth = {
+        stopPropagation: () => {},
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.bottom + 6
+    };
+    showGlobalMenu(synth, word, 'stack');
+}
+
 function toggleStackFullEdit() {
     const item = REVIEW_BANK.find(b => b.word === stackEditingWord);
     if(!item) { alert('Flip the card to a flashcard first.'); return; }
