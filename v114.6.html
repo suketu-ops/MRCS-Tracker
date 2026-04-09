@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V114.5 — Dedupe Pass 2</title>
+<title>MRCS QBank Tracker Pro Max V114.6 — Orphan Cleanup</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1861,6 +1861,7 @@
     <div class="row" style="justify-content:center; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
         <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#a78bfa; color:#a78bfa;" onclick="togglePostopSelectMode()">✔ Select</button>
         <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#ffab00; color:#ffab00;" onclick="postopCleanupDuplication('all')" title="Strip duplicated Core Fact text and RISK FLAG remnants from every card on this page">🧹 Clean All Duplication</button>
+        <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#ff5252; color:#ff5252;" onclick="removeOrphanedPostopTiles()" title="Remove tiles whose underlying card no longer exists">👻 Remove Orphans</button>
         <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#00f2fe; color:#00f2fe;" onclick="generateMissingPostOp()" title="Generate AI exam notes for any cards still missing them">🤖 Generate Missing AI Notes</button>
     </div>
     <div id="postop-select-bar" style="display:none; justify-content:center; gap:6px; margin-bottom:8px; flex-wrap:wrap;" class="row">
@@ -7480,7 +7481,25 @@ function _galleryToolMenuOutside(e) {
 
 function openExpandedCard(word) {
     const item = REVIEW_BANK.find(b => b.word === word);
-    if(!item) return;
+    if(!item) {
+        // V114.6: Orphaned tile — underlying card was deleted but the DOM tile remains.
+        // Offer to remove the tile so it stops cluttering the post-op view.
+        const tile = document.querySelector('.postop-fact-tile[data-word="' + CSS.escape(word) + '"]');
+        if(tile) {
+            if(confirm('"' + word + '" has no underlying card (orphaned tile from a previous version).\n\nRemove this tile from the post-op view?')) {
+                tile.remove();
+                // Also strip from postOpSessionWords if present
+                if(typeof postOpSessionWords !== 'undefined' && Array.isArray(postOpSessionWords)) {
+                    postOpSessionWords = postOpSessionWords.filter(w => {
+                        const wordStr = typeof w === 'string' ? w : (w && w.word) || '';
+                        return wordStr !== word;
+                    });
+                }
+                console.log('[V114.6] removed orphaned tile:', word);
+            }
+        }
+        return;
+    }
     expandEditingWord = word;
     
     $('expand-word').textContent = item.word;
@@ -10408,6 +10427,38 @@ function closePostOpReview() {
     } else {
         show('v-session-summary');
     }
+}
+
+// V114.6: Scan all post-op tiles for orphans (no matching REVIEW_BANK entry)
+// and remove them in one pass.
+function removeOrphanedPostopTiles() {
+    const tiles = document.querySelectorAll('.postop-fact-tile');
+    const orphans = [];
+    tiles.forEach(t => {
+        const w = t.getAttribute('data-word');
+        if(!w) { orphans.push(t); return; }
+        const item = REVIEW_BANK.find(b => b.word === w);
+        if(!item) orphans.push(t);
+    });
+    if(orphans.length === 0) {
+        alert('No orphaned tiles found. Every tile has a valid underlying card.');
+        return;
+    }
+    if(!confirm('Found ' + orphans.length + ' orphaned tile' + (orphans.length > 1 ? 's' : '') + ' (no underlying card).\n\nRemove all from this post-op view?')) return;
+    const removedWords = [];
+    orphans.forEach(t => {
+        removedWords.push(t.getAttribute('data-word') || '(unnamed)');
+        t.remove();
+    });
+    // Strip from postOpSessionWords too
+    if(typeof postOpSessionWords !== 'undefined' && Array.isArray(postOpSessionWords)) {
+        postOpSessionWords = postOpSessionWords.filter(w => {
+            const wordStr = typeof w === 'string' ? w : (w && w.word) || '';
+            return !removedWords.includes(wordStr);
+        });
+    }
+    console.log('[V114.6] removed', orphans.length, 'orphaned tiles:', removedWords);
+    alert('Removed ' + orphans.length + ' orphaned tile' + (orphans.length > 1 ? 's' : '') + '.');
 }
 
 function generateMissingPostOp() {
