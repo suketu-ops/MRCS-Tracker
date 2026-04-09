@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V114.6 — Orphan Cleanup</title>
+<title>MRCS QBank Tracker Pro Max V114.6.1 — Orphan Cleanup (Persistent)</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -7486,16 +7486,17 @@ function openExpandedCard(word) {
         // Offer to remove the tile so it stops cluttering the post-op view.
         const tile = document.querySelector('.postop-fact-tile[data-word="' + CSS.escape(word) + '"]');
         if(tile) {
-            if(confirm('"' + word + '" has no underlying card (orphaned tile from a previous version).\n\nRemove this tile from the post-op view?')) {
+            if(confirm('"' + word + '" has no underlying card (orphaned tile from a previous version).\n\nRemove this tile from the post-op view? It will not come back.')) {
                 tile.remove();
-                // Also strip from postOpSessionWords if present
                 if(typeof postOpSessionWords !== 'undefined' && Array.isArray(postOpSessionWords)) {
                     postOpSessionWords = postOpSessionWords.filter(w => {
                         const wordStr = typeof w === 'string' ? w : (w && w.word) || '';
                         return wordStr !== word;
                     });
                 }
-                console.log('[V114.6] removed orphaned tile:', word);
+                // V114.6.1: Persist the removal so it survives reload
+                _stripWordsFromSession([word]);
+                console.log('[V114.6.1] removed orphaned tile (persistent):', word);
             }
         }
         return;
@@ -10429,6 +10430,32 @@ function closePostOpReview() {
     }
 }
 
+// V114.6.1: Strip orphaned word(s) from the persisted session object,
+// not just the in-memory postOpSessionWords. Without this the orphans
+// come back next time the post-op page is reopened.
+function _stripWordsFromSession(words) {
+    if(!Array.isArray(words) || words.length === 0) return;
+    if(typeof postOpSessionIdx === 'undefined' || postOpSessionIdx < 0) return;
+    const s = sessions[postOpSessionIdx];
+    if(!s) return;
+    const wordSet = new Set(words);
+    if(Array.isArray(s.scratchpad)) {
+        s.scratchpad = s.scratchpad.filter(w => {
+            const ws = typeof w === 'string' ? w : (w && w.word) || '';
+            return !wordSet.has(ws);
+        });
+    }
+    if(Array.isArray(s.scratchpadTyped)) {
+        s.scratchpadTyped = s.scratchpadTyped.filter(w => {
+            const ws = typeof w === 'string' ? w : (w && w.word) || '';
+            return !wordSet.has(ws);
+        });
+    }
+    persistData();
+    if(typeof pushToCloud === 'function') { try { pushToCloud(); } catch(_){} }
+    console.log('[V114.6.1] stripped', words.length, 'word(s) from session', postOpSessionIdx);
+}
+
 // V114.6: Scan all post-op tiles for orphans (no matching REVIEW_BANK entry)
 // and remove them in one pass.
 function removeOrphanedPostopTiles() {
@@ -10444,21 +10471,23 @@ function removeOrphanedPostopTiles() {
         alert('No orphaned tiles found. Every tile has a valid underlying card.');
         return;
     }
-    if(!confirm('Found ' + orphans.length + ' orphaned tile' + (orphans.length > 1 ? 's' : '') + ' (no underlying card).\n\nRemove all from this post-op view?')) return;
+    if(!confirm('Found ' + orphans.length + ' orphaned tile' + (orphans.length > 1 ? 's' : '') + ' (no underlying card).\n\nRemove all from this post-op view? They will not come back.')) return;
     const removedWords = [];
     orphans.forEach(t => {
-        removedWords.push(t.getAttribute('data-word') || '(unnamed)');
+        const w = t.getAttribute('data-word') || '';
+        if(w) removedWords.push(w);
         t.remove();
     });
-    // Strip from postOpSessionWords too
     if(typeof postOpSessionWords !== 'undefined' && Array.isArray(postOpSessionWords)) {
         postOpSessionWords = postOpSessionWords.filter(w => {
             const wordStr = typeof w === 'string' ? w : (w && w.word) || '';
             return !removedWords.includes(wordStr);
         });
     }
-    console.log('[V114.6] removed', orphans.length, 'orphaned tiles:', removedWords);
-    alert('Removed ' + orphans.length + ' orphaned tile' + (orphans.length > 1 ? 's' : '') + '.');
+    // V114.6.1: Persist the removal so it survives reload
+    _stripWordsFromSession(removedWords);
+    console.log('[V114.6.1] removed', orphans.length, 'orphaned tiles (persistent):', removedWords);
+    alert('Removed ' + orphans.length + ' orphaned tile' + (orphans.length > 1 ? 's' : '') + '. Session has been updated so they will not return.');
 }
 
 function generateMissingPostOp() {
