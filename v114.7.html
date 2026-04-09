@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V114.6.1 — Orphan Cleanup (Persistent)</title>
+<title>MRCS QBank Tracker Pro Max V114.7 — Rename Propagation</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -6018,6 +6018,10 @@ function triggerRename(word) {
                     REVIEW_BANK[idx].examNoteSource = '';
                 }
             }
+            // V114.7: Propagate to every session's scratchpad
+            if(typeof _propagateRenameAcrossSessions === 'function') {
+                _propagateRenameAcrossSessions(word, newWord);
+            }
             const sIdx = sessionScratchpad.findIndex(s => (typeof s === 'string' ? s : s.word) === word);
             if(sIdx > -1) { const sp = sessionScratchpad[sIdx]; if(typeof sp === 'string') sessionScratchpad[sIdx] = newWord; else sp.word = newWord; }
             // V114.5: Update post-op tile data-word so refreshes can find it
@@ -7762,6 +7766,10 @@ function saveExpandAllEdits(prefix) {
             if(qItem) qItem.word = newWord;
             expandEditingWord = newWord;
             renamed = true;
+            // V114.7: Propagate to every session's scratchpad
+            if(typeof _propagateRenameAcrossSessions === 'function') {
+                _propagateRenameAcrossSessions(oldWordForRename, newWord);
+            }
         }
     }
     // V114.3 save guard: only overwrite if (a) edit mode was active AND
@@ -10427,6 +10435,47 @@ function closePostOpReview() {
         openSessionSummary(idx);
     } else {
         show('v-session-summary');
+    }
+}
+
+// V114.7: Propagate a card rename across ALL persisted session scratchpads.
+// Without this, renaming a card in the gallery only updates REVIEW_BANK; every
+// past session that had the old word in its scratchpad keeps the stale string,
+// so when you reopen that session's post-op, the tile spawns under the old word
+// and becomes an orphan. This helper rewrites every reference in every session.
+function _propagateRenameAcrossSessions(oldWord, newWord) {
+    if(!oldWord || !newWord || oldWord === newWord) return;
+    if(!Array.isArray(sessions)) return;
+    let touched = 0;
+    sessions.forEach(s => {
+        if(!s) return;
+        let changed = false;
+        if(Array.isArray(s.scratchpad)) {
+            for(let i = 0; i < s.scratchpad.length; i++) {
+                const w = s.scratchpad[i];
+                if(typeof w === 'string') {
+                    if(w === oldWord) { s.scratchpad[i] = newWord; changed = true; }
+                } else if(w && w.word === oldWord) {
+                    w.word = newWord; changed = true;
+                }
+            }
+        }
+        if(Array.isArray(s.scratchpadTyped)) {
+            for(let i = 0; i < s.scratchpadTyped.length; i++) {
+                const w = s.scratchpadTyped[i];
+                if(typeof w === 'string') {
+                    if(w === oldWord) { s.scratchpadTyped[i] = newWord; changed = true; }
+                } else if(w && w.word === oldWord) {
+                    w.word = newWord; changed = true;
+                }
+            }
+        }
+        if(changed) touched++;
+    });
+    if(touched > 0) {
+        persistData();
+        if(typeof pushToCloud === 'function') { try { pushToCloud(); } catch(_){} }
+        console.log('[V114.7] propagated rename', oldWord, '->', newWord, 'across', touched, 'session(s)');
     }
 }
 
