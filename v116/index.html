@@ -104,7 +104,30 @@
             <div class="aw-csc-num" id="aw-csc-num">—</div>
             <div class="aw-csc-lbl">CSC questions / day &nbsp;(<span id="aw-csc-weeks">—</span> wks · 549 total)</div>
         </div>
-        <div class="row" style="justify-content:center; gap:12px; margin-top:4px;">
+                <div class="aw-field">
+            <label class="input-label">Rest days</label>
+            <div id="aw-restdays"></div>
+        </div>
+        <div class="aw-field">
+            <label class="input-label">Phase split &nbsp;<span style="opacity:0.55; font-weight:400;">(must total 100%)</span></label>
+            <div class="aw-phases">
+                <div class="aw-phase-cell">
+                    <input type="number" id="aw-phase-pt" min="0" max="100" value="50" oninput="_awUpdatePhaseTotal();updateAttemptCsc()">
+                    <div class="aw-phase-lbl">📘 PT REVISION</div>
+                </div>
+                <div class="aw-phase-cell">
+                    <input type="number" id="aw-phase-em" min="0" max="100" value="30" oninput="_awUpdatePhaseTotal();updateAttemptCsc()">
+                    <div class="aw-phase-lbl">📗 eM REVISION</div>
+                </div>
+                <div class="aw-phase-cell">
+                    <input type="number" id="aw-phase-csc" min="0" max="100" value="20" oninput="_awUpdatePhaseTotal();updateAttemptCsc()">
+                    <div class="aw-phase-lbl">🎯 CSC BLITZ</div>
+                </div>
+            </div>
+            <div class="aw-phase-total ok" id="aw-phase-total">100%</div>
+        </div>
+        <div class="aw-preview" id="aw-preview">Pick an exam date to preview the plan.</div>
+<div class="row" style="justify-content:center; gap:12px; margin-top:4px;">
             <button class="btn btn-sm btn-ghost" onclick="closeAttemptWizard()">Cancel</button>
             <button class="btn btn-sm" id="btn-aw-confirm" onclick="confirmAttemptWizard()" style="background:var(--accent); color:#fff; font-weight:700;">Arm Attempt</button>
         </div>

@@ -33,7 +33,7 @@ document.addEventListener("selectionchange", () => { const sel = window.getSelec
 
 const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar','incard-expand-wrapper','incard-expand-word','incard-expand-notes','incard-expand-exam-note','incard-expand-img-url','incard-expand-format-toolbar','incard-expand-save-row','btn-incard-expand-edit','btn-incard-expand-action','postop-errtype-filter','postop-topic-filter','postop-select-bar','postop-select-count','btn-sync-now','gallery-filters-collapsible','btn-toggle-gallery-filters','incard-ai-answer-row','incard-ai-exam-row','btn-incard-gen-answer','btn-incard-refine-answer','incard-refine-answer-input','btn-incard-gen-exam','btn-incard-refine-exam','incard-refine-exam-input','supabase-url','supabase-key','btn-sb-save','btn-sb-pull','btn-sb-seed','supabase-status','sb-import-file','btn-sb-show-sql','btn-sb-push-local','fc-mobile-action-bar','btn-fc-mobile-action','postop-mobile-filter-toggle','postop-filters-collapsible','topbar-sync-indicator','topbar-sync-text','topbar-sync-btn','fc-img-picker','fc-img-picker-grid','fc-img-picker-label','btn-fc-img-skip','btn-fc-img-skip-perm','btn-fc-find-img','btn-expand-find-img','google-cse-key','btn-fc-img-prev','btn-fc-img-next','fc-img-picker-counter','brave-api-key','brave-proxy-url','img-source-toggles','fc-img-picker-query','btn-fc-img-picker-search','priority-domains-input','blocked-domains-input','fc-img-picker-modes']);
 const $ = id => { const el = document.getElementById(id); if (!el) { if(!_optionalIds.has(id)) logDebug(`WARNING: Element '${id}' not found.`); return document.createElement('div'); } return el; };
-let EXAM_DATE = new Date(2026, 3, 22); // STEP 1: mutable so New Attempt wizard can reassign; daysToExam() & srsMaxIntervalDays() read this live
+let EXAM_DATE = new Date(2026, 8, 9); // v116.1: real next sitting = 9 Sep 2026. Mutable so New Attempt wizard can reassign; daysToExam() & srsMaxIntervalDays() read this live
 
 const PT_TOTAL = 3137;
 const EM_TOTAL = 2281;
@@ -3221,6 +3221,146 @@ function _awWeeksTo(targetDate) {
     return Math.max(1, Math.ceil(days / 7));
 }
 
+// v116.1 — additional attempt-wizard helpers (rest days, phase split, regen)
+const AW_K_REST = 'mrcs-attempt-rest-days';
+const AW_K_PHASES = 'mrcs-attempt-phases';
+const AW_DEFAULT_REST = ['Sat','Sun'];
+const AW_DEFAULT_PHASES = { pt:50, em:30, csc:20 };
+
+function _awGetRestDays() {
+    try { const v = localStorage.getItem(AW_K_REST); if(v) return v.split(',').filter(Boolean); } catch(e) {}
+    return AW_DEFAULT_REST.slice();
+}
+function _awGetPhases() {
+    try { const v = JSON.parse(localStorage.getItem(AW_K_PHASES) || 'null'); if(v && typeof v === 'object') return Object.assign({}, AW_DEFAULT_PHASES, v); } catch(e) {}
+    return Object.assign({}, AW_DEFAULT_PHASES);
+}
+function _awRenderRestChips() {
+    const wrap = document.getElementById('aw-restdays'); if(!wrap) return;
+    const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const sel = new Set((_awGetRestDays() || []).map(s => s.toLowerCase()));
+    wrap.innerHTML = '';
+    days.forEach(dy => {
+        const chip = document.createElement('div');
+        chip.className = 'aw-restchip' + (sel.has(dy.toLowerCase()) ? ' on' : '');
+        chip.textContent = dy;
+        chip.dataset.dy = dy;
+        chip.onclick = () => { chip.classList.toggle('on'); _awPreviewRegen(); };
+        wrap.appendChild(chip);
+    });
+}
+function _awReadRestChips() {
+    const wrap = document.getElementById('aw-restdays');
+    if(!wrap) return _awGetRestDays();
+    const sel = [...wrap.querySelectorAll('.aw-restchip.on')].map(c => c.dataset.dy);
+    return sel.length ? sel : [];
+}
+function _awReadPhases() {
+    const pt  = parseInt((document.getElementById('aw-phase-pt')||{}).value)  || 0;
+    const em  = parseInt((document.getElementById('aw-phase-em')||{}).value)  || 0;
+    const csc = parseInt((document.getElementById('aw-phase-csc')||{}).value) || 0;
+    return { pt: Math.max(0,Math.min(100,pt)), em: Math.max(0,Math.min(100,em)), csc: Math.max(0,Math.min(100,csc)) };
+}
+function _awUpdatePhaseTotal() {
+    const ph = _awReadPhases();
+    const tot = ph.pt + ph.em + ph.csc;
+    const el = document.getElementById('aw-phase-total');
+    if(!el) return;
+    el.textContent = tot + '%';
+    el.className = 'aw-phase-total ' + (Math.abs(tot - 100) <= 1 ? 'ok' : 'bad');
+    _awPreviewRegen();
+}
+// Live preview: how many rows the cycle will touch.
+function _awPreviewRegen() {
+    const out = document.getElementById('aw-preview'); if(!out) return;
+    const d = _awParseInputDate((document.getElementById('aw-exam-date')||{}).value);
+    if(!d) { out.textContent = 'Pick an exam date to preview the plan.'; return; }
+    const today = new Date(); today.setHours(0,0,0,0);
+    if(d < today) { out.innerHTML = '<span style="color:#ff7a90">⚠ exam date is in the past</span>'; return; }
+    const ms = 86400000;
+    const totalDays = Math.ceil((d.getTime() - today.getTime()) / ms) + 1;
+    const restSet = new Set(_awReadRestChips().map(s => s.toLowerCase()));
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    let studyDays = 0, restDays = 0;
+    const cur = new Date(today.getTime());
+    while(cur.getTime() <= d.getTime()) {
+        const dy = dayNames[cur.getDay()];
+        const daysUntilExam = Math.ceil((d.getTime() - cur.getTime()) / ms);
+        const examDayRest = daysUntilExam <= 1;
+        if(restSet.has(dy.toLowerCase()) || examDayRest) restDays++; else studyDays++;
+        cur.setTime(cur.getTime() + ms);
+    }
+    out.innerHTML = '<span class="aw-preview-x">✓</span> ' + totalDays + ' days plan · '
+                  + studyDays + ' study · ' + restDays + ' rest · existing rows preserved';
+}
+
+// Regenerate TRACKER_DATA from today → examDate based on rest days + phase split.
+// - PAST rows (< today) are left fully untouched.
+// - For each date in [today, examDate]:
+//     · if a row exists, UPDATE weights+tag+dy only — actuals (pa/ea/rpa/rea) preserved
+//     · else CREATE a new row with zero actuals
+// - Rows AFTER examDate are left as-is (the user can prune manually if needed).
+// Returns { added, modified, total }.
+function regenerateCycle(examDate, restDays, phases) {
+    if(!examDate || !(examDate instanceof Date) || isNaN(examDate.getTime())) {
+        return { added:0, modified:0, total:0 };
+    }
+    const today = new Date(); today.setHours(0,0,0,0);
+    if(examDate < today) return { added:0, modified:0, total:0 };
+    const restSet = new Set((restDays || []).map(s => s.toLowerCase()));
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const phPt  = (phases && typeof phases.pt  === 'number') ? phases.pt  : 50;
+    const phEm  = (phases && typeof phases.em  === 'number') ? phases.em  : 30;
+    const phCsc = (phases && typeof phases.csc === 'number') ? phases.csc : 20;
+
+    const existingByD = new Map();
+    TRACKER_DATA.forEach(r => existingByD.set(r.d, r));
+
+    const ms = 86400000;
+    let added = 0, modified = 0;
+    const cur = new Date(today.getTime());
+    while(cur.getTime() <= examDate.getTime()) {
+        const dStr = String(cur.getDate()).padStart(2,'0') + '/'
+                   + String(cur.getMonth()+1).padStart(2,'0') + '/'
+                   + String(cur.getFullYear()).slice(2);
+        const dy = dayNames[cur.getDay()];
+        const isRest = restSet.has(dy.toLowerCase());
+        const daysUntilExam = Math.ceil((examDate.getTime() - cur.getTime()) / ms);
+        const finalWeekMult = daysUntilExam <= 7 ? 0.5 : 1.0;
+        const examDayRest = daysUntilExam <= 1; // last 2 calendar days → REST
+        let pw=0, ew=0, rw_p=0, rw_e=0;
+        if(!isRest && !examDayRest) {
+            rw_p = (phPt  / 100) * 1.0 * finalWeekMult;
+            rw_e = (phEm  / 100) * 1.0 * finalWeekMult;
+            pw   = (phCsc / 100) * 1.0 * finalWeekMult;
+            ew   = 0.05 * finalWeekMult;
+        }
+        const totW = pw + ew + rw_p + rw_e;
+        const tag = totW >= 1.0 ? 'STUDY' : (totW > 0 ? 'WORK' : 'REST');
+        const ex = existingByD.get(dStr);
+        if(ex) {
+            ex.pw = pw; ex.ew = ew; ex.rw_p = rw_p; ex.rw_e = rw_e;
+            ex.tag = tag; ex.dy = dy;
+            ex.updatedAt = Date.now();
+            if(typeof markTrackerRow === 'function') markTrackerRow(ex);
+            modified++;
+        } else {
+            const row = { d:dStr, dy, pw, ew, rw_p, rw_e,
+                          pa:0, ea:0, rpa:0, rea:0, tag, updatedAt: Date.now() };
+            TRACKER_DATA.push(row);
+            if(typeof markTrackerRow === 'function') markTrackerRow(row);
+            added++;
+        }
+        cur.setTime(cur.getTime() + ms);
+    }
+    // Canonical chronological order (mirrors the existing sort comparator).
+    TRACKER_DATA.sort((a, b) => {
+        const ap = a.d.split('/'), bp = b.d.split('/');
+        return new Date(2000+parseInt(ap[2]), ap[1]-1, ap[0]) - new Date(2000+parseInt(bp[2]), bp[1]-1, bp[0]);
+    });
+    return { added, modified, total: added + modified };
+}
+
 // Live-update the CSC daily-target readout from the date picker.
 function updateAttemptCsc() {
     const d = _awParseInputDate($('aw-exam-date').value);
@@ -3228,6 +3368,8 @@ function updateAttemptCsc() {
     const csc = Math.ceil(549 / weeks);
     $('aw-csc-num').textContent = d ? String(csc) : '—';
     $('aw-csc-weeks').textContent = d ? String(weeks) : '—';
+    if(typeof _awUpdatePhaseTotal === 'function') _awUpdatePhaseTotal();
+    if(typeof _awPreviewRegen === 'function') _awPreviewRegen();
 }
 
 function openAttemptWizard() {
@@ -3235,6 +3377,15 @@ function openAttemptWizard() {
     try { $('aw-exam-date').value = _awToInputDate(EXAM_DATE); } catch(e) { $('aw-exam-date').value = ''; }
     $('aw-cycle-label').value = localStorage.getItem(AW_K_LABEL) || '';
     $('aw-reset-toggle').checked = true; // default ON every open
+    // v116.1: hydrate rest-days chips and phase split inputs from LS (or defaults)
+    try { _awRenderRestChips(); } catch(e) {}
+    try {
+        const ph = _awGetPhases();
+        if($('aw-phase-pt'))  $('aw-phase-pt').value  = ph.pt;
+        if($('aw-phase-em'))  $('aw-phase-em').value  = ph.em;
+        if($('aw-phase-csc')) $('aw-phase-csc').value = ph.csc;
+        _awUpdatePhaseTotal();
+    } catch(e) {}
     updateAttemptCsc();
     $('attempt-wizard').classList.add('active');
 }
@@ -3268,27 +3419,49 @@ function confirmAttemptWizard() {
     localStorage.setItem(AW_K_CYCLE_START, String(cycleStart));
     localStorage.setItem(AW_K_CSC, String(cscDaily));
 
-    // 4) Embed into REV_GOALS._attempt so it rides the existing rev_goals jsonb to
+    // 4) v116.1: read rest-days + phase split, validate, persist to LS.
+    const restDays = _awReadRestChips();
+    if(restDays.length >= 7) { mrcsToast('At least one study day required'); return; }
+    const phases = _awReadPhases();
+    const phaseTotal = phases.pt + phases.em + phases.csc;
+    if(Math.abs(phaseTotal - 100) > 1) {
+        mrcsToast('Phase split must total 100% (now ' + phaseTotal + '%)');
+        return;
+    }
+    try { localStorage.setItem(AW_K_REST, restDays.join(',')); } catch(e) {}
+    try { localStorage.setItem(AW_K_PHASES, JSON.stringify(phases)); } catch(e) {}
+
+    // 5) Embed into REV_GOALS._attempt so it rides the existing rev_goals jsonb to
     //    Supabase (no schema change). REV_GOALS.pt/.em are untouched.
     if(!REV_GOALS || typeof REV_GOALS !== 'object') REV_GOALS = { pt:1000, em:500 };
     REV_GOALS._attempt = {
         examDate: _awToInputDate(newDate),
         cycleLabel: cycleLabel,
         cycleStartDate: cycleStart,
-        cscDaily: cscDaily
+        cscDaily: cscDaily,
+        restDays: restDays,
+        phases: phases
     };
 
-    // 5) Recompute + persist + sync (all writes flow through persistData()).
+    // 6) Regenerate the calendar from today → exam date. PAST rows are kept
+    //    untouched; today→exam rows are updated/created with the new weights.
+    let regen = { added:0, modified:0, total:0 };
+    try { regen = regenerateCycle(newDate, restDays, phases); } catch(e) { console.warn('[v116.1] regen failed', e); }
+
+    // 7) Recompute + persist + sync (all writes flow through persistData()).
     if(typeof autoAdjust === 'function') autoAdjust();
     persistData();
     if(typeof markSettings === 'function') markSettings();
     if(typeof markSettingsUpdatedNow === 'function') markSettingsUpdatedNow();
     if(typeof renderTrackerTab === 'function') renderTrackerTab();
     if(typeof renderHome === 'function') { try { renderHome(); } catch(e){} }
+    // v116.1: refresh the home top-bar countdown ('#top-dte') — set on boot only.
+    try { if(document.getElementById('top-dte')) document.getElementById('top-dte').textContent = daysToExam(); } catch(e) {}
 
     closeAttemptWizard();
-    if(doReset) mrcsToast('Attempt 2 armed. CSC blitz begins now.');
-    else mrcsToast('Exam date updated · ' + cscDaily + ' CSC/day');
+    const planMsg = regen.total ? (' · ' + regen.added + ' new · ' + regen.modified + ' updated') : '';
+    if(doReset) mrcsToast('Attempt 2 armed' + planMsg);
+    else mrcsToast('Exam date updated · ' + cscDaily + ' CSC/day' + planMsg);
 }
 
 // Stamp the settings updated-at so this device wins the last-write-wins pull merge.
@@ -3306,6 +3479,9 @@ function restoreAttemptFromState() {
         if(typeof a.cycleLabel === 'string') localStorage.setItem(AW_K_LABEL, a.cycleLabel);
         if(a.cycleStartDate) localStorage.setItem(AW_K_CYCLE_START, String(a.cycleStartDate));
         if(a.cscDaily) localStorage.setItem(AW_K_CSC, String(a.cscDaily));
+        // v116.1
+        if(Array.isArray(a.restDays)) localStorage.setItem(AW_K_REST, a.restDays.join(','));
+        if(a.phases && typeof a.phases === 'object') localStorage.setItem(AW_K_PHASES, JSON.stringify(a.phases));
     }
     const isoExam = localStorage.getItem(AW_K_EXAM);
     if(isoExam) {

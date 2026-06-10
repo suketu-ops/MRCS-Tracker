@@ -1336,3 +1336,43 @@
 /* Confidence dot on session scratch chips */
 .conf-chip-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:4px; vertical-align:middle; }
 
+    /* === v116.1: New Attempt wizard — rest days + phase split === */
+    #aw-restdays { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:6px; }
+    .aw-restchip {
+        padding:6px 11px; border-radius:14px; border:1px solid rgba(255,255,255,0.18);
+        background:transparent; color:rgba(255,255,255,0.65);
+        font-size:0.66rem; font-family:'JetBrains Mono',monospace; letter-spacing:0.5px;
+        cursor:pointer; transition:all 0.15s;
+    }
+    .aw-restchip.on {
+        background:var(--accent2); color:#0a0014; border-color:var(--accent2);
+        font-weight:700;
+    }
+    .aw-phases { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-top:6px; }
+    .aw-phase-cell {
+        display:flex; flex-direction:column; align-items:center; gap:4px;
+        padding:8px 4px; border:1px solid rgba(255,255,255,0.12); border-radius:10px;
+        background:rgba(255,255,255,0.025);
+    }
+    .aw-phase-cell .aw-phase-lbl {
+        font-size:0.6rem; opacity:0.7; text-align:center; letter-spacing:0.5px;
+        line-height:1.2;
+    }
+    .aw-phase-cell input[type=number] {
+        width:100%; text-align:center; background:transparent; border:none;
+        color:var(--accent2); font-family:'Bebas Neue',sans-serif;
+        font-size:1.4rem; padding:0; outline:none;
+    }
+    .aw-phase-total {
+        margin-top:6px; text-align:center;
+        font-family:'JetBrains Mono',monospace; font-size:0.7rem;
+        letter-spacing:1px;
+    }
+    .aw-phase-total.ok  { color:#4ade80; }
+    .aw-phase-total.bad { color:#ff7a90; }
+    .aw-preview {
+        margin-top:8px; text-align:center;
+        font-size:0.62rem; opacity:0.75;
+        font-family:'JetBrains Mono',monospace; line-height:1.5;
+    }
+    .aw-preview .aw-preview-x { color:#4ade80; }
