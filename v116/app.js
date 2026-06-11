@@ -1233,6 +1233,183 @@ function buildDefaultArray() {
     return dts;
 }
 
+// v117 part 2a — Tracker row controls (delete, add-day, add-week, scroll-to-today, bulk rest days)
+
+function _tkFmtDate(dt) {
+    return String(dt.getDate()).padStart(2,'0') + '/' +
+           String(dt.getMonth()+1).padStart(2,'0') + '/' +
+           String(dt.getFullYear()).slice(2);
+}
+function _tkParseDate(d) {
+    const p = String(d || '').split('/');
+    if(p.length !== 3) return null;
+    const dt = new Date(2000+parseInt(p[2],10), parseInt(p[1],10)-1, parseInt(p[0],10));
+    return isNaN(dt.getTime()) ? null : dt;
+}
+function _tkDayName(dt) {
+    return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dt.getDay()];
+}
+function _tkSort() {
+    TRACKER_DATA.sort((a, b) => {
+        const ad = _tkParseDate(a.d), bd = _tkParseDate(b.d);
+        return (ad ? ad.getTime() : 0) - (bd ? bd.getTime() : 0);
+    });
+}
+function _tkRerender() {
+    if(typeof autoAdjust === 'function') autoAdjust();
+    if(typeof persistData === 'function') persistData();
+    if(typeof markSettings === 'function') markSettings();
+    if(typeof renderTrackerTab === 'function') renderTrackerTab();
+}
+
+// Add N day(s) after the last tracker row. Skip dates that already exist.
+function tkAddRow(n) {
+    if(!Array.isArray(TRACKER_DATA) || TRACKER_DATA.length === 0) {
+        if(typeof mrcsToast === 'function') mrcsToast('No rows to extend');
+        return;
+    }
+    const days = Math.max(1, parseInt(n) || 1);
+    const have = new Set(TRACKER_DATA.map(r => r.d));
+    const last = TRACKER_DATA.slice().sort((a, b) => {
+        const ad = _tkParseDate(a.d), bd = _tkParseDate(b.d);
+        return (ad ? ad.getTime() : 0) - (bd ? bd.getTime() : 0);
+    }).pop();
+    let lastDt = _tkParseDate(last.d) || new Date();
+    let added = 0;
+    for(let i = 0; i < days; i++) {
+        lastDt = new Date(lastDt.getTime() + 86400000);
+        const dStr = _tkFmtDate(lastDt);
+        if(have.has(dStr)) continue;
+        const row = {
+            d: dStr, dy: _tkDayName(lastDt),
+            pw:0, ew:0, rw_p:0, rw_e:0,
+            pa:0, ea:0, rpa:0, rea:0,
+            tag:'REST', updatedAt: Date.now()
+        };
+        TRACKER_DATA.push(row);
+        have.add(dStr);
+        if(typeof markTrackerRow === 'function') markTrackerRow(row);
+        added++;
+    }
+    _tkSort();
+    _tkRerender();
+    if(typeof mrcsToast === 'function') {
+        mrcsToast(added ? ('Added ' + added + (added===1 ? ' day' : ' days')) : 'No new dates added (already present)');
+    }
+}
+
+// Delete a row by index, with a "confirm by tapping twice within 2s" pattern.
+let _tkPendingDelete = { idx: -1, ts: 0 };
+function tkDeleteRow(idx) {
+    if(idx < 0 || idx >= TRACKER_DATA.length) return;
+    const row = TRACKER_DATA[idx];
+    if(!row) return;
+    const now = Date.now();
+    const isConfirm = (_tkPendingDelete.idx === idx && now - _tkPendingDelete.ts < 2500);
+    if(!isConfirm) {
+        _tkPendingDelete = { idx, ts: now };
+        const hasData = (parseInt(row.pa)||0) + (parseInt(row.ea)||0) + (parseInt(row.rpa)||0) + (parseInt(row.rea)||0) > 0;
+        if(typeof mrcsToast === 'function') mrcsToast('Tap × again to delete ' + row.d + (hasData ? ' (has data!)' : ''));
+        // visual: highlight the × that needs re-tapping
+        const x = document.querySelector('.tracker-row[data-tk-idx="' + idx + '"] .tk-row-x');
+        if(x) { x.style.background = 'rgba(230,57,70,0.25)'; x.style.color = '#E63946'; x.style.borderColor = '#E63946'; }
+        return;
+    }
+    // Confirmed delete
+    TRACKER_DATA.splice(idx, 1);
+    _tkPendingDelete = { idx: -1, ts: 0 };
+    _tkRerender();
+    if(typeof mrcsToast === 'function') mrcsToast('Deleted ' + row.d);
+}
+
+// Scroll the tracker list to today's row (or nearest future row).
+function tkScrollToToday() {
+    const list = document.getElementById('tracker-list'); if(!list) return;
+    const today = (typeof displayTodayStr === 'function') ? displayTodayStr() : null;
+    let row = today ? list.querySelector('.tracker-row[data-tk-date="' + today + '"]') : null;
+    if(!row) {
+        // fallback: first row whose date >= today (the .reverse() in render means future rows are above)
+        const todayDt = new Date(); todayDt.setHours(0,0,0,0);
+        const rows = [...list.querySelectorAll('.tracker-row[data-tk-date]')];
+        row = rows.reverse().find(el => {
+            const d = _tkParseDate(el.dataset.tkDate);
+            return d && d.getTime() >= todayDt.getTime();
+        });
+    }
+    if(row) row.scrollIntoView({ block:'center', behavior:'smooth' });
+    else if(typeof mrcsToast === 'function') mrcsToast('No future rows');
+}
+
+// Bulk-rest modal.
+const TK_BULK_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+let _tkBulkSel = {};
+function tkOpenBulk() {
+    _tkBulkSel = {};
+    // pre-select Sat+Sun by default if no current selection
+    try {
+        const stored = (localStorage.getItem('mrcs-attempt-rest-days') || '').split(',').filter(Boolean);
+        const seed = stored.length ? stored : ['Sat','Sun'];
+        seed.forEach(d => { _tkBulkSel[d.toLowerCase()] = true; });
+    } catch(e) {
+        ['Sat','Sun'].forEach(d => { _tkBulkSel[d.toLowerCase()] = true; });
+    }
+    _tkRenderBulkChips();
+    const m = document.getElementById('tk-bulk-modal');
+    if(m) m.classList.add('active');
+}
+function tkCloseBulk() {
+    const m = document.getElementById('tk-bulk-modal');
+    if(m) m.classList.remove('active');
+}
+function _tkRenderBulkChips() {
+    const wrap = document.getElementById('tk-bulk-days');
+    if(!wrap) return;
+    wrap.innerHTML = '';
+    TK_BULK_DAYS.forEach(dy => {
+        const chip = document.createElement('div');
+        chip.className = 'tk-bulk-chip' + (_tkBulkSel[dy.toLowerCase()] ? ' on' : '');
+        chip.textContent = dy;
+        chip.onclick = () => {
+            const k = dy.toLowerCase();
+            _tkBulkSel[k] = !_tkBulkSel[k];
+            chip.classList.toggle('on', _tkBulkSel[k]);
+        };
+        wrap.appendChild(chip);
+    });
+}
+// Apply rest days going forward: matching weekdays -> REST + zero weights;
+// non-matching CURRENTLY-rest rows -> STUDY w/ light defaults so user can fill.
+function tkApplyBulkRest() {
+    const restSet = new Set(Object.keys(_tkBulkSel).filter(k => _tkBulkSel[k]));
+    const today = new Date(); today.setHours(0,0,0,0);
+    let changed = 0;
+    TRACKER_DATA.forEach(r => {
+        const d = _tkParseDate(r.d);
+        if(!d || d.getTime() < today.getTime()) return;   // past untouched
+        const dyLc = (r.dy || _tkDayName(d) || '').toLowerCase();
+        const shouldRest = restSet.has(dyLc);
+        if(shouldRest) {
+            if(r.tag !== 'REST' || (r.pw||0)+(r.ew||0)+(r.rw_p||0)+(r.rw_e||0) > 0) {
+                r.pw = 0; r.ew = 0; r.rw_p = 0; r.rw_e = 0; r.tag = 'REST';
+                r.updatedAt = Date.now();
+                if(typeof markTrackerRow === 'function') markTrackerRow(r);
+                changed++;
+            }
+        } else if(r.tag === 'REST' && (r.pw||0)+(r.ew||0)+(r.rw_p||0)+(r.rw_e||0) === 0) {
+            // Was a rest day, now should be a study day — give it light defaults
+            r.pw = 0.5; r.ew = 0.5; r.rw_p = 0.5; r.rw_e = 0.5; r.tag = 'STUDY';
+            r.updatedAt = Date.now();
+            if(typeof markTrackerRow === 'function') markTrackerRow(r);
+            changed++;
+        }
+    });
+    // persist the new rest-day prefs so future regen picks them up too
+    try { localStorage.setItem('mrcs-attempt-rest-days', [...restSet].map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(',')); } catch(e) {}
+    tkCloseBulk();
+    _tkRerender();
+    if(typeof mrcsToast === 'function') mrcsToast(changed ? ('Updated ' + changed + ' future rows') : 'No future rows changed');
+}
+
 function forceTemplateWeights() {
     TRACKER_DATA.forEach(r => {
         const p = r.d.split('/');
@@ -5457,7 +5634,8 @@ function renderTrackerTab() {
         const selE = val => `<option value="${val}" ${wgtE==val?'selected':''}>${val}</option>`;
 
         return `
-        <div class="tracker-row${isToday?' active':''}" style="${bd}">
+        <div class="tracker-row${isToday?' active':''}" style="${bd}" data-tk-idx="${idx}" data-tk-date="${r.d}">
+            <button class="tk-row-x" onclick="tkDeleteRow(${idx})" title="Delete this row" aria-label="Delete row">×</button>
             <div style="width:20%;">
                 <b>${r.d.slice(0,5)}</b><br><span style="font-size:0.56rem;opacity:0.6">${r.dy}</span><br>
                 <div style="margin-top:6px;">${tagHtml}</div>

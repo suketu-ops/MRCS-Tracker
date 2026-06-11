@@ -1441,3 +1441,32 @@
     }
     .rc-grade-row { display:flex; gap:10px; justify-content:center; margin-top:12px; }
     .rc-foot-row { display:flex; justify-content:center; gap:8px; margin-top:14px; }
+    /* === v117 part 2a: Tracker row controls === */
+    .tk-toolbar { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:4px 0 8px 0; padding:6px 8px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); }
+    .tk-toolbar .tk-tb-btn {
+        flex:0 1 auto; padding:6px 10px; border-radius:8px;
+        border:1px solid rgba(255,255,255,0.18); background:transparent; color:var(--fg);
+        font-size:0.65rem; font-family:'JetBrains Mono',monospace; letter-spacing:0.5px;
+        cursor:pointer; transition:all 0.15s; font-weight:600;
+    }
+    .tk-toolbar .tk-tb-btn:hover { border-color:var(--accent2); color:var(--accent2); }
+    .tk-toolbar .tk-tb-btn.accent { border-color:var(--accent2); color:var(--accent2); }
+    .tk-row-x {
+        position:absolute; top:4px; right:4px; width:22px; height:22px;
+        border-radius:50%; border:1px solid rgba(255,255,255,0.2);
+        background:transparent; color:rgba(255,255,255,0.5);
+        font-size:0.7rem; line-height:1; cursor:pointer; padding:0;
+        display:flex; align-items:center; justify-content:center;
+        transition:all 0.15s;
+    }
+    .tk-row-x:hover { border-color:#E63946; color:#E63946; background:rgba(230,57,70,0.1); }
+    .tracker-row { position:relative; }
+    /* bulk-rest modal — reuses .modal-overlay / .modal-content from existing patterns */
+    .tk-bulk-days { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:10px 0; }
+    .tk-bulk-chip {
+        padding:7px 12px; border-radius:14px; border:1px solid rgba(255,255,255,0.2);
+        background:transparent; color:var(--fg); cursor:pointer;
+        font-size:0.68rem; font-family:'JetBrains Mono',monospace;
+        transition:all 0.15s;
+    }
+    .tk-bulk-chip.on { background:var(--accent2); color:#111; border-color:var(--accent2); font-weight:700; }

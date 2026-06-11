@@ -84,6 +84,18 @@
         </div>
     </div>
 </div>
+<div class="modal-overlay" id="tk-bulk-modal" onclick="tkCloseBulk()">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width:440px;">
+        <div class="dash-lbl" style="color:var(--accent2); text-align:center; margin-bottom:4px;">⋯ Bulk · rest days</div>
+        <div style="font-size:0.7rem; opacity:0.7; text-align:center; line-height:1.5; margin-bottom:10px;">Apply rest days to <b>future</b> tracker rows (today onwards). Past rows are untouched.</div>
+        <div class="tk-bulk-days" id="tk-bulk-days"></div>
+        <div style="font-size:0.62rem; opacity:0.55; text-align:center; margin-bottom:10px;">Selected days → tag REST + weights 0. Other days revert to STUDY if currently REST.</div>
+        <div class="row" style="justify-content:center; gap:12px; margin-top:6px;">
+            <button class="btn btn-sm btn-ghost" onclick="tkCloseBulk()">Cancel</button>
+            <button class="btn btn-sm" onclick="tkApplyBulkRest()" style="background:var(--accent); color:#fff; font-weight:700;">Apply</button>
+        </div>
+    </div>
+</div>
 <div class="modal-overlay" id="attempt-wizard" onclick="closeAttemptWizard()">
     <div class="modal-content" onclick="event.stopPropagation()">
         <div class="dash-lbl" style="color:var(--accent2); text-align:center; margin-bottom:4px;">🎯 New Attempt</div>
@@ -515,6 +527,12 @@
                 <div style="width:20%">Date</div>
                 <div style="width:40%;text-align:center;">Pastest</div>
                 <div style="width:40%;text-align:center;">eMRCS</div>
+              </div>
+              <div id="tk-toolbar" class="tk-toolbar">
+                <button class="tk-tb-btn accent" onclick="tkScrollToToday()">📍 Today</button>
+                <button class="tk-tb-btn" onclick="tkAddRow(1)">＋ Day</button>
+                <button class="tk-tb-btn" onclick="tkAddRow(7)">＋ Week</button>
+                <button class="tk-tb-btn" onclick="tkOpenBulk()">⋯ Bulk</button>
               </div>
               <div id="tracker-list" style="width:100%;max-height:65vh;overflow-y:auto;padding-right:4px;"></div>
             </div>
