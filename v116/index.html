@@ -1037,6 +1037,30 @@
 
   <!-- STEP 8: Re-Clear session view -->
   <div id="v-reclear" class="view" style="max-width:600px;">
+    <!-- v117 drill: desktop sidebar (timer + pace + score + controls). Hidden < 768px. -->
+    <aside class="rc-sidebar">
+        <div class="rc-side-block">
+            <div class="rc-side-lbl">SESSION TIME</div>
+            <div class="rc-side-val big" id="rc-session-elapsed">0:00</div>
+        </div>
+        <div class="rc-side-block">
+            <div class="rc-side-lbl">PROGRESS</div>
+            <div class="rc-side-val" id="rc-side-progress">0 / 0</div>
+        </div>
+        <div class="rc-side-block">
+            <div class="rc-side-lbl">PACE</div>
+            <div class="rc-side-val" id="rc-side-pace">—</div>
+        </div>
+        <div class="rc-side-block">
+            <div class="rc-side-lbl">SCORE</div>
+            <div class="rc-side-val" id="rc-side-score">0 / 0</div>
+        </div>
+        <div class="rc-side-buttons">
+            <button class="rc-side-btn pause" id="rc-pause-btn" onclick="reclearTogglePause()">⏸ Pause</button>
+            <button class="rc-side-btn end" onclick="endReclearSession()">⏹ End Session</button>
+        </div>
+    </aside>
+    <div class="rc-content">
     <!-- v117a: single-screen drill — header (progress + timer), Q, options, confidence, reveal -->
     <div class="rc-header">
         <div class="rc-progress" id="reclear-progress-lbl">0 / 0</div>
@@ -1063,6 +1087,7 @@
     </div>
     <div class="row" style="justify-content:center; gap:8px; margin-top:18px;">
         <button class="btn btn-sm btn-ghost" style="border-color:var(--err-red); color:var(--err-red);" onclick="endReclearSession()">End Re-Clear</button>
+    </div>
     </div>
   </div>
 

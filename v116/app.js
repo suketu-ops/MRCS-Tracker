@@ -5017,12 +5017,84 @@ function startReclearSession() {
     closeReclearWizard();
     show('v-reclear'); applyTheme();
     reclearRenderCurrent();   // also starts the per-question timer
+    _rcStartSessionClock();
 }
 
 // v117a: drill timer state
 let _reclearTimerIv = null;
 let _reclearTimerSec = 0;
 const RECLEAR_TIMER_DEFAULT_S = 90;   // 1:30 default per question
+
+// === v117 drill: session-level clock + pace ===
+let _rcSessionIv = null;
+let _rcSessionPaused = false;
+
+function _rcRenderSidebar() {
+    const s = reclearSession; if(!s) return;
+    const elapsed = (s.elapsedMs || 0);
+    const sec = Math.floor(elapsed / 1000);
+    const m = Math.floor(sec / 60), r = sec % 60;
+    const elEl = document.getElementById('rc-session-elapsed');
+    if(elEl) elEl.textContent = m + ':' + (r < 10 ? '0' : '') + r;
+    const progressEl = document.getElementById('rc-side-progress');
+    if(progressEl) progressEl.textContent = (s.idx + 1) + ' / ' + s.items.length;
+    const paceEl = document.getElementById('rc-side-pace');
+    if(paceEl) {
+        const done = s.correct + s.wrong;
+        paceEl.className = 'rc-side-val';
+        if(done > 0) {
+            const secPerQ = Math.round(elapsed / 1000 / done);
+            paceEl.textContent = secPerQ + 's/Q';
+            if(secPerQ > 90) paceEl.classList.add('over');
+            else if(secPerQ > 60) paceEl.classList.add('warn');
+            else paceEl.classList.add('ok');
+        } else { paceEl.textContent = '—'; }
+    }
+    const scoreEl = document.getElementById('rc-side-score');
+    if(scoreEl) {
+        const done = s.correct + s.wrong;
+        scoreEl.textContent = s.correct + ' / ' + done;
+        scoreEl.className = 'rc-side-val' + (done > 0 ? (s.correct / done >= 0.5 ? ' ok' : ' warn') : '');
+    }
+}
+
+function _rcStartSessionClock() {
+    if(_rcSessionIv) clearInterval(_rcSessionIv);
+    const s = reclearSession; if(!s) return;
+    if(s.elapsedMs === undefined) s.elapsedMs = 0;
+    s.lastTickMs = Date.now();
+    _rcSessionPaused = false;
+    const btn = document.getElementById('rc-pause-btn');
+    if(btn) { btn.textContent = '⏸ Pause'; btn.classList.remove('paused'); }
+    _rcSessionIv = setInterval(() => {
+        if(!reclearSession || _rcSessionPaused) return;
+        const now = Date.now();
+        reclearSession.elapsedMs = (reclearSession.elapsedMs || 0) + (now - reclearSession.lastTickMs);
+        reclearSession.lastTickMs = now;
+        _rcRenderSidebar();
+    }, 1000);
+    _rcRenderSidebar();
+}
+
+function _rcStopSessionClock() {
+    if(_rcSessionIv) { clearInterval(_rcSessionIv); _rcSessionIv = null; }
+}
+
+function reclearTogglePause() {
+    if(!reclearSession) return;
+    _rcSessionPaused = !_rcSessionPaused;
+    const btn = document.getElementById('rc-pause-btn');
+    if(btn) {
+        btn.textContent = _rcSessionPaused ? '▶ Resume' : '⏸ Pause';
+        btn.classList.toggle('paused', _rcSessionPaused);
+    }
+    if(_rcSessionPaused) {
+        _reclearStopTimer();
+    } else {
+        if(reclearSession) reclearSession.lastTickMs = Date.now();
+        _reclearStartTimer();
+    }
+}
 
 function _reclearStopTimer() {
     if(_reclearTimerIv) { clearInterval(_reclearTimerIv); _reclearTimerIv = null; }
@@ -5137,6 +5209,7 @@ function reclearGrade(gotIt) {
     const item = s.items[s.idx];
     if(gotIt) { s.correct++; if(typeof haptic === 'function') haptic(15); }
     else { s.wrong++; s.flagged.push(item.question_text); if(typeof haptic === 'function') haptic(30); }
+    _rcRenderSidebar();
     s.idx++;
     if(s.idx >= s.items.length) { _reclearFinish(); }
     else reclearRenderCurrent();
@@ -5144,6 +5217,7 @@ function reclearGrade(gotIt) {
 
 function endReclearSession() {
     _reclearStopTimer();
+    _rcStopSessionClock();
     const s = reclearSession;
     if(s && s.idx === 0) { reclearSession = null; show('v-setup'); applyTheme(); return; }
     _reclearFinish();

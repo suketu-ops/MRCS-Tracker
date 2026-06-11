@@ -1494,3 +1494,49 @@
         transition:all 0.15s;
     }
     .tk-bulk-chip.on { background:var(--accent2); color:#111; border-color:var(--accent2); font-weight:700; }
+    /* === v117 drill: desktop split layout (sidebar | content) === */
+    .rc-sidebar { display:none; }
+    @media (min-width: 768px) {
+        #v-reclear.view.active {
+            max-width: 1080px !important;
+            display: grid !important;
+            grid-template-columns: 280px 1fr !important;
+            gap: 28px;
+            align-items: start;
+        }
+        .rc-sidebar { display: block; position: sticky; top: 90px; }
+        .rc-content { min-width: 0; }
+    }
+    .rc-sidebar {
+        padding: 16px 14px;
+        border: 1px solid var(--stroke);
+        border-radius: var(--r-md);
+        background: var(--surface-soft);
+        text-align: center;
+    }
+    .rc-side-block { padding: 7px 0; }
+    .rc-side-block + .rc-side-block { border-top: 1px solid rgba(255,255,255,0.08); margin-top: 2px; }
+    .rc-side-lbl {
+        font-size: 0.52rem; opacity: 0.55; letter-spacing: 1.5px;
+        text-transform: uppercase; font-family: 'JetBrains Mono',monospace;
+    }
+    .rc-side-val {
+        font-family: 'Bebas Neue',sans-serif; line-height: 1.0;
+        color: var(--accent2); margin-top: 3px;
+        font-size: 1.7rem;
+    }
+    .rc-side-val.big { font-size: 2.4rem; }
+    .rc-side-val.warn { color: var(--warn); }
+    .rc-side-val.over { color: var(--err); }
+    .rc-side-val.ok { color: var(--ok); }
+    .rc-side-buttons { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .rc-side-buttons .rc-side-btn {
+        width: 100%; padding: 9px 12px; border-radius: 10px;
+        background: transparent; cursor: pointer;
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px;
+        font-family: inherit; transition: all 0.15s;
+    }
+    .rc-side-btn.pause { border:1.5px solid var(--accent2); color: var(--accent2); }
+    .rc-side-btn.pause.paused { background: var(--accent2); color: #111; }
+    .rc-side-btn.end { border:1.5px solid var(--err-red); color: var(--err-red); }
+    .rc-side-btn:hover { transform: translateY(-1px); }

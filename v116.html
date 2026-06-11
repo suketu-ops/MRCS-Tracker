@@ -1509,6 +1509,52 @@
         transition:all 0.15s;
     }
     .tk-bulk-chip.on { background:var(--accent2); color:#111; border-color:var(--accent2); font-weight:700; }
+    /* === v117 drill: desktop split layout (sidebar | content) === */
+    .rc-sidebar { display:none; }
+    @media (min-width: 768px) {
+        #v-reclear.view.active {
+            max-width: 1080px !important;
+            display: grid !important;
+            grid-template-columns: 280px 1fr !important;
+            gap: 28px;
+            align-items: start;
+        }
+        .rc-sidebar { display: block; position: sticky; top: 90px; }
+        .rc-content { min-width: 0; }
+    }
+    .rc-sidebar {
+        padding: 16px 14px;
+        border: 1px solid var(--stroke);
+        border-radius: var(--r-md);
+        background: var(--surface-soft);
+        text-align: center;
+    }
+    .rc-side-block { padding: 7px 0; }
+    .rc-side-block + .rc-side-block { border-top: 1px solid rgba(255,255,255,0.08); margin-top: 2px; }
+    .rc-side-lbl {
+        font-size: 0.52rem; opacity: 0.55; letter-spacing: 1.5px;
+        text-transform: uppercase; font-family: 'JetBrains Mono',monospace;
+    }
+    .rc-side-val {
+        font-family: 'Bebas Neue',sans-serif; line-height: 1.0;
+        color: var(--accent2); margin-top: 3px;
+        font-size: 1.7rem;
+    }
+    .rc-side-val.big { font-size: 2.4rem; }
+    .rc-side-val.warn { color: var(--warn); }
+    .rc-side-val.over { color: var(--err); }
+    .rc-side-val.ok { color: var(--ok); }
+    .rc-side-buttons { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .rc-side-buttons .rc-side-btn {
+        width: 100%; padding: 9px 12px; border-radius: 10px;
+        background: transparent; cursor: pointer;
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px;
+        font-family: inherit; transition: all 0.15s;
+    }
+    .rc-side-btn.pause { border:1.5px solid var(--accent2); color: var(--accent2); }
+    .rc-side-btn.pause.paused { background: var(--accent2); color: #111; }
+    .rc-side-btn.end { border:1.5px solid var(--err-red); color: var(--err-red); }
+    .rc-side-btn:hover { transform: translateY(-1px); }
 </style>
 </head>
 <body>
@@ -2532,6 +2578,30 @@
 
   <!-- STEP 8: Re-Clear session view -->
   <div id="v-reclear" class="view" style="max-width:600px;">
+    <!-- v117 drill: desktop sidebar (timer + pace + score + controls). Hidden < 768px. -->
+    <aside class="rc-sidebar">
+        <div class="rc-side-block">
+            <div class="rc-side-lbl">SESSION TIME</div>
+            <div class="rc-side-val big" id="rc-session-elapsed">0:00</div>
+        </div>
+        <div class="rc-side-block">
+            <div class="rc-side-lbl">PROGRESS</div>
+            <div class="rc-side-val" id="rc-side-progress">0 / 0</div>
+        </div>
+        <div class="rc-side-block">
+            <div class="rc-side-lbl">PACE</div>
+            <div class="rc-side-val" id="rc-side-pace">—</div>
+        </div>
+        <div class="rc-side-block">
+            <div class="rc-side-lbl">SCORE</div>
+            <div class="rc-side-val" id="rc-side-score">0 / 0</div>
+        </div>
+        <div class="rc-side-buttons">
+            <button class="rc-side-btn pause" id="rc-pause-btn" onclick="reclearTogglePause()">⏸ Pause</button>
+            <button class="rc-side-btn end" onclick="endReclearSession()">⏹ End Session</button>
+        </div>
+    </aside>
+    <div class="rc-content">
     <!-- v117a: single-screen drill — header (progress + timer), Q, options, confidence, reveal -->
     <div class="rc-header">
         <div class="rc-progress" id="reclear-progress-lbl">0 / 0</div>
@@ -2558,6 +2628,7 @@
     </div>
     <div class="row" style="justify-content:center; gap:8px; margin-top:18px;">
         <button class="btn btn-sm btn-ghost" style="border-color:var(--err-red); color:var(--err-red);" onclick="endReclearSession()">End Re-Clear</button>
+    </div>
     </div>
   </div>
 
@@ -7608,12 +7679,84 @@ function startReclearSession() {
     closeReclearWizard();
     show('v-reclear'); applyTheme();
     reclearRenderCurrent();   // also starts the per-question timer
+    _rcStartSessionClock();
 }
 
 // v117a: drill timer state
 let _reclearTimerIv = null;
 let _reclearTimerSec = 0;
 const RECLEAR_TIMER_DEFAULT_S = 90;   // 1:30 default per question
+
+// === v117 drill: session-level clock + pace ===
+let _rcSessionIv = null;
+let _rcSessionPaused = false;
+
+function _rcRenderSidebar() {
+    const s = reclearSession; if(!s) return;
+    const elapsed = (s.elapsedMs || 0);
+    const sec = Math.floor(elapsed / 1000);
+    const m = Math.floor(sec / 60), r = sec % 60;
+    const elEl = document.getElementById('rc-session-elapsed');
+    if(elEl) elEl.textContent = m + ':' + (r < 10 ? '0' : '') + r;
+    const progressEl = document.getElementById('rc-side-progress');
+    if(progressEl) progressEl.textContent = (s.idx + 1) + ' / ' + s.items.length;
+    const paceEl = document.getElementById('rc-side-pace');
+    if(paceEl) {
+        const done = s.correct + s.wrong;
+        paceEl.className = 'rc-side-val';
+        if(done > 0) {
+            const secPerQ = Math.round(elapsed / 1000 / done);
+            paceEl.textContent = secPerQ + 's/Q';
+            if(secPerQ > 90) paceEl.classList.add('over');
+            else if(secPerQ > 60) paceEl.classList.add('warn');
+            else paceEl.classList.add('ok');
+        } else { paceEl.textContent = '—'; }
+    }
+    const scoreEl = document.getElementById('rc-side-score');
+    if(scoreEl) {
+        const done = s.correct + s.wrong;
+        scoreEl.textContent = s.correct + ' / ' + done;
+        scoreEl.className = 'rc-side-val' + (done > 0 ? (s.correct / done >= 0.5 ? ' ok' : ' warn') : '');
+    }
+}
+
+function _rcStartSessionClock() {
+    if(_rcSessionIv) clearInterval(_rcSessionIv);
+    const s = reclearSession; if(!s) return;
+    if(s.elapsedMs === undefined) s.elapsedMs = 0;
+    s.lastTickMs = Date.now();
+    _rcSessionPaused = false;
+    const btn = document.getElementById('rc-pause-btn');
+    if(btn) { btn.textContent = '⏸ Pause'; btn.classList.remove('paused'); }
+    _rcSessionIv = setInterval(() => {
+        if(!reclearSession || _rcSessionPaused) return;
+        const now = Date.now();
+        reclearSession.elapsedMs = (reclearSession.elapsedMs || 0) + (now - reclearSession.lastTickMs);
+        reclearSession.lastTickMs = now;
+        _rcRenderSidebar();
+    }, 1000);
+    _rcRenderSidebar();
+}
+
+function _rcStopSessionClock() {
+    if(_rcSessionIv) { clearInterval(_rcSessionIv); _rcSessionIv = null; }
+}
+
+function reclearTogglePause() {
+    if(!reclearSession) return;
+    _rcSessionPaused = !_rcSessionPaused;
+    const btn = document.getElementById('rc-pause-btn');
+    if(btn) {
+        btn.textContent = _rcSessionPaused ? '▶ Resume' : '⏸ Pause';
+        btn.classList.toggle('paused', _rcSessionPaused);
+    }
+    if(_rcSessionPaused) {
+        _reclearStopTimer();
+    } else {
+        if(reclearSession) reclearSession.lastTickMs = Date.now();
+        _reclearStartTimer();
+    }
+}
 
 function _reclearStopTimer() {
     if(_reclearTimerIv) { clearInterval(_reclearTimerIv); _reclearTimerIv = null; }
@@ -7728,6 +7871,7 @@ function reclearGrade(gotIt) {
     const item = s.items[s.idx];
     if(gotIt) { s.correct++; if(typeof haptic === 'function') haptic(15); }
     else { s.wrong++; s.flagged.push(item.question_text); if(typeof haptic === 'function') haptic(30); }
+    _rcRenderSidebar();
     s.idx++;
     if(s.idx >= s.items.length) { _reclearFinish(); }
     else reclearRenderCurrent();
@@ -7735,6 +7879,7 @@ function reclearGrade(gotIt) {
 
 function endReclearSession() {
     _reclearStopTimer();
+    _rcStopSessionClock();
     const s = reclearSession;
     if(s && s.idx === 0) { reclearSession = null; show('v-setup'); applyTheme(); return; }
     _reclearFinish();
