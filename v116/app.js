@@ -7028,10 +7028,11 @@ function renderCSCHitList() {
     // Default-collapsed on mobile (first render only), open on desktop.
     if(wrap && !wrap._cscInit) {
         wrap._cscInit = true;
-        const isMobile = window.innerWidth <= 480;
-        if(isMobile) body.classList.add('collapsed'); else body.classList.remove('collapsed');
+        // v117 fix: collapsed by default on ALL viewports (was mobile-only). User opens it
+        // explicitly via the header tap when they want to tick off topics.
+        body.classList.add('collapsed');
         const chev = document.getElementById('csc-hitlist-chevron');
-        if(chev) chev.textContent = body.classList.contains('collapsed') ? '▼' : '▲';
+        if(chev) chev.textContent = '▼';
     }
 }
 
