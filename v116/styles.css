@@ -1,5 +1,31 @@
 
-    :root { --bg: #1c0028; --base-fs: 16px; --accent: #ff5722; --accent2: #ffab00; }
+    :root {
+        /* v117 design system foundation — additive only. --accent/--accent2 are
+           OVERRIDDEN by the THEMES system at runtime, so changing their values
+           here changes only the fallback. The semantic status tokens below are
+           NOT touched by themes and serve as the single source of truth. */
+        --bg:        #1c0028;
+        --base-fs:   16px;
+        --accent:    #ff5722;   /* theme-overridden */
+        --accent2:   #ffab00;   /* theme-overridden */
+        --accent3:   #a78bfa;   /* lavender — settings/secondary */
+        /* Status — theme-independent, semantic */
+        --ok:        #4ade80;
+        --ok-fg:     #111;
+        --err:       #E63946;
+        --err-red:   #ff5252;
+        --err-soft:  #ff6b6b;
+        --warn:      #F4A261;
+        --gold:      #FFD166;
+        /* Strokes / surfaces */
+        --stroke:        rgba(255,255,255,0.12);
+        --stroke-strong: rgba(255,255,255,0.25);
+        --surface-soft:  rgba(255,255,255,0.04);
+        /* Radii */
+        --r-sm:   6px;
+        --r-md:  12px;
+        --r-pill: 9999px;
+    }
     html { font-size: var(--base-fs); }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow: hidden; background: var(--bg); -webkit-text-size-adjust: 100%; }

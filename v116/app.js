@@ -2473,16 +2473,16 @@ function showV111SetupSql() {
     box.style.cssText = 'background:#1c0028;border:2px solid #4ade80;border-radius:14px;padding:20px;max-width:720px;width:100%;max-height:85vh;display:flex;flex-direction:column;gap:10px;';
     box.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#4ade80;letter-spacing:1px;">V111 SETUP SQL</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--ok);letter-spacing:1px;">V111 SETUP SQL</div>
             <button class="btn btn-sm btn-ghost" id="v111-sql-close" style="font-size:0.7rem;padding:4px 10px;">✕ Close</button>
         </div>
         <div style="font-size:0.7rem;opacity:0.85;line-height:1.5;">
             Run this script <b>once</b> in your Supabase SQL Editor (sidebar → SQL Editor → New query → paste → Run).
             It creates the three new tables and the security policies. Safe to re-run.
         </div>
-        <textarea id="v111-sql-text" readonly style="flex:1;min-height:340px;background:#0a0014;color:#a78bfa;border:1px solid rgba(74,222,128,0.3);border-radius:8px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:0.65rem;line-height:1.5;resize:vertical;"></textarea>
+        <textarea id="v111-sql-text" readonly style="flex:1;min-height:340px;background:#0a0014;color:var(--accent3);border:1px solid rgba(74,222,128,0.3);border-radius:8px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:0.65rem;line-height:1.5;resize:vertical;"></textarea>
         <div class="row" style="justify-content:center;gap:8px;">
-            <button class="btn btn-sm" id="v111-sql-copy" style="background:#4ade80;color:#111;font-weight:700;font-size:0.7rem;padding:6px 14px;">📋 Copy SQL to clipboard</button>
+            <button class="btn btn-sm" id="v111-sql-copy" style="background:var(--ok);color:#111;font-weight:700;font-size:0.7rem;padding:6px 14px;">📋 Copy SQL to clipboard</button>
         </div>
     `;
     overlay.appendChild(box);
@@ -7451,9 +7451,9 @@ function injectInCardExpandContent(item) {
                     <div id="incard-expand-exam-note" class="sticky-note" contenteditable="false" style="outline:none; padding:12px;">${examHtml}</div>
                     <!-- V107: AI add/refine row for the exam note — hidden until edit mode -->
                     <div id="incard-ai-exam-row" class="row" style="display:none; margin-top:6px; gap:4px;">
-                        <button class="btn btn-sm btn-ghost" id="btn-incard-gen-exam" onclick="event.stopPropagation(); incardGenExam()" style="border-color:#a78bfa; color:#a78bfa; font-size:0.55rem; padding:5px 9px; flex-shrink:0;">🤖 AI Exam</button>
+                        <button class="btn btn-sm btn-ghost" id="btn-incard-gen-exam" onclick="event.stopPropagation(); incardGenExam()" style="border-color:var(--accent3); color:var(--accent3); font-size:0.55rem; padding:5px 9px; flex-shrink:0;">🤖 AI Exam</button>
                         <input type="text" id="incard-refine-exam-input" placeholder="🪄 Refine exam note..." onclick="event.stopPropagation()" style="font-size:0.6rem; padding:5px 8px; flex:1; border-radius:6px; border:1px solid rgba(128,128,128,0.25); background:rgba(128,128,128,0.08); color:inherit; font-family:'JetBrains Mono',monospace; outline:none; min-width:0;">
-                        <button class="btn btn-sm" id="btn-incard-refine-exam" onclick="event.stopPropagation(); incardRefineExam()" style="background:#a78bfa; color:#111; font-size:0.55rem; padding:5px 10px; flex-shrink:0;">Send</button>
+                        <button class="btn btn-sm" id="btn-incard-refine-exam" onclick="event.stopPropagation(); incardRefineExam()" style="background:var(--accent3); color:#111; font-size:0.55rem; padding:5px 10px; flex-shrink:0;">Send</button>
                     </div>
                 </div>
                 <input type="text" id="incard-expand-img-url" disabled placeholder="📷 Image URL" style="display:none; width:100%; padding:8px 10px; font-size:0.7rem; background:rgba(128,128,128,0.08); border:1px solid rgba(128,128,128,0.15); border-radius:6px; color:inherit; font-family:'JetBrains Mono',monospace; outline:none;" value="${item.img && !item.img.startsWith('data:') ? item.img : ''}">
@@ -7550,8 +7550,8 @@ function buildIncardDistractorSection(item) {
     mount.innerHTML =
         '<div class="incard-distractor-wrap">'
         +   '<div class="incard-distractor-head" onclick="event.stopPropagation(); toggleIncardDistractor()">'
-        +     '<div class="dash-lbl" style="color:#E63946;margin:0;">❓ Why the others are wrong</div>'
-        +     '<span id="incard-distractor-chevron" style="color:#E63946;font-size:0.7rem;flex-shrink:0;">' + chevron + '</span>'
+        +     '<div class="dash-lbl" style="color:var(--err);margin:0;">❓ Why the others are wrong</div>'
+        +     '<span id="incard-distractor-chevron" style="color:var(--err);font-size:0.7rem;flex-shrink:0;">' + chevron + '</span>'
         +   '</div>'
         +   '<div id="incard-distractor-body" class="incard-distractor-body' + (_incardDistractorOpen ? ' open' : '') + '" style="margin-top:' + (_incardDistractorOpen ? '8px' : '0') + ';">'
         +     bodyInner
@@ -8422,10 +8422,10 @@ async function generateExamNoteForStack() {
             // V105: Cross-view sync — update front word risk dot and gallery
             syncCardEverywhere(item.word);
         } else {
-            examEl.innerHTML = '<span style="color:#ff5252;">AI generation failed.</span>';
+            examEl.innerHTML = '<span style="color:var(--err-red);">AI generation failed.</span>';
         }
     } catch(e) {
-        examEl.innerHTML = '<span style="color:#ff5252;">Error: ' + (e.message || 'Network error') + '</span>';
+        examEl.innerHTML = '<span style="color:var(--err-red);">Error: ' + (e.message || 'Network error') + '</span>';
     } finally {
         if(btn) { btn.disabled = false; btn.textContent = '🤖 AI Surgeon'; }
     }
@@ -8789,10 +8789,10 @@ FORMATTING RULES (STRICT):
             notesEl.innerHTML = renderMarkdown(text);
             notesEl.contentEditable = expandEditActive ? 'true' : 'false';
         } else {
-            notesEl.innerHTML = '<span style="color:#ff5252;">AI generation failed. Try again.</span>';
+            notesEl.innerHTML = '<span style="color:var(--err-red);">AI generation failed. Try again.</span>';
         }
     } catch(e) {
-        notesEl.innerHTML = '<span style="color:#ff5252;">Error: ' + (e.message || 'Network error') + '</span>';
+        notesEl.innerHTML = '<span style="color:var(--err-red);">Error: ' + (e.message || 'Network error') + '</span>';
     } finally {
         if(btn) { btn.disabled = false; btn.textContent = '🤖 AI Answer'; }
     }
@@ -8889,10 +8889,10 @@ async function generateExamNoteForExpand() {
             // V105: Cross-view sync
             syncCardEverywhere(item.word);
         } else {
-            examEl.innerHTML = '<span style="color:#ff5252;">AI generation failed. Try again.</span>';
+            examEl.innerHTML = '<span style="color:var(--err-red);">AI generation failed. Try again.</span>';
         }
     } catch(e) {
-        examEl.innerHTML = '<span style="color:#ff5252;">Error: ' + (e.message || 'Network error') + '</span>';
+        examEl.innerHTML = '<span style="color:var(--err-red);">Error: ' + (e.message || 'Network error') + '</span>';
     } finally {
         if(btn) { btn.disabled = false; btn.textContent = '🤖 Generate AI Note'; }
     }
@@ -9095,7 +9095,7 @@ function renderGallery() {
                 <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px;" onclick="clearGalleryDates()">Clear Dates</button>
             </div>
         </div>
-        ${gallerySelectMode ? '<div class="gallery-batch-bar" id="gallery-batch-bar"><span style="font-size:0.7rem; opacity:0.7;">'+gallerySelected.size+' selected</span><button class="btn btn-sm" style="background:#00c853; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="galleryBulkAddToStack()">📚 Add to Stack</button><button class="btn btn-sm" style="background:#a78bfa; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="batchGenerateAI(\'selected\')">🤖 AI → Exam Notes</button><button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#a78bfa; color:#a78bfa;" onclick="batchGenerateAI(\'empty\')">🤖 All Empty</button><button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-color:#ff5252; color:#ff5252;" onclick="toggleGallerySelectMode()">Cancel</button></div>' : ''}
+        ${gallerySelectMode ? '<div class="gallery-batch-bar" id="gallery-batch-bar"><span style="font-size:0.7rem; opacity:0.7;">'+gallerySelected.size+' selected</span><button class="btn btn-sm" style="background:#00c853; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="galleryBulkAddToStack()">📚 Add to Stack</button><button class="btn btn-sm" style="background:var(--accent3); color:#111; font-size:0.6rem; padding:4px 10px;" onclick="batchGenerateAI(\'selected\')">🤖 AI → Exam Notes</button><button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:var(--accent3); color:var(--accent3);" onclick="batchGenerateAI(\'empty\')">🤖 All Empty</button><button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-color:var(--err-red); color:var(--err-red);" onclick="toggleGallerySelectMode()">Cancel</button></div>' : ''}
     `;
     // V104: Restore date input values after re-render
     if(dateFromEl && dateFromEl.value) { const el = document.getElementById('fc-date-from'); if(el) el.value = dateFromEl.value; }
@@ -9477,7 +9477,7 @@ RULES: Max 12 lines. Bold key terms. No "in summary." If a mnemonic exists, add 
         const data = await res.json();
         
         if (data.error) {
-            $('ai-response').innerHTML = `<div style="color:#ff5252; text-align:center; padding: 10px;"><b>Google API Error:</b><br>${data.error.message}</div>`;
+            $('ai-response').innerHTML = `<div style="color:var(--err-red); text-align:center; padding: 10px;"><b>Google API Error:</b><br>${data.error.message}</div>`;
         } else if(data.candidates && data.candidates[0].content.parts[0].text) {
             let text = data.candidates[0].content.parts[0].text;
             lastAIResponseText = text;
@@ -9489,10 +9489,10 @@ RULES: Max 12 lines. Bold key terms. No "in summary." If a mnemonic exists, add 
             $('btn-append-ai').style.display = 'block'; $('btn-exam-note-ai').style.display = 'block';
             input.disabled = false; input.focus();
         } else {
-            $('ai-response').innerHTML = '<div style="color:#ff5252; text-align:center;">Consultant unavailable. Unrecognized response format.</div>';
+            $('ai-response').innerHTML = '<div style="color:var(--err-red); text-align:center;">Consultant unavailable. Unrecognized response format.</div>';
         }
     } catch(e) {
-        $('ai-response').innerHTML = `<div style="color:#ff5252; text-align:center;">Connection failed: ${e.message}.<br><br><span style="font-size:0.7rem; opacity:0.7;">(If this says 'Failed to fetch', your browser or network firewall is actively blocking the connection).</span></div>`;
+        $('ai-response').innerHTML = `<div style="color:var(--err-red); text-align:center;">Connection failed: ${e.message}.<br><br><span style="font-size:0.7rem; opacity:0.7;">(If this says 'Failed to fetch', your browser or network firewall is actively blocking the connection).</span></div>`;
     }
 }
 
@@ -9524,7 +9524,7 @@ async function sendFollowUp() {
         if(loadEl) loadEl.remove();
         
         if (data.error) {
-            respBox.innerHTML += `<div style="color:#ff5252; text-align:center; padding: 10px;"><b>API Error:</b><br>${data.error.message}</div>`;
+            respBox.innerHTML += `<div style="color:var(--err-red); text-align:center; padding: 10px;"><b>API Error:</b><br>${data.error.message}</div>`;
         } else if(data.candidates && data.candidates[0].content.parts[0].text) {
             let text = data.candidates[0].content.parts[0].text;
             lastAIResponseText = text;
@@ -9538,7 +9538,7 @@ async function sendFollowUp() {
         input.disabled = false; input.focus();
     } catch(e) {
         const loadEl = $('ai-loading-follow'); if(loadEl) loadEl.remove();
-        respBox.innerHTML += `<div style="color:#ff5252; text-align:center;">Failed: ${e.message}</div>`;
+        respBox.innerHTML += `<div style="color:var(--err-red); text-align:center;">Failed: ${e.message}</div>`;
         input.disabled = false;
     }
 }
@@ -11523,7 +11523,7 @@ Example:
     }
     
     pushToCloud();
-    if($('gallery-panel-content')) $('gallery-panel-content').innerHTML = '<div style="text-align:center;color:#4ade80;padding:20px;">✅ Re-classified ' + done + ' cards</div>';
+    if($('gallery-panel-content')) $('gallery-panel-content').innerHTML = '<div style="text-align:center;color:var(--ok);padding:20px;">✅ Re-classified ' + done + ' cards</div>';
     renderGallery();
     syncAllCardsEverywhere();
 }
@@ -11610,7 +11610,7 @@ async function batchGenerateAI(mode) {
     if(lastItem) {
         openGalleryExamPanel(lastItem);
     } else {
-        $('gallery-panel-content').innerHTML = '<div style="text-align:center;color:#4ade80;padding:20px;">✅ Complete — ' + targets.length + ' notes generated</div>';
+        $('gallery-panel-content').innerHTML = '<div style="text-align:center;color:var(--ok);padding:20px;">✅ Complete — ' + targets.length + ' notes generated</div>';
     }
     $('btn-gallery-panel-edit').style.display = '';
     
@@ -12132,14 +12132,14 @@ async function autoPostOpReview(sessionWords) {
                 failedCount++;
                 if(tile) {
                     tile.setAttribute('data-failed','1');
-                    tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:#ff5252;padding:8px 0;">\u26A0\uFE0F AI generation failed</div>';
+                    tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:var(--err-red);padding:8px 0;">\u26A0\uFE0F AI generation failed</div>';
                 }
             }
         } catch(e) {
             failedCount++;
             if(tile) {
                 tile.setAttribute('data-failed','1');
-                tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:#ff5252;padding:8px 0;">\u26A0\uFE0F Error: ' + (e.message||'network') + '</div>';
+                tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:var(--err-red);padding:8px 0;">\u26A0\uFE0F Error: ' + (e.message||'network') + '</div>';
             }
         }
         completed++;
@@ -12160,7 +12160,7 @@ async function autoPostOpReview(sessionWords) {
     
     pushToCloud();
     if(failedCount > 0) {
-        $('postop-status').innerHTML = '\u26A0\uFE0F ' + failedCount + ' failed \u2014 <button class="btn btn-sm" style="background:#ff5252;color:#fff;font-size:0.6rem;padding:4px 10px;" onclick="retryFailedPostOp()">\uD83D\uDD01 Retry Failed</button>';
+        $('postop-status').innerHTML = '\u26A0\uFE0F ' + failedCount + ' failed \u2014 <button class="btn btn-sm" style="background:var(--err-red);color:#fff;font-size:0.6rem;padding:4px 10px;" onclick="retryFailedPostOp()">\uD83D\uDD01 Retry Failed</button>';
     } else {
         $('postop-status').textContent = '\u2705 Complete \u2014 ' + sessionWords.length + ' exam notes generated';
     }
@@ -12738,7 +12738,7 @@ Reply with ONLY one word: RED, YELLOW, or GREEN.`;
         card.classList.add('risk-card-' + bankItem.riskLevel);
     });
     
-    $('gallery-panel-content').innerHTML = '<div style="text-align:center;padding:20px;color:#4ade80;">✅ ' + updated + ' cards classified.<br>Card order updates on next visit.</div>';
+    $('gallery-panel-content').innerHTML = '<div style="text-align:center;padding:20px;color:var(--ok);">✅ ' + updated + ' cards classified.<br>Card order updates on next visit.</div>';
     $('btn-gallery-panel-edit').style.display = '';
 }
 

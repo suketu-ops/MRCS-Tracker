@@ -14,7 +14,33 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231c0028' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='%23ff007f'>M</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-    :root { --bg: #1c0028; --base-fs: 16px; --accent: #ff5722; --accent2: #ffab00; }
+    :root {
+        /* v117 design system foundation — additive only. --accent/--accent2 are
+           OVERRIDDEN by the THEMES system at runtime, so changing their values
+           here changes only the fallback. The semantic status tokens below are
+           NOT touched by themes and serve as the single source of truth. */
+        --bg:        #1c0028;
+        --base-fs:   16px;
+        --accent:    #ff5722;   /* theme-overridden */
+        --accent2:   #ffab00;   /* theme-overridden */
+        --accent3:   #a78bfa;   /* lavender — settings/secondary */
+        /* Status — theme-independent, semantic */
+        --ok:        #4ade80;
+        --ok-fg:     #111;
+        --err:       #E63946;
+        --err-red:   #ff5252;
+        --err-soft:  #ff6b6b;
+        --warn:      #F4A261;
+        --gold:      #FFD166;
+        /* Strokes / surfaces */
+        --stroke:        rgba(255,255,255,0.12);
+        --stroke-strong: rgba(255,255,255,0.25);
+        --surface-soft:  rgba(255,255,255,0.04);
+        /* Radii */
+        --r-sm:   6px;
+        --r-md:  12px;
+        --r-pill: 9999px;
+    }
     html { font-size: var(--base-fs); }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow: hidden; background: var(--bg); -webkit-text-size-adjust: 100%; }
@@ -1551,7 +1577,7 @@
         <textarea id="action-input" class="modal-textarea" style="margin-bottom: 24px; display:none; white-space:pre-wrap;"></textarea>
         <div class="row" style="justify-content:center; gap:12px;">
             <button class="btn btn-sm btn-ghost" id="btn-action-cancel">Cancel</button>
-            <button class="btn btn-sm" id="btn-action-confirm" style="background:#ff5252; color:#fff;">Confirm</button>
+            <button class="btn btn-sm" id="btn-action-confirm" style="background:var(--err-red); color:#fff;">Confirm</button>
         </div>
     </div>
 </div>
@@ -1564,29 +1590,29 @@
         </div>
         <div style="font-size:0.7rem; opacity:0.65; text-align:center; line-height:1.5; margin-bottom:14px;">Cloud sync, API keys, image-search prefs and JSON import/export — all live here. Tap any section to expand.</div>
             <!-- V112: Supabase production sync — cards + tracker + sessions + settings, with first-boot upload fix. -->
-            <details open class="set-section" style="border:1px solid rgba(74,222,128,0.4); border-radius:10px; padding:8px 10px; margin-bottom:10px;"><summary style="cursor:pointer; color:#4ade80; font-weight:700; font-size:0.78rem; padding:4px 0;">☁ Cloud sync · Supabase</summary><div style="padding-top:8px;">
-                <div class="dash-lbl" style="text-align:center;margin-bottom:6px;color:#4ade80;">☁️ V112 SUPABASE — Full Sync</div>
+            <details open class="set-section" style="border:1px solid rgba(74,222,128,0.4); border-radius:10px; padding:8px 10px; margin-bottom:10px;"><summary style="cursor:pointer; color:var(--ok); font-weight:700; font-size:0.78rem; padding:4px 0;">☁ Cloud sync · Supabase</summary><div style="padding-top:8px;">
+                <div class="dash-lbl" style="text-align:center;margin-bottom:6px;color:var(--ok);">☁️ V112 SUPABASE — Full Sync</div>
                 <div style="font-size:0.6rem;opacity:0.75;text-align:center;margin-bottom:10px;line-height:1.5;">
                     All flashcards, tracker rows, study sessions, and settings now sync across devices via Supabase.<br>
                     <b>First-time v111 users:</b> click "📋 Show SQL Setup" below to get the new tables script.
                 </div>
                 
-                <input type="text" id="supabase-url" class="input-field" placeholder="Supabase Project URL (https://xxxxx.supabase.co)" style="font-size:0.7rem;padding:6px;margin-bottom:6px;border-color:#4ade80;">
-                <input type="password" id="supabase-key" class="input-field" placeholder="Supabase anon public key (eyJ...)" style="font-size:0.7rem;padding:6px;margin-bottom:8px;border-color:#4ade80;">
+                <input type="text" id="supabase-url" class="input-field" placeholder="Supabase Project URL (https://xxxxx.supabase.co)" style="font-size:0.7rem;padding:6px;margin-bottom:6px;border-color:var(--ok);">
+                <input type="password" id="supabase-key" class="input-field" placeholder="Supabase anon public key (eyJ...)" style="font-size:0.7rem;padding:6px;margin-bottom:8px;border-color:var(--ok);">
                 
                 <div class="row" style="justify-content:center;gap:4px;margin-bottom:8px;flex-wrap:wrap;">
-                    <button class="btn btn-sm" id="btn-sb-save" onclick="saveSupabaseCreds()" style="background:#4ade80;color:#111;font-weight:700;font-size:0.65rem;padding:5px 10px;">💾 Save & Test</button>
-                    <button class="btn btn-sm btn-ghost" id="btn-sb-pull" onclick="supabasePullEverything(true)" style="border-color:#4ade80;color:#4ade80;font-size:0.65rem;padding:5px 10px;">⬇ Pull All</button>
-                    <button class="btn btn-sm" id="btn-sb-push-local" onclick="pushLocalEverythingToSupabase()" style="background:#a78bfa;color:#111;font-weight:700;font-size:0.65rem;padding:5px 10px;" title="One-time: upload local tracker, sessions, and settings to Supabase">⬆ Push Local → Supabase</button>
+                    <button class="btn btn-sm" id="btn-sb-save" onclick="saveSupabaseCreds()" style="background:var(--ok);color:#111;font-weight:700;font-size:0.65rem;padding:5px 10px;">💾 Save & Test</button>
+                    <button class="btn btn-sm btn-ghost" id="btn-sb-pull" onclick="supabasePullEverything(true)" style="border-color:var(--ok);color:var(--ok);font-size:0.65rem;padding:5px 10px;">⬇ Pull All</button>
+                    <button class="btn btn-sm" id="btn-sb-push-local" onclick="pushLocalEverythingToSupabase()" style="background:var(--accent3);color:#111;font-weight:700;font-size:0.65rem;padding:5px 10px;" title="One-time: upload local tracker, sessions, and settings to Supabase">⬆ Push Local → Supabase</button>
                     <button class="btn btn-sm btn-ghost" id="btn-sb-show-sql" onclick="showV111SetupSql()" style="border-color:#ffab00;color:#ffab00;font-size:0.65rem;padding:5px 10px;">📋 Show SQL Setup</button>
                     <button class="btn btn-sm btn-ghost" id="btn-sb-seed" onclick="seedFromJsonbinToSupabase()" style="border-color:#888;color:#888;font-size:0.6rem;padding:5px 10px;" title="Only needed if migrating from JSONBin">🌱 Seed from JSONBin</button>
                 </div>
-                <div id="supabase-status" class="sync-status" style="color:#4ade80;font-weight:600;">Not connected</div>
+                <div id="supabase-status" class="sync-status" style="color:var(--ok);font-weight:600;">Not connected</div>
                 
                 <div class="row" style="justify-content:center;gap:4px;margin-top:10px;border-top:1px solid rgba(74,222,128,0.25);padding-top:10px;flex-wrap:wrap;">
-                    <button class="btn btn-sm btn-ghost" onclick="exportSupabaseBankToFile()" style="border-style:dashed;border-color:#4ade80;color:#4ade80;font-size:0.6rem;padding:4px 8px;">📥 Export Everything to JSON</button>
+                    <button class="btn btn-sm btn-ghost" onclick="exportSupabaseBankToFile()" style="border-style:dashed;border-color:var(--ok);color:var(--ok);font-size:0.6rem;padding:4px 8px;">📥 Export Everything to JSON</button>
                     <input type="file" id="sb-import-file" style="display:none" accept=".json" onchange="importSupabaseBankFromFile(event)">
-                    <button class="btn btn-sm btn-ghost" onclick="document.getElementById('sb-import-file').click()" style="border-style:dashed;border-color:#4ade80;color:#4ade80;font-size:0.6rem;padding:4px 8px;">📤 Import from JSON</button>
+                    <button class="btn btn-sm btn-ghost" onclick="document.getElementById('sb-import-file').click()" style="border-style:dashed;border-color:var(--ok);color:var(--ok);font-size:0.6rem;padding:4px 8px;">📤 Import from JSON</button>
                 </div>
                 <div style="font-size:0.55rem;opacity:0.55;text-align:center;margin-top:6px;line-height:1.4;">
                     Export downloads cards + tracker + sessions + settings as one backup file.
@@ -1604,7 +1630,7 @@
                 <!-- V114.19: Brave Search API direct (will fail with CORS in browser, kept for completeness) -->
                 <input type="password" id="brave-api-key" class="input-field" placeholder="Brave Search API Key (direct — usually CORS-blocked)" style="font-size:0.7rem;padding:6px;margin-bottom:8px; border-color:#fb542b; opacity:0.6;">
                 <!-- V114.16: Google Custom Search for image picker (fallback) -->
-                <input type="password" id="google-cse-key" class="input-field" placeholder="Google CSE API Key (image search — optional)" style="font-size:0.75rem;padding:6px;margin-bottom:6px; border-color:#a78bfa;">
+                <input type="password" id="google-cse-key" class="input-field" placeholder="Google CSE API Key (image search — optional)" style="font-size:0.75rem;padding:6px;margin-bottom:6px; border-color:var(--accent3);">
                 <div style="font-size:0.55rem; opacity:0.55; text-align:center; margin-bottom:10px; line-height:1.4;">Google image search: 100 free searches/day. Get a key at <span style="color:var(--accent2);">console.cloud.google.com/apis/credentials</span> (enable the Custom Search API). Without a key, picker falls back to Wikipedia + Openverse.</div>
                 <!-- V114.20: Per-source toggles -->
                 <div style="border:1px dashed rgba(128,128,128,0.3); border-radius:8px; padding:8px; margin-bottom:10px;">
@@ -1623,10 +1649,10 @@
                 </div>
                 <!-- V114.24: Blocklist. Results from these domains are hidden entirely. -->
                 <div style="border:1px dashed rgba(255,100,100,0.35); border-radius:8px; padding:8px; margin-bottom:10px;">
-                    <div style="font-size:0.55rem; opacity:0.6; text-align:center; margin-bottom:6px; letter-spacing:1px; text-transform:uppercase; color:#ff6b6b;">Blocked Domains (one per line)</div>
+                    <div style="font-size:0.55rem; opacity:0.6; text-align:center; margin-bottom:6px; letter-spacing:1px; text-transform:uppercase; color:var(--err-soft);">Blocked Domains (one per line)</div>
                     <textarea id="blocked-domains-input" class="input-field" rows="5" placeholder="3d4medical.com&#10;shutterstock.com&#10;pinterest.com" style="font-size:0.7rem; padding:6px; font-family:'JetBrains Mono',monospace; width:100%; box-sizing:border-box; resize:vertical; margin-bottom:6px; border-color:rgba(255,100,100,0.4);"></textarea>
                     <div class="row" style="justify-content:center; gap:6px;">
-                        <button class="btn btn-sm btn-ghost" onclick="saveBlockedDomains()" style="font-size:0.6rem; padding:4px 10px; border-color:#ff6b6b; color:#ff6b6b;">💾 Save</button>
+                        <button class="btn btn-sm btn-ghost" onclick="saveBlockedDomains()" style="font-size:0.6rem; padding:4px 10px; border-color:var(--err-soft); color:var(--err-soft);">💾 Save</button>
                         <button class="btn btn-sm btn-ghost" onclick="resetBlockedDomains()" style="font-size:0.6rem; padding:4px 10px;">↺ Reset to defaults</button>
                     </div>
                     <div style="font-size:0.5rem; opacity:0.55; text-align:center; margin-top:6px; line-height:1.4;">Results from these sites are hidden entirely (watermarked, paywalled, or useless). Subdomains match automatically.</div>
@@ -1745,8 +1771,8 @@
          Shows last sync time + status. Tapping the ⟳ button triggers an immediate
          supabasePullEverything (which also pushes any pending writes). -->
     <div id="topbar-sync-indicator" style="display:flex; align-items:center; gap:6px; font-size:0.6rem; opacity:0.85; margin-right:auto; margin-left:8px;">
-        <span id="topbar-sync-text" style="white-space:nowrap; font-family:'JetBrains Mono',monospace; color:#4ade80;">☁ idle</span>
-        <button id="topbar-sync-btn" onclick="manualSyncFromTopBar()" title="Sync now" style="background:transparent; border:1px solid #4ade80; color:#4ade80; border-radius:50%; width:24px; height:24px; padding:0; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; justify-content:center; line-height:1;">⟳</button>
+        <span id="topbar-sync-text" style="white-space:nowrap; font-family:'JetBrains Mono',monospace; color:var(--ok);">☁ idle</span>
+        <button id="topbar-sync-btn" onclick="manualSyncFromTopBar()" title="Sync now" style="background:transparent; border:1px solid var(--ok); color:var(--ok); border-radius:50%; width:24px; height:24px; padding:0; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; justify-content:center; line-height:1;">⟳</button>
     </div>
     <div class="th-bar" id="themes"></div>
   </div>
@@ -1919,7 +1945,7 @@
     <div class="row" style="flex-wrap:wrap;gap:6px;margin-bottom:8px;" id="lm-row"></div>
     
     <div class="row" style="justify-content:center;gap:8px;margin-top:12px;">
-      <button class="btn btn-sm btn-ghost" id="btn-abandon" style="border-color:#ff5252; color:#ff5252;">Abandon</button>
+      <button class="btn btn-sm btn-ghost" id="btn-abandon" style="border-color:var(--err-red); color:var(--err-red);">Abandon</button>
       <button class="btn btn-sm" id="btn-pause">Pause</button>
       <button class="btn btn-sm" id="btn-end">End session</button>
     </div>
@@ -1998,7 +2024,7 @@
               <button class="btn btn-sm" onclick="saveTrackerEdits()" style="background:var(--accent2); color:#111;">Recalc Plan</button>
               <button class="btn btn-ghost btn-sm" onclick="forceTemplateWeights()" style="border-style:dashed; color:var(--accent2); border-color:var(--accent2);">Fix Weights</button>
               <button class="btn btn-sm" onclick="openAttemptWizard()" style="background:var(--accent); color:#fff;">New Attempt 🎯</button>
-              <button class="btn btn-sm btn-ghost" onclick="openSettingsModal()" style="border-style:dashed; color:#a78bfa; border-color:#a78bfa;">⚙ Settings</button>
+              <button class="btn btn-sm btn-ghost" onclick="openSettingsModal()" style="border-style:dashed; color:var(--accent3); border-color:var(--accent3);">⚙ Settings</button>
 
               <button class="btn btn-ghost btn-sm" id="btn-tk-back">Back Home</button>
             </div>
@@ -2083,7 +2109,7 @@
             <div class="dash-lbl" style="text-align:center; margin-bottom:16px; opacity:0.6;">Anki Rotation (Faded)</div>
             <div class="row" style="flex-wrap:wrap; justify-content:center; gap:8px;" id="bank-reviewed-grid"></div>
             <div style="text-align:center; margin-top:24px;">
-                <button class="btn btn-sm btn-ghost" onclick="clearReviewedWords()" style="border-color:#ff5252; color:#ff5252; width:100%; margin-top:12px; font-size:0.7rem;">🗑️ Delete All Reviewed</button>
+                <button class="btn btn-sm btn-ghost" onclick="clearReviewedWords()" style="border-color:var(--err-red); color:var(--err-red); width:100%; margin-top:12px; font-size:0.7rem;">🗑️ Delete All Reviewed</button>
             </div>
         </div>
     </div>
@@ -2121,8 +2147,8 @@
                 <button class="btn btn-sm btn-ghost" onclick="execFormat('italic')" style="padding:3px 6px;font-size:0.65rem;font-style:italic;" title="Italic">I</button>
                 <button class="btn btn-sm btn-ghost" onclick="execFormat('underline')" style="padding:3px 6px;font-size:0.65rem;text-decoration:underline;" title="Underline">U</button>
                 <button class="btn btn-sm btn-ghost" onclick="execFormat('hiliteColor','#ffe066')" style="padding:3px 6px;font-size:0.6rem;background:#ffe066;color:#1a1a1a;font-weight:700;border-color:#e6c54b;" title="Yellow highlight">🖍️</button>
-                <button class="btn btn-sm btn-ghost" onclick="execFormat('foreColor','#ff5252')" style="padding:3px 6px;font-size:0.6rem;color:#ff5252;font-weight:900;border-color:#ff5252;" title="Red text">🔴</button>
-                <button class="btn btn-sm btn-ghost" onclick="execFormat('foreColor','#4ade80')" style="padding:3px 6px;font-size:0.6rem;color:#4ade80;font-weight:900;border-color:#4ade80;" title="Green text">🟢</button>
+                <button class="btn btn-sm btn-ghost" onclick="execFormat('foreColor','#ff5252')" style="padding:3px 6px;font-size:0.6rem;color:var(--err-red);font-weight:900;border-color:var(--err-red);" title="Red text">🔴</button>
+                <button class="btn btn-sm btn-ghost" onclick="execFormat('foreColor','#4ade80')" style="padding:3px 6px;font-size:0.6rem;color:var(--ok);font-weight:900;border-color:var(--ok);" title="Green text">🟢</button>
                 <button class="btn btn-sm btn-ghost" onclick="execFormat('removeFormat')" style="padding:3px 6px;font-size:0.55rem;opacity:0.7;" title="Clear formatting">✕</button>
                 <button class="btn btn-sm" onclick="saveStackFullEdit()" style="background:var(--accent2);color:#111;padding:3px 8px;font-size:0.6rem;">💾 Save</button>
                 <button class="btn btn-sm btn-ghost" onclick="cancelStackFullEdit()" style="padding:3px 8px;font-size:0.6rem;">Cancel</button>
@@ -2165,7 +2191,7 @@
                 </div>
                 
                 <div id="srs-btn-group" class="row" style="justify-content:center; gap:8px; margin-top:12px; opacity:0; pointer-events:none; transition: opacity 0.3s; max-width:600px;">
-                    <button class="srs-btn" style="background:#ff5252; color:#fff;" id="btn-srs-1">Again <br><span id="srs-lbl-1" style="font-size:0.6rem; opacity:0.8;">10m</span></button>
+                    <button class="srs-btn" style="background:var(--err-red); color:#fff;" id="btn-srs-1">Again <br><span id="srs-lbl-1" style="font-size:0.6rem; opacity:0.8;">10m</span></button>
                     <button class="srs-btn" style="background:#ffab00; color:#111;" id="btn-srs-2">Hard <br><span id="srs-lbl-2" style="font-size:0.6rem; opacity:0.8;">1d</span></button>
                     <button class="srs-btn" style="background:#00e676; color:#111;" id="btn-srs-3">Good <br><span id="srs-lbl-3" style="font-size:0.6rem; opacity:0.8;">3d</span></button>
                     <button class="srs-btn" style="background:#448aff; color:#fff;" id="btn-srs-4">Easy <br><span id="srs-lbl-4" style="font-size:0.6rem; opacity:0.8;">7d</span></button>
@@ -2347,8 +2373,8 @@
             <button class="btn btn-sm btn-ghost" onclick="execFormat('italic')" style="padding:3px 10px;font-size:0.7rem;font-style:italic;min-height:28px;" title="Italic">I</button>
             <button class="btn btn-sm btn-ghost" onclick="execFormat('underline')" style="padding:3px 10px;font-size:0.7rem;text-decoration:underline;min-height:28px;" title="Underline">U</button>
             <button class="btn btn-sm btn-ghost" onclick="execFormat('hiliteColor','#ffe066')" style="padding:3px 8px;font-size:0.65rem;background:#ffe066;color:#1a1a1a;font-weight:700;min-height:28px;border-color:#e6c54b;" title="Yellow highlight">🖍️ Hi</button>
-            <button class="btn btn-sm btn-ghost" onclick="execFormat('foreColor','#ff5252')" style="padding:3px 8px;font-size:0.65rem;color:#ff5252;font-weight:900;min-height:28px;border-color:#ff5252;" title="Red text">🔴 Red</button>
-            <button class="btn btn-sm btn-ghost" onclick="execFormat('foreColor','#4ade80')" style="padding:3px 8px;font-size:0.65rem;color:#4ade80;font-weight:900;min-height:28px;border-color:#4ade80;" title="Green text">🟢 Grn</button>
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('foreColor','#ff5252')" style="padding:3px 8px;font-size:0.65rem;color:var(--err-red);font-weight:900;min-height:28px;border-color:var(--err-red);" title="Red text">🔴 Red</button>
+            <button class="btn btn-sm btn-ghost" onclick="execFormat('foreColor','#4ade80')" style="padding:3px 8px;font-size:0.65rem;color:var(--ok);font-weight:900;min-height:28px;border-color:var(--ok);" title="Green text">🟢 Grn</button>
             <button class="btn btn-sm btn-ghost" onclick="execFormat('removeFormat')" style="padding:3px 8px;font-size:0.6rem;min-height:28px;opacity:0.7;" title="Clear formatting">✕ Clear</button>
         </div>
         
@@ -2488,16 +2514,16 @@
     <div class="gallery-risk-filter" id="postop-topic-filter" style="justify-content:center; margin-bottom:12px; flex-wrap:wrap;"></div>
     <!-- V105: Select / cleanup duplication bar -->
     <div class="row" style="justify-content:center; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
-        <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#a78bfa; color:#a78bfa;" onclick="togglePostopSelectMode()">✔ Select</button>
+        <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:var(--accent3); color:var(--accent3);" onclick="togglePostopSelectMode()">✔ Select</button>
         <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#ffab00; color:#ffab00;" onclick="postopCleanupDuplication('all')" title="Strip duplicated Core Fact text and RISK FLAG remnants from every card on this page">🧹 Clean All Duplication</button>
-        <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#ff5252; color:#ff5252;" onclick="removeOrphanedPostopTiles()" title="Remove tiles whose underlying card no longer exists">👻 Remove Orphans</button>
+        <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:var(--err-red); color:var(--err-red);" onclick="removeOrphanedPostopTiles()" title="Remove tiles whose underlying card no longer exists">👻 Remove Orphans</button>
         <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#00f2fe; color:#00f2fe;" onclick="generateMissingPostOp()" title="Generate AI exam notes for any cards still missing them">🤖 Generate Missing AI Notes</button>
     </div>
     <div id="postop-select-bar" style="display:none; justify-content:center; gap:6px; margin-bottom:8px; flex-wrap:wrap;" class="row">
         <span id="postop-select-count" style="font-size:0.7rem; opacity:0.7; align-self:center;">0 selected</span>
         <button class="btn btn-sm" style="background:#00c853; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="postopBulkAddToStack()" title="Add selected cards to the Anki flashcard stack (due tomorrow)">📚 Add to Stack</button>
         <button class="btn btn-sm" style="background:#ffab00; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="postopCleanupDuplication('selected')">🧹 Clean Selected</button>
-        <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-color:#ff5252; color:#ff5252;" onclick="togglePostopSelectMode()">Cancel</button>
+        <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-color:var(--err-red); color:var(--err-red);" onclick="togglePostopSelectMode()">Cancel</button>
     </div>
     </div><!-- end #postop-filters-collapsible -->
     <div class="postop-fact-mosaic" id="postop-mosaic"></div>
@@ -2528,12 +2554,12 @@
         <div id="reclear-explanation" class="rc-explanation md-content"></div>
         <div class="dash-lbl" style="text-align:center; margin-top:14px; color:var(--accent2);">Did you clear it this time?</div>
         <div class="rc-grade-row">
-            <button class="btn btn-sm" style="background:#E63946; color:#fff;" onclick="reclearGrade(false)">✗ Still Wrong</button>
-            <button class="btn btn-sm" style="background:#4ade80; color:#111;" onclick="reclearGrade(true)">✓ Got It</button>
+            <button class="btn btn-sm" style="background:var(--err); color:#fff;" onclick="reclearGrade(false)">✗ Still Wrong</button>
+            <button class="btn btn-sm" style="background:var(--ok); color:#111;" onclick="reclearGrade(true)">✓ Got It</button>
         </div>
     </div>
     <div class="row" style="justify-content:center; gap:8px; margin-top:18px;">
-        <button class="btn btn-sm btn-ghost" style="border-color:#ff5252; color:#ff5252;" onclick="endReclearSession()">End Re-Clear</button>
+        <button class="btn btn-sm btn-ghost" style="border-color:var(--err-red); color:var(--err-red);" onclick="endReclearSession()">End Re-Clear</button>
     </div>
   </div>
 
@@ -5040,16 +5066,16 @@ function showV111SetupSql() {
     box.style.cssText = 'background:#1c0028;border:2px solid #4ade80;border-radius:14px;padding:20px;max-width:720px;width:100%;max-height:85vh;display:flex;flex-direction:column;gap:10px;';
     box.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#4ade80;letter-spacing:1px;">V111 SETUP SQL</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--ok);letter-spacing:1px;">V111 SETUP SQL</div>
             <button class="btn btn-sm btn-ghost" id="v111-sql-close" style="font-size:0.7rem;padding:4px 10px;">✕ Close</button>
         </div>
         <div style="font-size:0.7rem;opacity:0.85;line-height:1.5;">
             Run this script <b>once</b> in your Supabase SQL Editor (sidebar → SQL Editor → New query → paste → Run).
             It creates the three new tables and the security policies. Safe to re-run.
         </div>
-        <textarea id="v111-sql-text" readonly style="flex:1;min-height:340px;background:#0a0014;color:#a78bfa;border:1px solid rgba(74,222,128,0.3);border-radius:8px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:0.65rem;line-height:1.5;resize:vertical;"></textarea>
+        <textarea id="v111-sql-text" readonly style="flex:1;min-height:340px;background:#0a0014;color:var(--accent3);border:1px solid rgba(74,222,128,0.3);border-radius:8px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:0.65rem;line-height:1.5;resize:vertical;"></textarea>
         <div class="row" style="justify-content:center;gap:8px;">
-            <button class="btn btn-sm" id="v111-sql-copy" style="background:#4ade80;color:#111;font-weight:700;font-size:0.7rem;padding:6px 14px;">📋 Copy SQL to clipboard</button>
+            <button class="btn btn-sm" id="v111-sql-copy" style="background:var(--ok);color:#111;font-weight:700;font-size:0.7rem;padding:6px 14px;">📋 Copy SQL to clipboard</button>
         </div>
     `;
     overlay.appendChild(box);
@@ -10018,9 +10044,9 @@ function injectInCardExpandContent(item) {
                     <div id="incard-expand-exam-note" class="sticky-note" contenteditable="false" style="outline:none; padding:12px;">${examHtml}</div>
                     <!-- V107: AI add/refine row for the exam note — hidden until edit mode -->
                     <div id="incard-ai-exam-row" class="row" style="display:none; margin-top:6px; gap:4px;">
-                        <button class="btn btn-sm btn-ghost" id="btn-incard-gen-exam" onclick="event.stopPropagation(); incardGenExam()" style="border-color:#a78bfa; color:#a78bfa; font-size:0.55rem; padding:5px 9px; flex-shrink:0;">🤖 AI Exam</button>
+                        <button class="btn btn-sm btn-ghost" id="btn-incard-gen-exam" onclick="event.stopPropagation(); incardGenExam()" style="border-color:var(--accent3); color:var(--accent3); font-size:0.55rem; padding:5px 9px; flex-shrink:0;">🤖 AI Exam</button>
                         <input type="text" id="incard-refine-exam-input" placeholder="🪄 Refine exam note..." onclick="event.stopPropagation()" style="font-size:0.6rem; padding:5px 8px; flex:1; border-radius:6px; border:1px solid rgba(128,128,128,0.25); background:rgba(128,128,128,0.08); color:inherit; font-family:'JetBrains Mono',monospace; outline:none; min-width:0;">
-                        <button class="btn btn-sm" id="btn-incard-refine-exam" onclick="event.stopPropagation(); incardRefineExam()" style="background:#a78bfa; color:#111; font-size:0.55rem; padding:5px 10px; flex-shrink:0;">Send</button>
+                        <button class="btn btn-sm" id="btn-incard-refine-exam" onclick="event.stopPropagation(); incardRefineExam()" style="background:var(--accent3); color:#111; font-size:0.55rem; padding:5px 10px; flex-shrink:0;">Send</button>
                     </div>
                 </div>
                 <input type="text" id="incard-expand-img-url" disabled placeholder="📷 Image URL" style="display:none; width:100%; padding:8px 10px; font-size:0.7rem; background:rgba(128,128,128,0.08); border:1px solid rgba(128,128,128,0.15); border-radius:6px; color:inherit; font-family:'JetBrains Mono',monospace; outline:none;" value="${item.img && !item.img.startsWith('data:') ? item.img : ''}">
@@ -10117,8 +10143,8 @@ function buildIncardDistractorSection(item) {
     mount.innerHTML =
         '<div class="incard-distractor-wrap">'
         +   '<div class="incard-distractor-head" onclick="event.stopPropagation(); toggleIncardDistractor()">'
-        +     '<div class="dash-lbl" style="color:#E63946;margin:0;">❓ Why the others are wrong</div>'
-        +     '<span id="incard-distractor-chevron" style="color:#E63946;font-size:0.7rem;flex-shrink:0;">' + chevron + '</span>'
+        +     '<div class="dash-lbl" style="color:var(--err);margin:0;">❓ Why the others are wrong</div>'
+        +     '<span id="incard-distractor-chevron" style="color:var(--err);font-size:0.7rem;flex-shrink:0;">' + chevron + '</span>'
         +   '</div>'
         +   '<div id="incard-distractor-body" class="incard-distractor-body' + (_incardDistractorOpen ? ' open' : '') + '" style="margin-top:' + (_incardDistractorOpen ? '8px' : '0') + ';">'
         +     bodyInner
@@ -10989,10 +11015,10 @@ async function generateExamNoteForStack() {
             // V105: Cross-view sync — update front word risk dot and gallery
             syncCardEverywhere(item.word);
         } else {
-            examEl.innerHTML = '<span style="color:#ff5252;">AI generation failed.</span>';
+            examEl.innerHTML = '<span style="color:var(--err-red);">AI generation failed.</span>';
         }
     } catch(e) {
-        examEl.innerHTML = '<span style="color:#ff5252;">Error: ' + (e.message || 'Network error') + '</span>';
+        examEl.innerHTML = '<span style="color:var(--err-red);">Error: ' + (e.message || 'Network error') + '</span>';
     } finally {
         if(btn) { btn.disabled = false; btn.textContent = '🤖 AI Surgeon'; }
     }
@@ -11356,10 +11382,10 @@ FORMATTING RULES (STRICT):
             notesEl.innerHTML = renderMarkdown(text);
             notesEl.contentEditable = expandEditActive ? 'true' : 'false';
         } else {
-            notesEl.innerHTML = '<span style="color:#ff5252;">AI generation failed. Try again.</span>';
+            notesEl.innerHTML = '<span style="color:var(--err-red);">AI generation failed. Try again.</span>';
         }
     } catch(e) {
-        notesEl.innerHTML = '<span style="color:#ff5252;">Error: ' + (e.message || 'Network error') + '</span>';
+        notesEl.innerHTML = '<span style="color:var(--err-red);">Error: ' + (e.message || 'Network error') + '</span>';
     } finally {
         if(btn) { btn.disabled = false; btn.textContent = '🤖 AI Answer'; }
     }
@@ -11456,10 +11482,10 @@ async function generateExamNoteForExpand() {
             // V105: Cross-view sync
             syncCardEverywhere(item.word);
         } else {
-            examEl.innerHTML = '<span style="color:#ff5252;">AI generation failed. Try again.</span>';
+            examEl.innerHTML = '<span style="color:var(--err-red);">AI generation failed. Try again.</span>';
         }
     } catch(e) {
-        examEl.innerHTML = '<span style="color:#ff5252;">Error: ' + (e.message || 'Network error') + '</span>';
+        examEl.innerHTML = '<span style="color:var(--err-red);">Error: ' + (e.message || 'Network error') + '</span>';
     } finally {
         if(btn) { btn.disabled = false; btn.textContent = '🤖 Generate AI Note'; }
     }
@@ -11662,7 +11688,7 @@ function renderGallery() {
                 <button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px;" onclick="clearGalleryDates()">Clear Dates</button>
             </div>
         </div>
-        ${gallerySelectMode ? '<div class="gallery-batch-bar" id="gallery-batch-bar"><span style="font-size:0.7rem; opacity:0.7;">'+gallerySelected.size+' selected</span><button class="btn btn-sm" style="background:#00c853; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="galleryBulkAddToStack()">📚 Add to Stack</button><button class="btn btn-sm" style="background:#a78bfa; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="batchGenerateAI(\'selected\')">🤖 AI → Exam Notes</button><button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:#a78bfa; color:#a78bfa;" onclick="batchGenerateAI(\'empty\')">🤖 All Empty</button><button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-color:#ff5252; color:#ff5252;" onclick="toggleGallerySelectMode()">Cancel</button></div>' : ''}
+        ${gallerySelectMode ? '<div class="gallery-batch-bar" id="gallery-batch-bar"><span style="font-size:0.7rem; opacity:0.7;">'+gallerySelected.size+' selected</span><button class="btn btn-sm" style="background:#00c853; color:#111; font-size:0.6rem; padding:4px 10px;" onclick="galleryBulkAddToStack()">📚 Add to Stack</button><button class="btn btn-sm" style="background:var(--accent3); color:#111; font-size:0.6rem; padding:4px 10px;" onclick="batchGenerateAI(\'selected\')">🤖 AI → Exam Notes</button><button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px; border-color:var(--accent3); color:var(--accent3);" onclick="batchGenerateAI(\'empty\')">🤖 All Empty</button><button class="btn btn-sm btn-ghost" style="font-size:0.55rem; padding:3px 8px; border-color:var(--err-red); color:var(--err-red);" onclick="toggleGallerySelectMode()">Cancel</button></div>' : ''}
     `;
     // V104: Restore date input values after re-render
     if(dateFromEl && dateFromEl.value) { const el = document.getElementById('fc-date-from'); if(el) el.value = dateFromEl.value; }
@@ -12044,7 +12070,7 @@ RULES: Max 12 lines. Bold key terms. No "in summary." If a mnemonic exists, add 
         const data = await res.json();
         
         if (data.error) {
-            $('ai-response').innerHTML = `<div style="color:#ff5252; text-align:center; padding: 10px;"><b>Google API Error:</b><br>${data.error.message}</div>`;
+            $('ai-response').innerHTML = `<div style="color:var(--err-red); text-align:center; padding: 10px;"><b>Google API Error:</b><br>${data.error.message}</div>`;
         } else if(data.candidates && data.candidates[0].content.parts[0].text) {
             let text = data.candidates[0].content.parts[0].text;
             lastAIResponseText = text;
@@ -12056,10 +12082,10 @@ RULES: Max 12 lines. Bold key terms. No "in summary." If a mnemonic exists, add 
             $('btn-append-ai').style.display = 'block'; $('btn-exam-note-ai').style.display = 'block';
             input.disabled = false; input.focus();
         } else {
-            $('ai-response').innerHTML = '<div style="color:#ff5252; text-align:center;">Consultant unavailable. Unrecognized response format.</div>';
+            $('ai-response').innerHTML = '<div style="color:var(--err-red); text-align:center;">Consultant unavailable. Unrecognized response format.</div>';
         }
     } catch(e) {
-        $('ai-response').innerHTML = `<div style="color:#ff5252; text-align:center;">Connection failed: ${e.message}.<br><br><span style="font-size:0.7rem; opacity:0.7;">(If this says 'Failed to fetch', your browser or network firewall is actively blocking the connection).</span></div>`;
+        $('ai-response').innerHTML = `<div style="color:var(--err-red); text-align:center;">Connection failed: ${e.message}.<br><br><span style="font-size:0.7rem; opacity:0.7;">(If this says 'Failed to fetch', your browser or network firewall is actively blocking the connection).</span></div>`;
     }
 }
 
@@ -12091,7 +12117,7 @@ async function sendFollowUp() {
         if(loadEl) loadEl.remove();
         
         if (data.error) {
-            respBox.innerHTML += `<div style="color:#ff5252; text-align:center; padding: 10px;"><b>API Error:</b><br>${data.error.message}</div>`;
+            respBox.innerHTML += `<div style="color:var(--err-red); text-align:center; padding: 10px;"><b>API Error:</b><br>${data.error.message}</div>`;
         } else if(data.candidates && data.candidates[0].content.parts[0].text) {
             let text = data.candidates[0].content.parts[0].text;
             lastAIResponseText = text;
@@ -12105,7 +12131,7 @@ async function sendFollowUp() {
         input.disabled = false; input.focus();
     } catch(e) {
         const loadEl = $('ai-loading-follow'); if(loadEl) loadEl.remove();
-        respBox.innerHTML += `<div style="color:#ff5252; text-align:center;">Failed: ${e.message}</div>`;
+        respBox.innerHTML += `<div style="color:var(--err-red); text-align:center;">Failed: ${e.message}</div>`;
         input.disabled = false;
     }
 }
@@ -14090,7 +14116,7 @@ Example:
     }
     
     pushToCloud();
-    if($('gallery-panel-content')) $('gallery-panel-content').innerHTML = '<div style="text-align:center;color:#4ade80;padding:20px;">✅ Re-classified ' + done + ' cards</div>';
+    if($('gallery-panel-content')) $('gallery-panel-content').innerHTML = '<div style="text-align:center;color:var(--ok);padding:20px;">✅ Re-classified ' + done + ' cards</div>';
     renderGallery();
     syncAllCardsEverywhere();
 }
@@ -14177,7 +14203,7 @@ async function batchGenerateAI(mode) {
     if(lastItem) {
         openGalleryExamPanel(lastItem);
     } else {
-        $('gallery-panel-content').innerHTML = '<div style="text-align:center;color:#4ade80;padding:20px;">✅ Complete — ' + targets.length + ' notes generated</div>';
+        $('gallery-panel-content').innerHTML = '<div style="text-align:center;color:var(--ok);padding:20px;">✅ Complete — ' + targets.length + ' notes generated</div>';
     }
     $('btn-gallery-panel-edit').style.display = '';
     
@@ -14699,14 +14725,14 @@ async function autoPostOpReview(sessionWords) {
                 failedCount++;
                 if(tile) {
                     tile.setAttribute('data-failed','1');
-                    tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:#ff5252;padding:8px 0;">\u26A0\uFE0F AI generation failed</div>';
+                    tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:var(--err-red);padding:8px 0;">\u26A0\uFE0F AI generation failed</div>';
                 }
             }
         } catch(e) {
             failedCount++;
             if(tile) {
                 tile.setAttribute('data-failed','1');
-                tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:#ff5252;padding:8px 0;">\u26A0\uFE0F Error: ' + (e.message||'network') + '</div>';
+                tile.innerHTML = '<div class="tile-word">' + word + '</div><div style="font-size:0.7rem;color:var(--err-red);padding:8px 0;">\u26A0\uFE0F Error: ' + (e.message||'network') + '</div>';
             }
         }
         completed++;
@@ -14727,7 +14753,7 @@ async function autoPostOpReview(sessionWords) {
     
     pushToCloud();
     if(failedCount > 0) {
-        $('postop-status').innerHTML = '\u26A0\uFE0F ' + failedCount + ' failed \u2014 <button class="btn btn-sm" style="background:#ff5252;color:#fff;font-size:0.6rem;padding:4px 10px;" onclick="retryFailedPostOp()">\uD83D\uDD01 Retry Failed</button>';
+        $('postop-status').innerHTML = '\u26A0\uFE0F ' + failedCount + ' failed \u2014 <button class="btn btn-sm" style="background:var(--err-red);color:#fff;font-size:0.6rem;padding:4px 10px;" onclick="retryFailedPostOp()">\uD83D\uDD01 Retry Failed</button>';
     } else {
         $('postop-status').textContent = '\u2705 Complete \u2014 ' + sessionWords.length + ' exam notes generated';
     }
@@ -15305,7 +15331,7 @@ Reply with ONLY one word: RED, YELLOW, or GREEN.`;
         card.classList.add('risk-card-' + bankItem.riskLevel);
     });
     
-    $('gallery-panel-content').innerHTML = '<div style="text-align:center;padding:20px;color:#4ade80;">✅ ' + updated + ' cards classified.<br>Card order updates on next visit.</div>';
+    $('gallery-panel-content').innerHTML = '<div style="text-align:center;padding:20px;color:var(--ok);">✅ ' + updated + ' cards classified.<br>Card order updates on next visit.</div>';
     $('btn-gallery-panel-edit').style.display = '';
 }
 
