@@ -1399,10 +1399,10 @@
     .aw-preview .aw-preview-x { color:#4ade80; }
     /* === v117a: visible active states for the three home toggle bars === */
     /* Uses CSS :has() (Safari 15.4+, Chrome 105+, Firefox 121+ — fine for iPhone 14 iOS16+) */
-    #mode-toggle label:has(input:checked)   { background: var(--accent);  color: #fff; }
-    #qb-toggle   label:has(input:checked)   { background: var(--accent2); color: #111; }
-    #domain-toggle label:has(input:checked) { background: var(--accent2); color: #111; }
-    #domain-toggle label:has(input[value="csc"]:checked) { background: #E63946; color: #fff; }
+    #mode-toggle label:has(input:checked)   { background: var(--accent)  !important; color: #fff !important; }
+    #qb-toggle   label:has(input:checked)   { background: var(--accent2) !important; color: #111 !important; }
+    #domain-toggle label:has(input:checked) { background: var(--accent2) !important; color: #111 !important; }
+    #domain-toggle label:has(input[value="csc"]:checked) { background: var(--err) !important; color: #fff !important; }
     /* Non-selected label hover affordance — fades hint a little brighter */
     .qbank-toggle label { opacity: 0.65; }
     .qbank-toggle label:has(input:checked) { opacity: 1; }
