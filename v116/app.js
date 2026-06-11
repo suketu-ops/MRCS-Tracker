@@ -3224,6 +3224,7 @@ function _awWeeksTo(targetDate) {
 // v116.1 — additional attempt-wizard helpers (rest days, phase split, regen)
 const AW_K_REST = 'mrcs-attempt-rest-days';
 const AW_K_PHASES = 'mrcs-attempt-phases';
+const AW_K_BLITZ = 'mrcs-attempt-blitz-weeks';
 const AW_DEFAULT_REST = ['Sat','Sun'];
 const AW_DEFAULT_PHASES = { pt:50, em:30, csc:20 };
 
@@ -3255,19 +3256,26 @@ function _awReadRestChips() {
     const sel = [...wrap.querySelectorAll('.aw-restchip.on')].map(c => c.dataset.dy);
     return sel.length ? sel : [];
 }
-function _awReadPhases() {
-    const pt  = parseInt((document.getElementById('aw-phase-pt')||{}).value)  || 0;
-    const em  = parseInt((document.getElementById('aw-phase-em')||{}).value)  || 0;
-    const csc = parseInt((document.getElementById('aw-phase-csc')||{}).value) || 0;
-    return { pt: Math.max(0,Math.min(100,pt)), em: Math.max(0,Math.min(100,em)), csc: Math.max(0,Math.min(100,csc)) };
+function _awReadBlitzWeeks() {
+    const v = parseInt((document.getElementById('aw-blitz-weeks')||{}).value);
+    return isNaN(v) ? null : Math.max(1, v);
 }
-function _awUpdatePhaseTotal() {
-    const ph = _awReadPhases();
-    const tot = ph.pt + ph.em + ph.csc;
-    const el = document.getElementById('aw-phase-total');
-    if(!el) return;
-    el.textContent = tot + '%';
-    el.className = 'aw-phase-total ' + (Math.abs(tot - 100) <= 1 ? 'ok' : 'bad');
+function _awDefaultBlitz(totalWeeks) {
+    return Math.max(1, Math.min(Math.round(totalWeeks * 0.45), Math.max(1, totalWeeks - 1)));
+}
+// Sync the phase-2 weeks readout to (totalWeeks - blitzWeeks); clamp; refresh preview.
+function _awSyncBlitz() {
+    const d = _awParseInputDate((document.getElementById('aw-exam-date')||{}).value);
+    const tw = d ? _awWeeksTo(d) : null;
+    const input = document.getElementById('aw-blitz-weeks');
+    let bw = _awReadBlitzWeeks();
+    if(tw != null) {
+        if(bw == null) bw = _awDefaultBlitz(tw);
+        bw = Math.max(1, Math.min(bw, Math.max(1, tw - 1)));
+        if(input && parseInt(input.value) !== bw) input.value = bw;
+    }
+    const p2 = document.getElementById('aw-phase2-weeks');
+    if(p2) p2.textContent = (tw != null && bw != null) ? String(Math.max(0, tw - bw)) : '—';
     _awPreviewRegen();
 }
 // Live preview: how many rows the cycle will touch.
@@ -3290,8 +3298,12 @@ function _awPreviewRegen() {
         if(restSet.has(dy.toLowerCase()) || examDayRest) restDays++; else studyDays++;
         cur.setTime(cur.getTime() + ms);
     }
-    out.innerHTML = '<span class="aw-preview-x">✓</span> ' + totalDays + ' days plan · '
-                  + studyDays + ' study · ' + restDays + ' rest · existing rows preserved';
+    const _tw = _awWeeksTo(d);
+    let _bw = _awReadBlitzWeeks(); if(_bw == null) _bw = _awDefaultBlitz(_tw);
+    _bw = Math.max(1, Math.min(_bw, Math.max(1, _tw - 1)));
+    out.innerHTML = '<span class="aw-preview-x">✓</span> ' + totalDays + ' days · '
+                  + studyDays + ' study · ' + restDays + ' rest<br>'
+                  + '🎯 ' + _bw + ' wks CSC/wrong revision → 📚 ' + Math.max(0, _tw - _bw) + ' wks both QBanks full';
 }
 
 // Regenerate TRACKER_DATA from today → examDate based on rest days + phase split.
@@ -3301,7 +3313,7 @@ function _awPreviewRegen() {
 //     · else CREATE a new row with zero actuals
 // - Rows AFTER examDate are left as-is (the user can prune manually if needed).
 // Returns { added, modified, total }.
-function regenerateCycle(examDate, restDays, phases) {
+function regenerateCycle(examDate, restDays, blitzWeeks) {
     if(!examDate || !(examDate instanceof Date) || isNaN(examDate.getTime())) {
         return { added:0, modified:0, total:0 };
     }
@@ -3309,14 +3321,21 @@ function regenerateCycle(examDate, restDays, phases) {
     if(examDate < today) return { added:0, modified:0, total:0 };
     const restSet = new Set((restDays || []).map(s => s.toLowerCase()));
     const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const phPt  = (phases && typeof phases.pt  === 'number') ? phases.pt  : 50;
-    const phEm  = (phases && typeof phases.em  === 'number') ? phases.em  : 30;
-    const phCsc = (phases && typeof phases.csc === 'number') ? phases.csc : 20;
+    const ms = 86400000;
+    // SEQUENCED two-phase plan:
+    //   Phase 1 (first `blitzWeeks`) = CSC + wrong-answer revision -> REVISION lanes
+    //      (rw_p/rw_e). CSC itself is drilled in-app (Drill button) + ticked on the hit-list.
+    //   Phase 2 (the rest) = both QBanks in FULL -> 1ST-PASS lanes (pw/ew).
+    const totalDaysAll = Math.max(1, Math.ceil((examDate.getTime() - today.getTime()) / ms));
+    const totalWeeks = Math.max(1, Math.ceil(totalDaysAll / 7));
+    let bw = parseInt(blitzWeeks);
+    if(isNaN(bw)) bw = Math.max(1, Math.round(totalWeeks * 0.45));
+    bw = Math.max(1, Math.min(bw, Math.max(1, totalWeeks - 1)));
+    const blitzCutoff = today.getTime() + bw * 7 * ms; // phase-1 end (exclusive)
 
     const existingByD = new Map();
     TRACKER_DATA.forEach(r => existingByD.set(r.d, r));
 
-    const ms = 86400000;
     let added = 0, modified = 0;
     const cur = new Date(today.getTime());
     while(cur.getTime() <= examDate.getTime()) {
@@ -3328,12 +3347,20 @@ function regenerateCycle(examDate, restDays, phases) {
         const daysUntilExam = Math.ceil((examDate.getTime() - cur.getTime()) / ms);
         const finalWeekMult = daysUntilExam <= 7 ? 0.5 : 1.0;
         const examDayRest = daysUntilExam <= 1; // last 2 calendar days → REST
+        const inBlitz = cur.getTime() < blitzCutoff;
         let pw=0, ew=0, rw_p=0, rw_e=0;
         if(!isRest && !examDayRest) {
-            rw_p = (phPt  / 100) * 1.0 * finalWeekMult;
-            rw_e = (phEm  / 100) * 1.0 * finalWeekMult;
-            pw   = (phCsc / 100) * 1.0 * finalWeekMult;
-            ew   = 0.05 * finalWeekMult;
+            if(inBlitz) {
+                rw_p = 1.0 * finalWeekMult;   // PasTest wrong revision
+                rw_e = 0.7 * finalWeekMult;   // eMRCS wrong revision
+                pw   = 0.3 * finalWeekMult;   // light qbank trickle
+                ew   = 0.0;
+            } else {
+                pw   = 1.2 * finalWeekMult;   // PasTest full
+                ew   = 1.0 * finalWeekMult;   // eMRCS full
+                rw_p = 0.3 * finalWeekMult;   // light revision tail
+                rw_e = 0.3 * finalWeekMult;
+            }
         }
         const totW = pw + ew + rw_p + rw_e;
         const tag = totW >= 1.0 ? 'STUDY' : (totW > 0 ? 'WORK' : 'REST');
@@ -3368,8 +3395,7 @@ function updateAttemptCsc() {
     const csc = Math.ceil(549 / weeks);
     $('aw-csc-num').textContent = d ? String(csc) : '—';
     $('aw-csc-weeks').textContent = d ? String(weeks) : '—';
-    if(typeof _awUpdatePhaseTotal === 'function') _awUpdatePhaseTotal();
-    if(typeof _awPreviewRegen === 'function') _awPreviewRegen();
+    if(typeof _awSyncBlitz === 'function') _awSyncBlitz();
 }
 
 function openAttemptWizard() {
@@ -3380,11 +3406,9 @@ function openAttemptWizard() {
     // v116.1: hydrate rest-days chips and phase split inputs from LS (or defaults)
     try { _awRenderRestChips(); } catch(e) {}
     try {
-        const ph = _awGetPhases();
-        if($('aw-phase-pt'))  $('aw-phase-pt').value  = ph.pt;
-        if($('aw-phase-em'))  $('aw-phase-em').value  = ph.em;
-        if($('aw-phase-csc')) $('aw-phase-csc').value = ph.csc;
-        _awUpdatePhaseTotal();
+        const bw = parseInt(localStorage.getItem(AW_K_BLITZ) || '');
+        if($('aw-blitz-weeks') && !isNaN(bw)) $('aw-blitz-weeks').value = bw;
+        _awSyncBlitz();
     } catch(e) {}
     updateAttemptCsc();
     $('attempt-wizard').classList.add('active');
@@ -3422,14 +3446,11 @@ function confirmAttemptWizard() {
     // 4) v116.1: read rest-days + phase split, validate, persist to LS.
     const restDays = _awReadRestChips();
     if(restDays.length >= 7) { mrcsToast('At least one study day required'); return; }
-    const phases = _awReadPhases();
-    const phaseTotal = phases.pt + phases.em + phases.csc;
-    if(Math.abs(phaseTotal - 100) > 1) {
-        mrcsToast('Phase split must total 100% (now ' + phaseTotal + '%)');
-        return;
-    }
+    let blitzWeeks = _awReadBlitzWeeks();
+    if(blitzWeeks == null) blitzWeeks = _awDefaultBlitz(weeks);
+    blitzWeeks = Math.max(1, Math.min(blitzWeeks, Math.max(1, weeks - 1)));
     try { localStorage.setItem(AW_K_REST, restDays.join(',')); } catch(e) {}
-    try { localStorage.setItem(AW_K_PHASES, JSON.stringify(phases)); } catch(e) {}
+    try { localStorage.setItem(AW_K_BLITZ, String(blitzWeeks)); } catch(e) {}
 
     // 5) Embed into REV_GOALS._attempt so it rides the existing rev_goals jsonb to
     //    Supabase (no schema change). REV_GOALS.pt/.em are untouched.
@@ -3440,13 +3461,13 @@ function confirmAttemptWizard() {
         cycleStartDate: cycleStart,
         cscDaily: cscDaily,
         restDays: restDays,
-        phases: phases
+        blitzWeeks: blitzWeeks
     };
 
     // 6) Regenerate the calendar from today → exam date. PAST rows are kept
     //    untouched; today→exam rows are updated/created with the new weights.
     let regen = { added:0, modified:0, total:0 };
-    try { regen = regenerateCycle(newDate, restDays, phases); } catch(e) { console.warn('[v116.1] regen failed', e); }
+    try { regen = regenerateCycle(newDate, restDays, blitzWeeks); } catch(e) { console.warn('[v116.3] regen failed', e); }
 
     // 7) Recompute + persist + sync (all writes flow through persistData()).
     if(typeof autoAdjust === 'function') autoAdjust();
@@ -3481,7 +3502,7 @@ function restoreAttemptFromState() {
         if(a.cscDaily) localStorage.setItem(AW_K_CSC, String(a.cscDaily));
         // v116.1
         if(Array.isArray(a.restDays)) localStorage.setItem(AW_K_REST, a.restDays.join(','));
-        if(a.phases && typeof a.phases === 'object') localStorage.setItem(AW_K_PHASES, JSON.stringify(a.phases));
+        if(typeof a.blitzWeeks === 'number') localStorage.setItem(AW_K_BLITZ, String(a.blitzWeeks));
     }
     const isoExam = localStorage.getItem(AW_K_EXAM);
     if(isoExam) {

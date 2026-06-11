@@ -109,22 +109,26 @@
             <div id="aw-restdays"></div>
         </div>
         <div class="aw-field">
-            <label class="input-label">Phase split &nbsp;<span style="opacity:0.55; font-weight:400;">(must total 100%)</span></label>
-            <div class="aw-phases">
-                <div class="aw-phase-cell">
-                    <input type="number" id="aw-phase-pt" min="0" max="100" value="50" oninput="_awUpdatePhaseTotal();updateAttemptCsc()">
-                    <div class="aw-phase-lbl">📘 PT REVISION</div>
+            <label class="input-label">Plan shape &nbsp;<span style="opacity:0.55; font-weight:400;">(sequenced)</span></label>
+            <div class="aw-blitz">
+                <div class="aw-blitz-phase">
+                    <div class="aw-blitz-ico">🎯</div>
+                    <div class="aw-blitz-body">
+                        <div class="aw-blitz-name">Phase 1 · CSC + wrong revision</div>
+                        <div class="aw-blitz-sub">drill CSC in-app + redo wrong answers first</div>
+                    </div>
+                    <div class="aw-blitz-wk"><input type="number" id="aw-blitz-weeks" min="1" value="6" oninput="_awSyncBlitz()"><span class="aw-blitz-unit">wks</span></div>
                 </div>
-                <div class="aw-phase-cell">
-                    <input type="number" id="aw-phase-em" min="0" max="100" value="30" oninput="_awUpdatePhaseTotal();updateAttemptCsc()">
-                    <div class="aw-phase-lbl">📗 eM REVISION</div>
-                </div>
-                <div class="aw-phase-cell">
-                    <input type="number" id="aw-phase-csc" min="0" max="100" value="20" oninput="_awUpdatePhaseTotal();updateAttemptCsc()">
-                    <div class="aw-phase-lbl">🎯 CSC BLITZ</div>
+                <div class="aw-blitz-arrow">▼ THEN ▼</div>
+                <div class="aw-blitz-phase">
+                    <div class="aw-blitz-ico">📚</div>
+                    <div class="aw-blitz-body">
+                        <div class="aw-blitz-name">Phase 2 · Both QBanks full</div>
+                        <div class="aw-blitz-sub">PasTest + eMRCS, full volume to the exam</div>
+                    </div>
+                    <div class="aw-blitz-wk"><span id="aw-phase2-weeks" class="aw-blitz-num">—</span><span class="aw-blitz-unit">wks</span></div>
                 </div>
             </div>
-            <div class="aw-phase-total ok" id="aw-phase-total">100%</div>
         </div>
         <div class="aw-preview" id="aw-preview">Pick an exam date to preview the plan.</div>
 <div class="row" style="justify-content:center; gap:12px; margin-top:4px;">
