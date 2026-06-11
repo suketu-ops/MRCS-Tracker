@@ -3575,6 +3575,16 @@ function updateAttemptCsc() {
     if(typeof _awSyncBlitz === 'function') _awSyncBlitz();
 }
 
+// v117: Consolidated Settings modal
+function openSettingsModal() {
+    const m = document.getElementById('settings-modal');
+    if(m) m.classList.add('active');
+}
+function closeSettingsModal() {
+    const m = document.getElementById('settings-modal');
+    if(m) m.classList.remove('active');
+}
+
 function openAttemptWizard() {
     // Prefill exam date from current EXAM_DATE (already mutable post Step-1 hook).
     try { $('aw-exam-date').value = _awToInputDate(EXAM_DATE); } catch(e) { $('aw-exam-date').value = ''; }
