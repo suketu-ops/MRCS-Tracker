@@ -4829,7 +4829,45 @@ function startReclearSession() {
     };
     closeReclearWizard();
     show('v-reclear'); applyTheme();
-    reclearRenderCurrent();
+    reclearRenderCurrent();   // also starts the per-question timer
+}
+
+// v117a: drill timer state
+let _reclearTimerIv = null;
+let _reclearTimerSec = 0;
+const RECLEAR_TIMER_DEFAULT_S = 90;   // 1:30 default per question
+
+function _reclearStopTimer() {
+    if(_reclearTimerIv) { clearInterval(_reclearTimerIv); _reclearTimerIv = null; }
+}
+function _reclearRenderTimer() {
+    const el = document.getElementById('reclear-timer');
+    if(!el) return;
+    const s = Math.max(0, _reclearTimerSec);
+    const m = Math.floor(s / 60), r = s % 60;
+    el.textContent = m + ':' + (r < 10 ? '0' : '') + r;
+    el.classList.toggle('warn', s > 0 && s <= 20);
+    el.classList.toggle('over', s === 0);
+}
+function _reclearStartTimer() {
+    _reclearStopTimer();
+    _reclearTimerSec = RECLEAR_TIMER_DEFAULT_S;
+    _reclearRenderTimer();
+    _reclearTimerIv = setInterval(() => {
+        _reclearTimerSec--;
+        _reclearRenderTimer();
+        if(_reclearTimerSec <= -1) _reclearStopTimer();   // count up after 0 -> negative, but stop drawing
+    }, 1000);
+}
+// Tap an option to select it (before committing with a confidence button).
+function reclearSelectOption(letter) {
+    const s = reclearSession; if(!s) return;
+    const item = s.items[s.idx];
+    if(item._revealed) return;   // locked after reveal
+    item._picked = String(letter || '').toUpperCase();
+    document.querySelectorAll('#reclear-options .rc-opt').forEach(el => {
+        el.classList.toggle('selected', el.dataset.letter === item._picked);
+    });
 }
 
 function reclearRenderCurrent() {
@@ -4840,18 +4878,41 @@ function reclearRenderCurrent() {
     $('reclear-bar').style.width = Math.round((s.idx / total) * 100) + '%';
     $('reclear-topic-tag').textContent = item.topic || '';
     $('reclear-qtext').textContent = item.question_text || '(no question text)';
-    // Reset to confidence-gate stage
+    // Render options A-E upfront, tappable, NOT revealed yet.
+    item._revealed = false;
+    item._picked = item._picked || '';
+    const optWrap = $('reclear-options');
+    optWrap.innerHTML = '';
+    const opts = item.options || {};
+    Object.keys(opts).sort().forEach(k => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'rc-opt' + (item._picked === k ? ' selected' : '');
+        btn.dataset.letter = k;
+        btn.innerHTML = '<span class="rc-opt-letter">' + k + '</span><span class="rc-opt-text">' + (opts[k] || '') + '</span>';
+        btn.onclick = () => reclearSelectOption(k);
+        optWrap.appendChild(btn);
+    });
+    // Reset confidence + reveal blocks
     $('reclear-confgate-wrap').style.display = 'block';
     $('reclear-reveal').style.display = 'none';
-    $('reclear-options').innerHTML = '';
     $('reclear-explanation').innerHTML = '';
+    // Restart the per-question timer
+    _reclearStartTimer();
 }
 
-// Step-4 confidence gate: record then reveal
+// v117a: confidence gate now requires an option pick first
 function reclearAnswerConfidence(level) {
     const s = reclearSession; if(!s) return;
-    s.items[s.idx]._confidence = level;
+    const item = s.items[s.idx];
+    if(!item._picked) {
+        _reclearToast('Pick an option first');
+        return;
+    }
+    item._confidence = level;
+    item._revealed = true;
     if(typeof haptic === 'function') haptic(10);
+    _reclearStopTimer();
     reclearReveal();
 }
 
@@ -4859,21 +4920,24 @@ function reclearReveal() {
     const s = reclearSession; if(!s) return;
     const item = s.items[s.idx];
     $('reclear-confgate-wrap').style.display = 'none';
-    const optWrap = $('reclear-options');
-    optWrap.innerHTML = '';
     const correctKey = String(item.correct_answer || '').trim().toUpperCase();
-    const yourKey = String(item.your_answer || '').trim().toUpperCase();
-    Object.keys(item.options || {}).forEach(k => {
-        const row = document.createElement('div');
-        let cls = 'reclear-opt-row';
-        if(k === correctKey) cls += ' correct';
-        else if(k === yourKey) cls += ' yours-wrong';
-        row.className = cls;
-        let prefix = k + '. ';
-        if(k === correctKey) prefix = '✓ ' + prefix;
-        else if(k === yourKey) prefix = '✗ ' + prefix + '(your pick) ';
-        row.textContent = prefix + item.options[k];
-        optWrap.appendChild(row);
+    const pickedKey  = String(item._picked || '').trim().toUpperCase();
+    // Layer reveal styles on the ALREADY-RENDERED options (no innerHTML wipe).
+    document.querySelectorAll('#reclear-options .rc-opt').forEach(btn => {
+        const k = btn.dataset.letter;
+        btn.classList.remove('selected');
+        btn.classList.toggle('correct', k === correctKey);
+        btn.classList.toggle('wrong-pick', k === pickedKey && k !== correctKey);
+        // append a tick/cross mark
+        if(!btn.querySelector('.rc-opt-mark')) {
+            const mark = document.createElement('span');
+            mark.className = 'rc-opt-mark';
+            if(k === correctKey) mark.textContent = '✓';
+            else if(k === pickedKey) mark.textContent = '✗';
+            if(mark.textContent) btn.appendChild(mark);
+        }
+        btn.disabled = true;
+        btn.style.cursor = 'default';
     });
     const expl = item.explanation || '';
     $('reclear-explanation').innerHTML = (typeof renderMarkdown === 'function' && expl) ? renderMarkdown(expl) : (expl || '<em style="opacity:0.5;">No explanation in CSV.</em>');
@@ -4892,6 +4956,7 @@ function reclearGrade(gotIt) {
 }
 
 function endReclearSession() {
+    _reclearStopTimer();
     const s = reclearSession;
     if(s && s.idx === 0) { reclearSession = null; show('v-setup'); applyTheme(); return; }
     _reclearFinish();

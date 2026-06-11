@@ -1007,26 +1007,27 @@
 
   <!-- STEP 8: Re-Clear session view -->
   <div id="v-reclear" class="view" style="max-width:600px;">
-    <div class="clock" style="font-size:2.5rem; margin-bottom:2px;">Re-Clear 🔁</div>
-    <div class="clock-label" id="reclear-progress-lbl" style="margin-bottom:10px; color:var(--accent2); font-weight:700;">0 / 0</div>
+    <!-- v117a: single-screen drill — header (progress + timer), Q, options, confidence, reveal -->
+    <div class="rc-header">
+        <div class="rc-progress" id="reclear-progress-lbl">0 / 0</div>
+        <div class="rc-timer" id="reclear-timer">1:30</div>
+    </div>
     <div class="bar-track" style="margin-bottom:14px;"><div class="bar-fill" id="reclear-bar" style="width:0%"></div></div>
-    <div id="reclear-topic-tag" style="font-size:0.62rem; letter-spacing:1px; text-transform:uppercase; opacity:0.6; margin-bottom:6px; font-family:'JetBrains Mono',monospace;"></div>
-    <div class="reclear-qtext" id="reclear-qtext">Question text…</div>
-    <!-- Confidence gate (Step 4 pattern) -->
+    <div class="rc-topic" id="reclear-topic-tag"></div>
+    <div class="rc-qtext" id="reclear-qtext">Question text…</div>
+    <div class="rc-options" id="reclear-options"></div>
     <div id="reclear-confgate-wrap">
-        <div class="dash-lbl" style="text-align:center; margin-top:10px; color:var(--accent2);">Before you peek — how sure are you?</div>
-        <div class="reclear-confgate">
-            <button class="reclear-conf-btn hesitant" onclick="reclearAnswerConfidence('hesitant')">😬 Hesitant</button>
-            <button class="reclear-conf-btn confident" onclick="reclearAnswerConfidence('confident')">💪 Confident</button>
+        <div class="dash-lbl" style="text-align:center; margin:6px 0 4px 0; color:var(--accent2); font-size:0.62rem;">Pick an option, then commit:</div>
+        <div class="rc-confgate">
+            <button class="rc-conf-btn hesitant" id="reclear-conf-hesitant" onclick="reclearAnswerConfidence('hesitant')">😬 Hesitant</button>
+            <button class="rc-conf-btn confident" id="reclear-conf-confident" onclick="reclearAnswerConfidence('confident')">💪 Confident</button>
         </div>
     </div>
-    <!-- Reveal block (hidden until confidence chosen) -->
     <div id="reclear-reveal" style="display:none;">
-        <div id="reclear-options" style="margin-top:8px;"></div>
-        <div id="reclear-explanation" class="md-content" style="text-align:left; font-size:0.85rem; line-height:1.55; margin-top:12px; padding:12px 14px; border-radius:12px; background:rgba(128,128,128,0.05);"></div>
+        <div id="reclear-explanation" class="rc-explanation md-content"></div>
         <div class="dash-lbl" style="text-align:center; margin-top:14px; color:var(--accent2);">Did you clear it this time?</div>
-        <div class="row" style="justify-content:center; gap:12px; margin-top:8px;">
-            <button class="btn btn-sm" style="background:#ff5252; color:#fff;" onclick="reclearGrade(false)">✗ Still Wrong</button>
+        <div class="rc-grade-row">
+            <button class="btn btn-sm" style="background:#E63946; color:#fff;" onclick="reclearGrade(false)">✗ Still Wrong</button>
             <button class="btn btn-sm" style="background:#4ade80; color:#111;" onclick="reclearGrade(true)">✓ Got It</button>
         </div>
     </div>

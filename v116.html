@@ -1388,6 +1388,74 @@
         font-family:'JetBrains Mono',monospace; line-height:1.5;
     }
     .aw-preview .aw-preview-x { color:#4ade80; }
+    /* === v117a: visible active states for the three home toggle bars === */
+    /* Uses CSS :has() (Safari 15.4+, Chrome 105+, Firefox 121+ — fine for iPhone 14 iOS16+) */
+    #mode-toggle label:has(input:checked)   { background: var(--accent);  color: #fff; }
+    #qb-toggle   label:has(input:checked)   { background: var(--accent2); color: #111; }
+    #domain-toggle label:has(input:checked) { background: var(--accent2); color: #111; }
+    #domain-toggle label:has(input[value="csc"]:checked) { background: #E63946; color: #fff; }
+    /* Non-selected label hover affordance — fades hint a little brighter */
+    .qbank-toggle label { opacity: 0.65; }
+    .qbank-toggle label:has(input:checked) { opacity: 1; }
+
+    /* === v117a: drill screen rebuild — Q + options + timer on one screen === */
+    .rc-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+    .rc-progress { font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--accent2); font-weight:700; letter-spacing:1px; }
+    .rc-timer {
+        font-family:'Bebas Neue',sans-serif; font-size:1.6rem; line-height:1;
+        color:var(--accent2); padding:6px 14px; border-radius:14px;
+        border:1.5px solid var(--accent2); min-width:88px; text-align:center;
+        transition:all 0.25s;
+    }
+    .rc-timer.warn  { color:#FFD166; border-color:#FFD166; }
+    .rc-timer.over  { color:#E63946; border-color:#E63946; animation:rcTimerPulse 1s ease-in-out infinite; }
+    @keyframes rcTimerPulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+    .rc-topic { font-size:0.6rem; letter-spacing:1px; text-transform:uppercase; opacity:0.6; margin-bottom:6px; font-family:'JetBrains Mono',monospace; }
+    .rc-qtext { font-size:1.0rem; line-height:1.55; color:var(--fg); margin:8px 0 14px 0; text-align:left; }
+    .rc-options { display:flex; flex-direction:column; gap:7px; margin-bottom:14px; }
+    .rc-opt {
+        display:flex; align-items:flex-start; gap:10px; text-align:left;
+        padding:11px 13px; border-radius:12px;
+        border:1.5px solid rgba(255,255,255,0.18);
+        background:rgba(255,255,255,0.03);
+        color:var(--fg); font-size:0.85rem; line-height:1.5;
+        cursor:pointer; transition:all 0.15s; width:100%;
+    }
+    .rc-opt:hover { border-color:rgba(255,255,255,0.35); background:rgba(255,255,255,0.06); }
+    .rc-opt .rc-opt-letter {
+        font-family:'Bebas Neue',sans-serif; font-size:1.2rem; line-height:1;
+        flex-shrink:0; width:24px; text-align:center;
+        color:var(--accent2);
+    }
+    .rc-opt.selected { border-color:var(--accent2); background:rgba(0,242,254,0.10); }
+    .rc-opt.selected .rc-opt-letter { color:var(--accent2); }
+    /* Reveal-state styling — layered on top of selection state */
+    .rc-opt.correct { border-color:#4ade80; background:rgba(74,222,128,0.12); }
+    .rc-opt.correct .rc-opt-letter { color:#4ade80; }
+    .rc-opt.wrong-pick { border-color:#E63946; background:rgba(230,57,70,0.12); }
+    .rc-opt.wrong-pick .rc-opt-letter { color:#E63946; }
+    .rc-opt-mark { margin-left:auto; font-weight:700; flex-shrink:0; }
+
+    .rc-confgate { display:flex; gap:10px; justify-content:center; margin:8px 0 12px 0; }
+    .rc-conf-btn {
+        flex:1; padding:11px 14px; border-radius:14px;
+        border:1.5px solid rgba(255,255,255,0.2);
+        background:rgba(255,255,255,0.04); color:var(--fg);
+        font-size:0.78rem; font-weight:700; cursor:pointer;
+        transition:all 0.15s; font-family:inherit;
+    }
+    .rc-conf-btn:hover { transform:translateY(-1px); }
+    .rc-conf-btn.hesitant { border-color:#F4A261; color:#F4A261; }
+    .rc-conf-btn.confident { border-color:#4ade80; color:#4ade80; }
+    .rc-conf-btn:disabled { opacity:0.35; cursor:not-allowed; transform:none; }
+
+    .rc-explanation {
+        text-align:left; font-size:0.82rem; line-height:1.55;
+        margin-top:10px; padding:12px 14px; border-radius:12px;
+        background:rgba(128,128,128,0.06);
+    }
+    .rc-grade-row { display:flex; gap:10px; justify-content:center; margin-top:12px; }
+    .rc-foot-row { display:flex; justify-content:center; gap:8px; margin-top:14px; }
 </style>
 </head>
 <body>
@@ -2381,26 +2449,27 @@
 
   <!-- STEP 8: Re-Clear session view -->
   <div id="v-reclear" class="view" style="max-width:600px;">
-    <div class="clock" style="font-size:2.5rem; margin-bottom:2px;">Re-Clear 🔁</div>
-    <div class="clock-label" id="reclear-progress-lbl" style="margin-bottom:10px; color:var(--accent2); font-weight:700;">0 / 0</div>
+    <!-- v117a: single-screen drill — header (progress + timer), Q, options, confidence, reveal -->
+    <div class="rc-header">
+        <div class="rc-progress" id="reclear-progress-lbl">0 / 0</div>
+        <div class="rc-timer" id="reclear-timer">1:30</div>
+    </div>
     <div class="bar-track" style="margin-bottom:14px;"><div class="bar-fill" id="reclear-bar" style="width:0%"></div></div>
-    <div id="reclear-topic-tag" style="font-size:0.62rem; letter-spacing:1px; text-transform:uppercase; opacity:0.6; margin-bottom:6px; font-family:'JetBrains Mono',monospace;"></div>
-    <div class="reclear-qtext" id="reclear-qtext">Question text…</div>
-    <!-- Confidence gate (Step 4 pattern) -->
+    <div class="rc-topic" id="reclear-topic-tag"></div>
+    <div class="rc-qtext" id="reclear-qtext">Question text…</div>
+    <div class="rc-options" id="reclear-options"></div>
     <div id="reclear-confgate-wrap">
-        <div class="dash-lbl" style="text-align:center; margin-top:10px; color:var(--accent2);">Before you peek — how sure are you?</div>
-        <div class="reclear-confgate">
-            <button class="reclear-conf-btn hesitant" onclick="reclearAnswerConfidence('hesitant')">😬 Hesitant</button>
-            <button class="reclear-conf-btn confident" onclick="reclearAnswerConfidence('confident')">💪 Confident</button>
+        <div class="dash-lbl" style="text-align:center; margin:6px 0 4px 0; color:var(--accent2); font-size:0.62rem;">Pick an option, then commit:</div>
+        <div class="rc-confgate">
+            <button class="rc-conf-btn hesitant" id="reclear-conf-hesitant" onclick="reclearAnswerConfidence('hesitant')">😬 Hesitant</button>
+            <button class="rc-conf-btn confident" id="reclear-conf-confident" onclick="reclearAnswerConfidence('confident')">💪 Confident</button>
         </div>
     </div>
-    <!-- Reveal block (hidden until confidence chosen) -->
     <div id="reclear-reveal" style="display:none;">
-        <div id="reclear-options" style="margin-top:8px;"></div>
-        <div id="reclear-explanation" class="md-content" style="text-align:left; font-size:0.85rem; line-height:1.55; margin-top:12px; padding:12px 14px; border-radius:12px; background:rgba(128,128,128,0.05);"></div>
+        <div id="reclear-explanation" class="rc-explanation md-content"></div>
         <div class="dash-lbl" style="text-align:center; margin-top:14px; color:var(--accent2);">Did you clear it this time?</div>
-        <div class="row" style="justify-content:center; gap:12px; margin-top:8px;">
-            <button class="btn btn-sm" style="background:#ff5252; color:#fff;" onclick="reclearGrade(false)">✗ Still Wrong</button>
+        <div class="rc-grade-row">
+            <button class="btn btn-sm" style="background:#E63946; color:#fff;" onclick="reclearGrade(false)">✗ Still Wrong</button>
             <button class="btn btn-sm" style="background:#4ade80; color:#111;" onclick="reclearGrade(true)">✓ Got It</button>
         </div>
     </div>
@@ -7268,7 +7337,45 @@ function startReclearSession() {
     };
     closeReclearWizard();
     show('v-reclear'); applyTheme();
-    reclearRenderCurrent();
+    reclearRenderCurrent();   // also starts the per-question timer
+}
+
+// v117a: drill timer state
+let _reclearTimerIv = null;
+let _reclearTimerSec = 0;
+const RECLEAR_TIMER_DEFAULT_S = 90;   // 1:30 default per question
+
+function _reclearStopTimer() {
+    if(_reclearTimerIv) { clearInterval(_reclearTimerIv); _reclearTimerIv = null; }
+}
+function _reclearRenderTimer() {
+    const el = document.getElementById('reclear-timer');
+    if(!el) return;
+    const s = Math.max(0, _reclearTimerSec);
+    const m = Math.floor(s / 60), r = s % 60;
+    el.textContent = m + ':' + (r < 10 ? '0' : '') + r;
+    el.classList.toggle('warn', s > 0 && s <= 20);
+    el.classList.toggle('over', s === 0);
+}
+function _reclearStartTimer() {
+    _reclearStopTimer();
+    _reclearTimerSec = RECLEAR_TIMER_DEFAULT_S;
+    _reclearRenderTimer();
+    _reclearTimerIv = setInterval(() => {
+        _reclearTimerSec--;
+        _reclearRenderTimer();
+        if(_reclearTimerSec <= -1) _reclearStopTimer();   // count up after 0 -> negative, but stop drawing
+    }, 1000);
+}
+// Tap an option to select it (before committing with a confidence button).
+function reclearSelectOption(letter) {
+    const s = reclearSession; if(!s) return;
+    const item = s.items[s.idx];
+    if(item._revealed) return;   // locked after reveal
+    item._picked = String(letter || '').toUpperCase();
+    document.querySelectorAll('#reclear-options .rc-opt').forEach(el => {
+        el.classList.toggle('selected', el.dataset.letter === item._picked);
+    });
 }
 
 function reclearRenderCurrent() {
@@ -7279,18 +7386,41 @@ function reclearRenderCurrent() {
     $('reclear-bar').style.width = Math.round((s.idx / total) * 100) + '%';
     $('reclear-topic-tag').textContent = item.topic || '';
     $('reclear-qtext').textContent = item.question_text || '(no question text)';
-    // Reset to confidence-gate stage
+    // Render options A-E upfront, tappable, NOT revealed yet.
+    item._revealed = false;
+    item._picked = item._picked || '';
+    const optWrap = $('reclear-options');
+    optWrap.innerHTML = '';
+    const opts = item.options || {};
+    Object.keys(opts).sort().forEach(k => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'rc-opt' + (item._picked === k ? ' selected' : '');
+        btn.dataset.letter = k;
+        btn.innerHTML = '<span class="rc-opt-letter">' + k + '</span><span class="rc-opt-text">' + (opts[k] || '') + '</span>';
+        btn.onclick = () => reclearSelectOption(k);
+        optWrap.appendChild(btn);
+    });
+    // Reset confidence + reveal blocks
     $('reclear-confgate-wrap').style.display = 'block';
     $('reclear-reveal').style.display = 'none';
-    $('reclear-options').innerHTML = '';
     $('reclear-explanation').innerHTML = '';
+    // Restart the per-question timer
+    _reclearStartTimer();
 }
 
-// Step-4 confidence gate: record then reveal
+// v117a: confidence gate now requires an option pick first
 function reclearAnswerConfidence(level) {
     const s = reclearSession; if(!s) return;
-    s.items[s.idx]._confidence = level;
+    const item = s.items[s.idx];
+    if(!item._picked) {
+        _reclearToast('Pick an option first');
+        return;
+    }
+    item._confidence = level;
+    item._revealed = true;
     if(typeof haptic === 'function') haptic(10);
+    _reclearStopTimer();
     reclearReveal();
 }
 
@@ -7298,21 +7428,24 @@ function reclearReveal() {
     const s = reclearSession; if(!s) return;
     const item = s.items[s.idx];
     $('reclear-confgate-wrap').style.display = 'none';
-    const optWrap = $('reclear-options');
-    optWrap.innerHTML = '';
     const correctKey = String(item.correct_answer || '').trim().toUpperCase();
-    const yourKey = String(item.your_answer || '').trim().toUpperCase();
-    Object.keys(item.options || {}).forEach(k => {
-        const row = document.createElement('div');
-        let cls = 'reclear-opt-row';
-        if(k === correctKey) cls += ' correct';
-        else if(k === yourKey) cls += ' yours-wrong';
-        row.className = cls;
-        let prefix = k + '. ';
-        if(k === correctKey) prefix = '✓ ' + prefix;
-        else if(k === yourKey) prefix = '✗ ' + prefix + '(your pick) ';
-        row.textContent = prefix + item.options[k];
-        optWrap.appendChild(row);
+    const pickedKey  = String(item._picked || '').trim().toUpperCase();
+    // Layer reveal styles on the ALREADY-RENDERED options (no innerHTML wipe).
+    document.querySelectorAll('#reclear-options .rc-opt').forEach(btn => {
+        const k = btn.dataset.letter;
+        btn.classList.remove('selected');
+        btn.classList.toggle('correct', k === correctKey);
+        btn.classList.toggle('wrong-pick', k === pickedKey && k !== correctKey);
+        // append a tick/cross mark
+        if(!btn.querySelector('.rc-opt-mark')) {
+            const mark = document.createElement('span');
+            mark.className = 'rc-opt-mark';
+            if(k === correctKey) mark.textContent = '✓';
+            else if(k === pickedKey) mark.textContent = '✗';
+            if(mark.textContent) btn.appendChild(mark);
+        }
+        btn.disabled = true;
+        btn.style.cursor = 'default';
     });
     const expl = item.explanation || '';
     $('reclear-explanation').innerHTML = (typeof renderMarkdown === 'function' && expl) ? renderMarkdown(expl) : (expl || '<em style="opacity:0.5;">No explanation in CSV.</em>');
@@ -7331,6 +7464,7 @@ function reclearGrade(gotIt) {
 }
 
 function endReclearSession() {
+    _reclearStopTimer();
     const s = reclearSession;
     if(s && s.idx === 0) { reclearSession = null; show('v-setup'); applyTheme(); return; }
     _reclearFinish();
