@@ -1,0 +1,3130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>MRCS Part A — Pearson VUE Simulator</title>
+<style>
+  /* ---------- Pearson VUE-style base ---------- */
+  :root{
+    --vue-navy:#1f3a5f;
+    --vue-navy-2:#12304e;
+    --vue-navy-3:#0b2542;
+    --vue-yellow:#f2b01e;
+    --vue-ink:#1a1a1a;
+    --vue-muted:#5a6472;
+    --vue-border:#b8bfc8;
+    --vue-border-2:#d5dae0;
+    --vue-bg:#e9ecef;
+    --vue-panel:#ffffff;
+    --vue-ok:#2e7d32;
+    --vue-bad:#b71c1c;
+    --vue-flag:#e9b000;
+    --vue-link:#0b4a9c;
+    --vue-row:#f6f8fa;
+    --vue-strip:#edf1f5;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family: Arial, Helvetica, "Liberation Sans", sans-serif;
+    font-size:14px;
+    color:var(--vue-ink);
+    background:var(--vue-bg);
+    -webkit-text-size-adjust:100%;
+  }
+  button{font-family:inherit;font-size:13px;cursor:pointer}
+  .hidden{display:none !important}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:fixed;left:0;right:0;top:0;height:56px;
+    background:linear-gradient(180deg,var(--vue-navy) 0%, var(--vue-navy-2) 100%);
+    color:#fff;display:flex;align-items:center;z-index:50;
+    border-bottom:1px solid #000;
+    box-shadow:0 1px 0 rgba(0,0,0,.2), 0 2px 6px rgba(0,0,0,.15);
+  }
+  .topbar .brand{
+    padding:0 14px;height:100%;display:flex;align-items:center;gap:10px;border-right:1px solid rgba(255,255,255,.15);
+    font-weight:bold;letter-spacing:.3px;
+  }
+  .topbar .brand .vue-logo{
+    background:var(--vue-yellow);color:#222;font-weight:800;font-size:11px;
+    padding:3px 6px;border-radius:2px;letter-spacing:.4px;
+  }
+  .topbar .exam-title{padding:0 14px;font-size:13px;opacity:.95}
+  .topbar .spacer{flex:1}
+  .topbar .meta{
+    display:flex;align-items:center;gap:18px;padding:0 14px;font-size:13px;
+    border-left:1px solid rgba(255,255,255,.15);height:100%;
+  }
+  .topbar .meta .lbl{opacity:.75;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  .topbar .meta .val{font-weight:bold}
+  .topbar .meta .timer{
+    background:#0a1f38;padding:6px 10px;border:1px solid rgba(255,255,255,.25);border-radius:3px;
+    font-variant-numeric:tabular-nums;font-size:14px;font-weight:bold;
+  }
+  .topbar .meta .timer.warn{background:#7a1f1f;border-color:#ffb3b3}
+  .topbar .iconbtn{
+    background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;
+    padding:6px 10px;border-radius:3px;font-size:12px;cursor:pointer;
+  }
+  .topbar .iconbtn:hover{background:rgba(255,255,255,.08)}
+  .topbar .backbtn{
+    background:transparent;border:none;color:#fff;font-size:13px;
+    padding:6px 12px;cursor:pointer;opacity:.85;display:flex;align-items:center;gap:4px;
+    border-right:1px solid rgba(255,255,255,.15);height:100%;
+  }
+  .topbar .backbtn:hover{opacity:1;background:rgba(255,255,255,.06)}
+  /* Pause overlay */
+  .pause-overlay{
+    position:fixed;inset:0;background:rgba(10,20,40,.88);z-index:200;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;
+  }
+  .pause-overlay h2{font-size:28px;margin-bottom:8px;font-weight:700}
+  .pause-overlay p{opacity:.7;margin-bottom:24px;font-size:14px}
+  .pause-overlay button{font-size:16px;padding:12px 36px}
+
+  /* ---------- Main layout ---------- */
+  .app{padding-top:56px;padding-bottom:64px;min-height:100vh}
+  .shell{max-width:1180px;margin:0 auto;padding:18px;}
+  .panel{
+    background:var(--vue-panel);border:1px solid var(--vue-border);
+    border-radius:2px;box-shadow:0 1px 0 rgba(0,0,0,.04);
+  }
+  .panel .phead{
+    background:linear-gradient(180deg,#f3f5f8 0%,#e5e9ef 100%);
+    border-bottom:1px solid var(--vue-border);
+    padding:10px 14px;font-weight:bold;font-size:13px;color:var(--vue-navy-2);
+    display:flex;align-items:center;gap:10px;
+  }
+  .panel .pbody{padding:16px 18px}
+
+  /* ---------- Bottom bar ---------- */
+  .bottombar{
+    position:fixed;left:0;right:0;bottom:0;height:56px;background:#ececec;
+    border-top:1px solid #9aa3ad;display:flex;align-items:center;z-index:50;
+    box-shadow:0 -1px 0 rgba(0,0,0,.05);
+  }
+  .bottombar .left{display:flex;gap:8px;padding:0 14px;align-items:center;flex:1}
+  .bottombar .right{display:flex;gap:8px;padding:0 14px;align-items:center}
+  .vbtn{
+    background:linear-gradient(180deg,#fbfcfd 0%,#dde3ea 100%);
+    border:1px solid #9aa3ad;color:#1a1a1a;
+    padding:7px 14px;border-radius:3px;font-weight:bold;font-size:13px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  .vbtn:hover{background:linear-gradient(180deg,#ffffff 0%,#d1d8e0 100%)}
+  .vbtn:active{background:#c6ced6}
+  .vbtn.primary{
+    background:linear-gradient(180deg,#2e63a6 0%,#1f3a5f 100%);
+    color:#fff;border-color:#0b2542;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .vbtn.primary:hover{filter:brightness(1.05)}
+  .vbtn.danger{
+    background:linear-gradient(180deg,#d15a5a 0%,#8a1f1f 100%);
+    color:#fff;border-color:#5a1010;
+  }
+  .vbtn.warn{
+    background:linear-gradient(180deg,#f3c34b 0%,#cf8f1b 100%);color:#222;border-color:#8a5f10;
+  }
+  .vbtn[disabled]{opacity:.45;cursor:not-allowed}
+
+  /* ---------- Question panel ---------- */
+  .qwrap{
+    background:#fff;border:1px solid var(--vue-border);border-radius:2px;
+    min-height:calc(100vh - 160px);display:flex;flex-direction:column;
+  }
+  .qhead{
+    background:linear-gradient(180deg,#f3f5f8 0%,#e5e9ef 100%);
+    border-bottom:1px solid var(--vue-border);
+    padding:8px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;
+  }
+  .qhead .tag{background:#eaeef3;border:1px solid #c9d1db;padding:2px 8px;border-radius:2px;color:#47556a;font-size:11px;letter-spacing:.4px;text-transform:uppercase}
+  .qhead .right{display:flex;align-items:center;gap:10px;color:#47556a}
+  .qbody{padding:20px 26px;flex:1;display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:22px}
+  .qbody.single{grid-template-columns:minmax(0,1fr)}
+  .qstem{
+    font-size:15.5px;line-height:1.55;color:#1a1a1a;white-space:pre-wrap;word-wrap:break-word;
+  }
+  .qstem p{margin:0 0 10px}
+  .qoptions{margin-top:18px;display:flex;flex-direction:column;gap:8px}
+  .qopt{
+    display:flex;gap:10px;align-items:flex-start;
+    border:1px solid var(--vue-border-2);background:#fbfcfd;
+    padding:10px 12px;border-radius:2px;cursor:pointer;
+  }
+  .qopt:hover{background:#f3f7fc;border-color:#8fb4de}
+  .qopt input{margin-top:3px;cursor:pointer}
+  .qopt .letter{font-weight:bold;color:var(--vue-navy-2);min-width:18px}
+  .qopt.selected{background:#e7f0fb;border-color:#2e63a6;box-shadow:inset 0 0 0 1px #2e63a6}
+  .qopt.correct{background:#e6f4e6;border-color:#2e7d32}
+  .qopt.incorrect{background:#fde7e7;border-color:#b71c1c}
+  .qopt.reveal{background:#fff8e1;border-color:#cf8f1b}
+
+  .qside{
+    border-left:1px solid var(--vue-border-2);padding-left:18px;
+  }
+  .qside h4{margin:0 0 8px;font-size:12px;color:#47556a;letter-spacing:.4px;text-transform:uppercase}
+  .qside .feedback{
+    font-size:13px;line-height:1.5;background:#f6f8fa;border:1px solid #d5dae0;
+    border-radius:2px;padding:10px;white-space:pre-wrap;
+  }
+  .qside .feedback.correct{background:#e9f5ea;border-color:#b0d4b3}
+  .qside .feedback.wrong{background:#fbeaea;border-color:#e4b0b0}
+
+  /* ---------- Review grid ---------- */
+  .rev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:6px;margin-top:10px}
+  .rev-cell{
+    border:1px solid #9aa3ad;background:#fff;padding:8px 0;text-align:center;border-radius:2px;
+    font-weight:bold;font-size:12px;cursor:pointer;position:relative;
+  }
+  .rev-cell:hover{background:#f1f4f8}
+  .rev-cell.answered{background:#d9e8fb;border-color:#2e63a6}
+  .rev-cell.flagged::after{
+    content:"";position:absolute;top:2px;right:2px;width:0;height:0;
+    border-left:6px solid transparent;border-bottom:6px solid transparent;border-top:6px solid var(--vue-flag);
+  }
+  .rev-cell.unanswered{background:#fff}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 4px;font-size:12px;color:#47556a}
+  .legend .sw{display:inline-block;width:12px;height:12px;border:1px solid #9aa3ad;margin-right:6px;vertical-align:-2px}
+
+  /* ---------- Start / config screens ---------- */
+  .hero{
+    background:linear-gradient(180deg,#1f3a5f 0%,#0b2542 100%);color:#fff;
+    padding:28px;border-radius:2px;margin-bottom:18px;
+    border:1px solid #000;
+  }
+  .hero h1{margin:0 0 4px;font-size:22px;letter-spacing:.3px}
+  .hero p{margin:0;opacity:.85;font-size:13.5px}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:760px){.grid2{grid-template-columns:1fr}}
+  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+  .field label{font-size:12px;color:#47556a;font-weight:bold;letter-spacing:.3px}
+  .field input[type="text"], .field input[type="number"], .field select, .field textarea{
+    border:1px solid var(--vue-border);padding:8px 10px;border-radius:2px;font-family:inherit;font-size:13px;background:#fff;
+  }
+  .field .hint{font-size:11px;color:#6f7889}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .chk{display:flex;gap:8px;align-items:center;font-size:13px}
+
+  .drop{
+    border:2px dashed #9aa3ad;background:#fafbfc;padding:22px;text-align:center;border-radius:3px;color:#47556a;
+  }
+  .drop.over{background:#eef4fb;border-color:#2e63a6;color:var(--vue-navy-2)}
+  .drop input[type=file]{display:none}
+
+  .chip{display:inline-block;background:#eaeef3;border:1px solid #c9d1db;color:#47556a;
+    padding:2px 8px;border-radius:10px;font-size:11px;margin-right:6px}
+
+  table.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.tbl th,table.tbl td{border:1px solid var(--vue-border-2);padding:6px 8px;text-align:left;vertical-align:top}
+  table.tbl th{background:#eef2f6;color:#47556a;font-weight:bold}
+  table.tbl tr:nth-child(even) td{background:var(--vue-row)}
+
+  /* Results */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0 18px}
+  @media (max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:#fff;border:1px solid var(--vue-border);padding:12px;border-radius:2px}
+  .kpi .v{font-size:22px;font-weight:bold;color:var(--vue-navy-2)}
+  .kpi .k{font-size:11px;color:#6f7889;letter-spacing:.3px;text-transform:uppercase}
+
+  .confirm-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:center;justify-content:center;
+  }
+  .confirm-box{background:#fff;border:1px solid #000;border-radius:3px;max-width:520px;width:92%;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);overflow:hidden}
+  .confirm-box .hd{background:var(--vue-navy-2);color:#fff;padding:10px 14px;font-weight:bold;font-size:13px}
+  .confirm-box .bd{padding:16px 18px;font-size:13.5px;line-height:1.5}
+  .confirm-box .ft{padding:10px 14px;background:#f3f5f8;border-top:1px solid var(--vue-border);display:flex;gap:8px;justify-content:flex-end}
+
+  /* small */
+  .note{font-size:12px;color:#6f7889}
+  a{color:var(--vue-link)}
+  .divider{height:1px;background:var(--vue-border-2);margin:12px 0}
+  details{background:#f6f8fa;border:1px solid var(--vue-border-2);border-radius:2px;padding:8px 10px;margin-top:8px;font-size:12.5px}
+  details summary{cursor:pointer;font-weight:bold;color:var(--vue-navy-2)}
+
+  .crumb{font-size:12px;color:#6f7889}
+  .crumb b{color:var(--vue-navy-2)}
+  pre.csv{background:#0b2542;color:#d6e4f7;padding:10px;border-radius:2px;font-size:11.5px;max-height:180px;overflow:auto;white-space:pre;border:1px solid #000}
+
+  /* print */
+  @media print{
+    .topbar,.bottombar{display:none}
+    .app{padding:0}
+    .qwrap{border:none}
+  }
+</style>
+</head>
+<body>
+<!-- TOP BAR -->
+<header class="topbar">
+  <button class="backbtn" id="btnBack" style="display:none" title="Back">◂</button>
+  <div class="brand"><span class="vue-logo">VUE</span><span>Pearson</span></div>
+  <div class="exam-title" id="barTitle">MRCS Part A — Wrong Questions Review</div>
+  <div class="spacer"></div>
+  <div class="meta" id="barMeta" style="display:none">
+    <div><div class="lbl">Question</div><div class="val"><span id="qNow">-</span> / <span id="qTotal">-</span></div></div>
+    <div><div class="lbl">Flagged</div><div class="val" id="qFlagged">0</div></div>
+    <div><div class="lbl" id="timerLabel">Time Remaining</div><div class="timer" id="timer">--:--:--</div></div>
+  </div>
+  <div class="meta">
+    <button class="iconbtn" id="btnHelp" title="Keyboard shortcuts">?</button>
+  </div>
+</header>
+
+<main class="app">
+  <div class="shell" id="root"></div>
+</main>
+
+<!-- BOTTOM BAR -->
+<footer class="bottombar" id="bottombar" style="display:none">
+  <div class="left">
+    <button class="vbtn" id="btnPrev">◂ Previous</button>
+    <button class="vbtn warn" id="btnFlag">⚑ Flag for Review</button>
+    <button class="vbtn" id="btnStrike">Highlight / Strikethrough</button>
+    <button class="vbtn" id="btnReveal" style="display:none">Reveal Answer</button>
+  </div>
+  <div class="right">
+    <button class="vbtn" id="btnPause" title="Pause exam & timer">⏸ Pause</button>
+    <button class="vbtn" id="btnReview">Review ▸</button>
+    <button class="vbtn danger" id="btnEnd">End Exam</button>
+    <button class="vbtn primary" id="btnNext">Next ▸</button>
+  </div>
+</footer>
+
+<script>
+/* ===========================================================
+   MRCS VUE Simulator — single-file app
+   - CSV import with auto-detect + manual mapping
+   - Paper modes: MRCS Paper 1 (180q/180min), Paper 2 (120q/120min), Custom
+   - Two modes: Strict exam (no feedback) OR Tutor (reveal while attempting)
+   - Flag for review, review screen, timed countdown
+   - Progress saved in localStorage per exam session id
+   =========================================================== */
+
+const LS_KEY  = 'mrcs-vue:v1';
+const LS_BANK = 'mrcs-vue:bank:v1';    // last uploaded question bank
+const LS_HIST = 'mrcs-vue:history:v1'; // completed session summaries
+const LS_ATT  = 'mrcs-vue:attempts:v1';// per-question attempt log keyed by stem hash
+
+
+
+
+
+
+
+
+
+
+
+
+const EMBEDDED_BANK_VERSION = "2026-04-20-v18";
+
+
+const state = {
+  screen: 'home',          // home | mapping | config | exam | review | results | history
+  bank: [],                // [{id, qhash, stem, options:[{letter,text}], correctLetter, explanation, topic, source}]
+  session: null,           // see newSession()
+  rawCsv: null,            // parsed {headers, rows}
+  mapping: null,           // column mapping
+  timerHandle: null,
+};
+
+/* ---------- Attempt log helpers ---------- */
+function hashStem(str){
+  // stable 32-bit hash so the same question text maps to the same id across CSV re-uploads
+  const s = String(str||'').replace(/\s+/g,' ').trim().toLowerCase();
+  let h = 2166136261 >>> 0;
+  for (let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return ('00000000' + h.toString(16)).slice(-8);
+}
+function loadAttempts(){ return loadLS(LS_ATT) || {}; }
+function saveAttempts(a){ saveLS(LS_ATT, a); }
+function loadHistory(){ return loadLS(LS_HIST) || []; }
+function saveHistory(h){ saveLS(LS_HIST, h); }
+function recordAttempt(q, result){
+  // result: 'correct' | 'wrong'
+  const a = loadAttempts();
+  const rec = a[q.qhash] || {qhash:q.qhash, stem:q.stem.slice(0,180), topic:q.topic||'', subject:q.subject||'', source:q.source||'', seen:0, correct:0, wrong:0, blank:0, lastResult:null, lastAt:null, history:[]};
+  if (!rec.subject && q.subject) rec.subject = q.subject; // backfill for older records
+  rec.seen += 1;
+  rec[result] = (rec[result]||0) + 1;
+  rec.lastResult = result;
+  rec.lastAt = Date.now();
+  rec.stem = q.stem.slice(0,180);
+  rec.topic = q.topic || rec.topic;
+  rec.source = q.source || rec.source;
+  rec.history = (rec.history || []).concat([{at:Date.now(), r:result}]).slice(-20);
+  a[q.qhash] = rec;
+  saveAttempts(a);
+}
+
+/* Revert attempt records for a deleted/abandoned session.
+   Uses the session's qhashes + startedAt to find and remove matching history entries.
+   If a question has no remaining history, delete the record entirely. */
+function revertSessionAttempts(sessionHist){
+  if (!sessionHist || !sessionHist.qhashes || !sessionHist.qhashes.length) return;
+  const a = loadAttempts();
+  const sessionTime = sessionHist.startedAt || 0;
+  sessionHist.qhashes.forEach(qh => {
+    const rec = a[qh];
+    if (!rec) return;
+    // Find the history entry closest to this session's startedAt (within 24h)
+    const hIdx = (rec.history||[]).findIndex(h => Math.abs((h.at||h.t||0) - sessionTime) < 24*60*60*1000);
+    if (hIdx >= 0){
+      const removed = rec.history.splice(hIdx, 1)[0];
+      rec.seen = Math.max(0, (rec.seen||1) - 1);
+      if (removed.r === 'correct') rec.correct = Math.max(0, (rec.correct||1) - 1);
+      else if (removed.r === 'wrong') rec.wrong = Math.max(0, (rec.wrong||1) - 1);
+      else rec.blank = Math.max(0, (rec.blank||1) - 1);
+    }
+    // If no history left, remove the record entirely
+    if (!rec.history || rec.history.length === 0){
+      delete a[qh];
+    } else {
+      // Update lastResult/lastAt from remaining history
+      const last = rec.history[rec.history.length - 1];
+      rec.lastResult = last.r;
+      rec.lastAt = last.at || last.t;
+      a[qh] = rec;
+    }
+  });
+  saveAttempts(a);
+}
+
+/* ---------- Utilities ---------- */
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+const el = (tag, props={}, kids=[]) => {
+  const n = document.createElement(tag);
+  for (const k in props){
+    if (k === 'class') n.className = props[k];
+    else if (k === 'html') n.innerHTML = props[k];
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2).toLowerCase(), props[k]);
+    else if (k === 'style' && typeof props[k] === 'object') Object.assign(n.style, props[k]);
+    else if (k === 'dataset') Object.assign(n.dataset, props[k]);
+    else n.setAttribute(k, props[k]);
+  }
+  (Array.isArray(kids)?kids:[kids]).forEach(c => {
+    if (c == null) return;
+    n.appendChild((typeof c === 'string' || typeof c === 'number') ? document.createTextNode(String(c)) : c);
+  });
+  return n;
+};
+const fmtHMS = (ms) => {
+  if (ms < 0) ms = 0;
+  const s = Math.floor(ms/1000);
+  const hh = String(Math.floor(s/3600)).padStart(2,'0');
+  const mm = String(Math.floor((s%3600)/60)).padStart(2,'0');
+  const ss = String(s%60).padStart(2,'0');
+  return `${hh}:${mm}:${ss}`;
+};
+const shuffle = (a) => {
+  for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+};
+function saveLS(key,obj){try{localStorage.setItem(key, JSON.stringify(obj));}catch(e){console.warn('LS save failed for',key,e);if(key===LS_ATT){alert('⚠️ Could not save your attempt log — localStorage is full. Your progress for this session may not be recorded. Try clearing the question bank from Settings.');}}}
+
+function loadLS(key){try{const v=localStorage.getItem(key);return v?JSON.parse(v):null;}catch(e){return null;}}
+
+/* ---------- CSV parser (RFC-4180 tolerant) ---------- */
+function parseCSV(text){
+  // auto-detect delimiter by first non-quoted line
+  const firstLine = (()=>{
+    let inQ=false, out='', i=0;
+    for(; i<text.length;i++){
+      const c=text[i];
+      if(c==='"' && text[i+1]==='"'){out+='""';i++;continue;}
+      if(c==='"'){inQ=!inQ;out+='"';continue;}
+      if(!inQ && (c==='\n'||c==='\r')) break;
+      out+=c;
+    }
+    return out;
+  })();
+  const counts = {',':0,';':0,'\t':0,'|':0};
+  let inQ=false;
+  for(const c of firstLine){
+    if(c==='"'){inQ=!inQ;continue;}
+    if(!inQ && c in counts) counts[c]++;
+  }
+  const delim = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0] || ',';
+
+  const rows=[]; let cur=[]; let cell=''; let inQuote=false;
+  for (let i=0;i<text.length;i++){
+    const c=text[i];
+    if (inQuote){
+      if (c==='"'){
+        if (text[i+1]==='"'){cell+='"';i++;} else {inQuote=false;}
+      } else cell+=c;
+    } else {
+      if (c==='"'){inQuote=true;}
+      else if (c===delim){cur.push(cell);cell='';}
+      else if (c==='\n'){cur.push(cell);rows.push(cur);cur=[];cell='';}
+      else if (c==='\r'){/* swallow */}
+      else cell+=c;
+    }
+  }
+  if (cell.length || cur.length){cur.push(cell);rows.push(cur);}
+  // trim empties at end
+  while (rows.length && rows[rows.length-1].every(x=>!x || !String(x).trim())) rows.pop();
+  if (!rows.length) return {headers:[],rows:[],delim};
+  const headers = rows.shift().map(h => String(h||'').trim());
+  const objs = rows.map(r => {
+    const o = {};
+    headers.forEach((h,i)=> o[h] = (r[i]==null?'':String(r[i])));
+    return o;
+  });
+  return {headers, rows:objs, delim};
+}
+
+/* ---------- Column auto-detect ---------- */
+const HEADER_HINTS = {
+  stem: ['question','stem','q','question_text','questiontext','body','prompt','vignette','clinical scenario','scenario'],
+  optA: ['a','option a','optiona','option_a','choice a','choicea','choice_a','ansa','answer a'],
+  optB: ['b','option b','optionb','option_b','choice b','choiceb','choice_b','ansb','answer b'],
+  optC: ['c','option c','optionc','option_c','choice c','choicec','choice_c','ansc','answer c'],
+  optD: ['d','option d','optiond','option_d','choice d','choiced','choice_d','ansd','answer d'],
+  optE: ['e','option e','optione','option_e','choice e','choicee','choice_e','anse','answer e'],
+  correct: ['correct','correct answer','correct_answer','answer','correctletter','correct_letter','ans','right','key'],
+  explanation: ['explanation','rationale','answer explanation','answer_explanation','teaching','feedback','notes','explanation_text','exp'],
+  topic: ['topic','category','specialty','subject','subcategory','system','chapter','module'],
+  source: ['source','bank','origin','platform']
+};
+function autoMap(headers){
+  const lc = headers.map(h => String(h||'').toLowerCase().trim());
+  const map = {};
+  const find = (cands) => {
+    for (const cand of cands){
+      const i = lc.indexOf(cand);
+      if (i >= 0) return headers[i];
+    }
+    // loose contains
+    for (const cand of cands){
+      const i = lc.findIndex(h => h.includes(cand));
+      if (i >= 0) return headers[i];
+    }
+    return '';
+  };
+  for (const k of Object.keys(HEADER_HINTS)) map[k] = find(HEADER_HINTS[k]);
+  return map;
+}
+
+/* Infer options when columns are "Option 1..5" or compact formats */
+function extractOptions(row, mapping){
+  const picks = ['optA','optB','optC','optD','optE']
+    .map((k,i) => ({letter: String.fromCharCode(65+i), key:mapping[k], text: mapping[k] ? String(row[mapping[k]]||'').trim() : ''}))
+    .filter(o => o.text.length);
+  return picks;
+}
+
+/* Normalise "correct" column to a single letter A-E */
+function extractCorrect(row, mapping, opts){
+  let raw = mapping.correct ? String(row[mapping.correct]||'').trim() : '';
+  if (!raw) return '';
+  // "A", "a", "1", "Option B", "B: acute appendicitis"
+  raw = raw.replace(/^option[\s_-]*/i,'').trim();
+  // numeric
+  const n = parseInt(raw,10);
+  if (!isNaN(n) && n >= 1 && n <= opts.length){
+    return String.fromCharCode(64+n);
+  }
+  // single letter
+  const m = raw.match(/^[A-Ea-e]/);
+  if (m) return m[0].toUpperCase();
+  // match against option text
+  const lc = raw.toLowerCase();
+  const hit = opts.find(o => o.text.toLowerCase() === lc || lc.startsWith(o.text.toLowerCase()));
+  if (hit) return hit.letter;
+  return '';
+}
+
+/* Build bank from parsed CSV + mapping */
+function buildBank(parsed, mapping){
+  const bank = [];
+  let skipped = 0;
+  parsed.rows.forEach((row, idx) => {
+    const stem = mapping.stem ? String(row[mapping.stem]||'').trim() : '';
+    if (!stem) {skipped++; return;}
+    const opts = extractOptions(row, mapping);
+    if (opts.length < 2) {skipped++; return;}
+    const correct = extractCorrect(row, mapping, opts);
+    const explanation = mapping.explanation ? String(row[mapping.explanation]||'').trim() : '';
+    const topic = mapping.topic ? String(row[mapping.topic]||'').trim() : '';
+    const source = mapping.source ? String(row[mapping.source]||'').trim() : '';
+    bank.push({
+      id: 'q'+(idx+1),
+      qhash: hashStem(stem),
+      stem, options:opts, correctLetter: correct,
+      explanation, topic, source
+    });
+  });
+  return {bank, skipped};
+}
+
+/* ---------- Session factory ---------- */
+function newSession(opts){
+  const {bank, paper, mode, durationMs, shuffleQ, shuffleOpts, questionCount, flagged, showAnswers} = opts;
+  let pool = bank.slice();
+  if (shuffleQ) shuffle(pool);
+  if (questionCount && questionCount < pool.length) pool = pool.slice(0, questionCount);
+
+  const questions = pool.map((q,i) => {
+    const options = q.options.map(o => ({...o}));
+    let correct = q.correctLetter;
+    if (shuffleOpts){
+      // preserve letters A..E positions but scramble text; remap correctLetter to the new position of the correct text
+      const correctText = options.find(o => o.letter === correct)?.text ?? '';
+      const texts = options.map(o => o.text);
+      shuffle(texts);
+      options.forEach((o,j) => { o.text = texts[j]; });
+      const newIdx = options.findIndex(o => o.text === correctText);
+      correct = newIdx >= 0 ? String.fromCharCode(65+newIdx) : correct;
+    }
+    return {
+      ...q, options, correctLetter: correct,
+      selected: null, flagged:false, visited:false, timeSpent:0
+    };
+  });
+
+  return {
+    id: 'sess-'+Date.now(),
+    paper, mode, showAnswers: !!showAnswers,
+    durationMs, startedAt: Date.now(), endedAt: null,
+    timeLeftMs: durationMs,
+    idx: 0, questions,
+    paused:false, submitted:false,
+  };
+}
+
+/* =============================================
+   RENDER
+   ============================================= */
+/* Screen history stack for Back button */
+const screenHistory = [];
+
+function navigateTo(screen){
+  if (state.screen && state.screen !== screen) screenHistory.push(state.screen);
+  state.screen = screen;
+  render();
+}
+
+function goBack(){
+  if (screenHistory.length){
+    state.screen = screenHistory.pop();
+  } else {
+    state.screen = 'home';
+  }
+  render();
+}
+
+/* Pause/resume exam */
+function pauseExam(){
+  if (!state.session || state.session.submitted) return;
+  state.session.paused = true;
+  stopTimer();
+  persist();
+  // Show overlay
+  const ov = document.createElement('div');
+  ov.className = 'pause-overlay';
+  ov.id = 'pauseOverlay';
+  const h = document.createElement('h2'); h.textContent = 'Exam Paused'; ov.appendChild(h);
+  const isUnt = state.session && state.session.durationMs < 0;
+  const p = document.createElement('p'); p.textContent = isUnt ? 'Your progress is saved.' : 'Timer is stopped. Your progress is saved.'; ov.appendChild(p);
+  const btn = document.createElement('button'); btn.className = 'vbtn primary'; btn.textContent = 'Resume Exam';
+  btn.addEventListener('click', resumeExam);
+  ov.appendChild(btn);
+  document.body.appendChild(ov);
+}
+
+function resumeExam(){
+  if (!state.session) return;
+  state.session.paused = false;
+  const ov = document.getElementById('pauseOverlay');
+  if (ov) ov.remove();
+  startTimer();
+}
+
+function render(){
+  const root = $('#root');
+  root.innerHTML = '';
+  const isExam = state.screen==='exam'||state.screen==='review';
+  $('#barMeta').style.display = isExam ? 'flex':'none';
+  $('#bottombar').style.display = isExam ? 'flex':'none';
+  // Reset timer label for timed/untimed
+  if (isExam && state.session){
+    const lbl = $('#timerLabel');
+    if (lbl) lbl.textContent = state.session.durationMs < 0 ? 'Time Elapsed' : 'Time Remaining';
+  }
+  // Back button — show on every screen except home
+  const backBtn = $('#btnBack');
+  if (state.screen === 'home'){
+    backBtn.style.display = 'none';
+  } else {
+    backBtn.style.display = 'flex';
+  }
+  if (state.screen==='home') renderHome(root);
+  else if (state.screen==='mapping') renderMapping(root);
+  else if (state.screen==='config') renderConfig(root);
+  else if (state.screen==='exam') renderExam(root);
+  else if (state.screen==='review') renderReview(root);
+  else if (state.screen==='results') renderResults(root);
+  else if (state.screen==='examReviewAll'){ renderResults(root); }
+  else if (state.screen==='history') renderHistory(root);
+  else if (state.screen==='sessionReview') renderSessionReview(root);
+}
+
+/* ---------- MRCS syllabus taxonomy ----------
+   Based on the Intercollegiate MRCS Part A syllabus (ISCP) and the Royal College
+   guidance. Paper 1 = Applied Basic Sciences. Paper 2 = Principles of
+   Surgery-in-General. Weights are approximate blueprint weights used to arrange
+   "MRCS blueprint" exams — they won't be exactly what you see on the day but
+   are a reasonable training proxy.
+*/
+const MRCS_SYLLABUS = {
+  paper1: [
+    {key:'anatomy',      label:'Anatomy',                       weight: 0.40},
+    {key:'physiology',   label:'Physiology',                    weight: 0.25},
+    {key:'pathology',    label:'Pathology',                     weight: 0.20},
+    {key:'pharmacology', label:'Pharmacology',                  weight: 0.05},
+    {key:'microbiology', label:'Microbiology',                  weight: 0.05},
+    {key:'biostats',     label:'Biostatistics / Imaging / Ethics', weight: 0.05},
+  ],
+  paper2: [
+    {key:'periop',       label:'Peri-operative care',           weight: 0.18},
+    {key:'emergencies',  label:'Surgical emergencies',          weight: 0.12},
+    {key:'trauma',       label:'Trauma',                        weight: 0.12},
+    {key:'oncology',     label:'Surgical oncology',             weight: 0.10},
+    {key:'paeds',        label:'Paediatric surgery',            weight: 0.06},
+    {key:'transplant',   label:'Organ / tissue transplantation',weight: 0.04},
+    {key:'techniques',   label:'Surgical techniques & technology', weight: 0.08},
+    {key:'infection',    label:'Surgical microbiology & infection', weight: 0.08},
+    {key:'management',   label:'Management, legal & professional', weight: 0.06},
+    {key:'vascular',     label:'Vascular surgery',              weight: 0.04},
+    {key:'gi',           label:'General / GI surgery',          weight: 0.06},
+    {key:'urology',      label:'Urology',                       weight: 0.03},
+    {key:'breast',       label:'Breast & endocrine',            weight: 0.03},
+  ]
+};
+/* aliases → canonical key */
+const TOPIC_ALIASES = {
+  // ── Paper 1 basic sciences ──
+  'anatomy':'anatomy','applied anatomy':'anatomy','surgical anatomy':'anatomy',
+  'head and neck':'anatomy','thorax':'anatomy','abdomen':'anatomy',
+  'upper limb':'anatomy','lower limb':'anatomy','neuroanatomy':'anatomy','embryology':'anatomy',
+
+  'physiology':'physiology','applied physiology':'physiology',
+  'cardiovascular physiology':'physiology','respiratory physiology':'physiology',
+  'renal physiology':'physiology','endocrine physiology':'physiology','gi physiology':'physiology',
+
+  'pathology':'pathology','general pathology':'pathology','systemic pathology':'pathology',
+  'inflammation':'pathology','neoplasia':'pathology','immunology':'pathology',
+  'haematology':'pathology','wound healing':'pathology',
+
+  'pharmacology':'pharmacology','drugs':'pharmacology','anaesthetics':'pharmacology',
+
+  'microbiology':'microbiology','micro':'microbiology','infection control':'microbiology',
+  'clinical microbiology':'microbiology',
+
+  'biostatistics':'biostats','statistics':'biostats','stats':'biostats',
+  'imaging':'biostats','professionalism':'biostats',
+  'statistics and research':'biostats',
+
+  // ── Paper 2 POSG ──
+  'peri-operative':'periop','peri-operative care':'periop','perioperative':'periop',
+  'perioperative care':'periop','pre-op':'periop','post-op':'periop',
+  'fluid balance':'periop','nutrition':'periop','consent':'periop',
+
+  'emergency':'emergencies','emergencies':'emergencies','surgical emergencies':'emergencies',
+  'acute abdomen':'emergencies','sepsis':'emergencies','shock':'emergencies',
+  'emergency medicine and trauma':'emergencies',
+  'critical care':'emergencies',
+
+  'trauma':'trauma','atls':'trauma','polytrauma':'trauma','burns':'trauma',
+  'head injury':'trauma','orthopaedic trauma':'trauma',
+  'orthopaedics':'trauma',
+  'skin and wound management':'trauma',
+
+  'oncology':'oncology','cancer':'oncology','surgical oncology':'oncology',
+  'tumour markers':'oncology',
+
+  'paediatric':'paeds','paediatrics':'paeds','paeds':'paeds',
+  'paediatric surgery':'paeds','child surgery':'paeds',
+
+  'transplant':'transplant','transplantation':'transplant','organ donation':'transplant',
+  'organ transplantation':'transplant',
+
+  'techniques':'techniques','surgical technique':'techniques',
+  'surgical techniques':'techniques','sutures':'techniques','knots':'techniques',
+  'laparoscopy':'techniques','robotic':'techniques','technology':'techniques',
+  'surgical technique and technology':'techniques',
+
+  'infection':'infection','surgical infection':'infection','abscess':'infection',
+  'surgical site infection':'infection','ssi':'infection',
+
+  'management':'management','legal':'management','professional':'management',
+  'clinical governance':'management','audit':'management','ethics':'management',
+  'ethics and law':'management',
+
+  'vascular':'vascular','vascular surgery':'vascular','aortic':'vascular',
+  'peripheral vascular':'vascular','cvs':'vascular','cardiovascular':'vascular',
+
+  'general surgery':'gi','gi':'gi','upper gi':'gi','lower gi':'gi',
+  'colorectal':'gi','hepatobiliary':'gi','hpb':'gi','pancreas':'gi',
+  'liver':'gi','bariatric':'gi',
+  'upper gastrointestinal surgery':'gi',
+  'colorectal surgery':'gi',
+  'hepatobiliary and pancreatic surgery':'gi',
+
+  'urology':'urology','urological':'urology','kidney':'urology',
+  'prostate':'urology','bladder':'urology',
+
+  'breast':'breast','endocrine':'breast','thyroid':'breast',
+  'parathyroid':'breast','adrenal':'breast',
+  'breast and endocrine surgery':'breast',
+
+  // ── Subject-field values (from re-tagger) ──
+  'head and neck surgery':'anatomy',
+  'neurosurgery':'anatomy',
+  'cardiothoracic surgery':'anatomy',
+  'embryology and development':'anatomy',
+};
+function canonTopic(t, subj){
+  if (!t && !subj) return '';
+  // Try subject first (more reliable after re-tagging)
+  if (subj){
+    const sj = String(subj).toLowerCase().trim();
+    if (TOPIC_ALIASES[sj]) return TOPIC_ALIASES[sj];
+  }
+  const s = String(t||'').toLowerCase().trim();
+  if (TOPIC_ALIASES[s]) return TOPIC_ALIASES[s];
+  // loose contains on topic
+  for (const k of Object.keys(TOPIC_ALIASES)){
+    if (s && s.includes(k)) return TOPIC_ALIASES[k];
+  }
+  // loose contains on subject
+  if (subj){
+    const sj = String(subj).toLowerCase().trim();
+    for (const k of Object.keys(TOPIC_ALIASES)){
+      if (sj.includes(k)) return TOPIC_ALIASES[k];
+    }
+  }
+  return '';
+}
+function syllabusLabel(key){
+  const all = [...MRCS_SYLLABUS.paper1, ...MRCS_SYLLABUS.paper2];
+  return (all.find(x => x.key === key)?.label) || '';
+}
+
+/* Arrange a pool to match MRCS blueprint proportions.
+   - paper: 'paper1' | 'paper2' | 'all'
+   - targetN: total questions desired
+   - Returns a sub-array of pool, sampled per-bucket at the syllabus weight.
+*/
+function arrangeByBlueprint(pool, paper, targetN){
+  const blueprint = paper === 'paper1' ? MRCS_SYLLABUS.paper1
+                  : paper === 'paper2' ? MRCS_SYLLABUS.paper2
+                  : [...MRCS_SYLLABUS.paper1, ...MRCS_SYLLABUS.paper2].map(b => ({...b, weight: b.weight/2}));
+  // build buckets
+  const buckets = {};
+  blueprint.forEach(b => { buckets[b.key] = []; });
+  pool.forEach(q => {
+    const k = q.topicCanon || canonTopic(q.topic, q.subject);
+    if (buckets[k]) buckets[k].push(q);
+    else (buckets._other = buckets._other || []).push(q);
+  });
+  // sample per bucket
+  Object.keys(buckets).forEach(k => shuffle(buckets[k]));
+  const picked = [];
+  blueprint.forEach(b => {
+    const want = Math.round(targetN * b.weight);
+    const take = buckets[b.key].splice(0, want);
+    picked.push(...take);
+  });
+  // top up from leftovers (including _other) if we under-filled
+  const leftover = [].concat(...Object.values(buckets));
+  shuffle(leftover);
+  while (picked.length < targetN && leftover.length) picked.push(leftover.shift());
+  // interleave so same-topic isn't back-to-back
+  const byKey = {};
+  picked.forEach(q => { const k = q.topicCanon || canonTopic(q.topic, q.subject) || '_'; (byKey[k] = byKey[k] || []).push(q); });
+  const keys = Object.keys(byKey); shuffle(keys);
+  const out = []; let remaining = picked.length;
+  while (remaining > 0){
+    for (const k of keys){ if (byKey[k].length){ out.push(byKey[k].shift()); remaining--; } }
+  }
+  return out;
+}
+
+/* ---------- Filter / arrange helpers ---------- */
+function filterBankByAttempts(bank, cfg){
+  const a = loadAttempts();
+  let pool = bank.slice();
+
+  if (cfg.onlyNeverSeen){
+    pool = pool.filter(q => !a[q.qhash] || a[q.qhash].seen === 0);
+  }
+  if (cfg.onlyLastWrong){
+    pool = pool.filter(q => a[q.qhash] && a[q.qhash].lastResult === 'wrong');
+  }
+  if (cfg.onlyNeverCorrect){
+    pool = pool.filter(q => !a[q.qhash] || a[q.qhash].correct === 0);
+  }
+  if (cfg.excludeMastered && cfg.masterN > 0){
+    // exclude if correct count >= masterN
+    pool = pool.filter(q => !a[q.qhash] || (a[q.qhash].correct||0) < cfg.masterN);
+  }
+  if (cfg.excludeSeenInSession && cfg.excludeSessionId){
+    const hist = loadHistory();
+    const prev = hist.find(h => h.id === cfg.excludeSessionId);
+    if (prev){
+      const seenSet = new Set(prev.qhashes||[]);
+      pool = pool.filter(q => !seenSet.has(q.qhash));
+    }
+  }
+  if (cfg.topicFilter && cfg.topicFilter.length){
+    const set = new Set(cfg.topicFilter);
+    pool = pool.filter(q => set.has(q.topic || '(untagged)'));
+  }
+  if (cfg.sourceFilter && cfg.sourceFilter.length){
+    const set = new Set(cfg.sourceFilter);
+    pool = pool.filter(q => set.has(q.source || '(unknown)'));
+  }
+  return pool;
+}
+function arrangePool(pool, mode){
+  if (mode === 'random'){
+    return shuffle(pool.slice());
+  }
+  if (mode === 'grouped'){
+    // group by topic in alphabetical order of topic
+    const groups = {};
+    pool.forEach(q => { const t=q.topic||'(untagged)'; (groups[t]=groups[t]||[]).push(q); });
+    const out = [];
+    Object.keys(groups).sort().forEach(t => groups[t].forEach(q => out.push(q)));
+    return out;
+  }
+  if (mode === 'interleaved'){
+    // round-robin across topics so similar topics aren't back-to-back (MRCS feel)
+    const groups = {};
+    pool.forEach(q => { const t=q.topic||'(untagged)'; (groups[t]=groups[t]||[]).push(q); });
+    Object.values(groups).forEach(arr => shuffle(arr));
+    const keys = Object.keys(groups);
+    shuffle(keys);
+    const out = [];
+    let remaining = pool.length;
+    while (remaining > 0){
+      for (const k of keys){
+        if (groups[k].length){ out.push(groups[k].shift()); remaining--; }
+      }
+    }
+    return out;
+  }
+  return pool.slice(); // 'csv' — keep file order
+}
+
+function renderHome(root){
+  const hero = el('div',{class:'hero'},[
+    el('h1',{},'MRCS Part A — Pearson VUE Simulator'),
+    el('p',{},'Your full eMRCS + Pastest wrong-question bank is pre-loaded — start a timed VUE-style paper immediately, or merge more CSVs below.'),
+  ]);
+  root.appendChild(hero);
+
+  /* Current bank summary (multi-CSV friendly) */
+  const savedPeek = loadLS(LS_BANK);
+  const bankNow = (state.bank && state.bank.length) ? state.bank : (savedPeek && savedPeek.bank ? savedPeek.bank : []);
+  if (bankNow.length){
+    const srcCount = {}, topicCount = {};
+    bankNow.forEach(q => {
+      const s = q.source || '(unknown)'; srcCount[s] = (srcCount[s]||0)+1;
+      const t = q.topic || '(untagged)'; topicCount[t] = (topicCount[t]||0)+1;
+    });
+    const sp = el('div',{class:'panel', style:{marginBottom:'14px'}});
+    sp.appendChild(el('div',{class:'phead'}, `Your bank  ·  ${bankNow.length} questions loaded`));
+    const sb = el('div',{class:'pbody'});
+    sb.appendChild(el('div',{style:{marginBottom:'6px'}},'By source:'));
+    const srcRow = el('div',{class:'row',style:{marginBottom:'10px'}});
+    Object.keys(srcCount).sort().forEach(s => srcRow.appendChild(el('span',{class:'chip'}, `${s}: ${srcCount[s]}`)));
+    sb.appendChild(srcRow);
+    const topics = Object.keys(topicCount).sort();
+    sb.appendChild(el('div',{style:{marginBottom:'6px'}}, `By topic (${topics.length}):`));
+    const tRow = el('div',{class:'row',style:{flexWrap:'wrap',gap:'4px'}});
+    topics.slice(0,24).forEach(t => tRow.appendChild(el('span',{class:'chip'}, `${t}: ${topicCount[t]}`)));
+    if (topics.length > 24) tRow.appendChild(el('span',{class:'note'}, ` + ${topics.length-24} more`));
+    sb.appendChild(tRow);
+
+    // Big "Start Exam" button so user can skip straight to config without scrolling past CSV upload
+    const startRow = el('div',{style:{marginTop:'14px', display:'flex', gap:'10px', alignItems:'center'}});
+    startRow.appendChild(el('button',{class:'vbtn primary', style:{fontSize:'16px', padding:'10px 28px'}, onClick: () => {
+      if (!state.bank.length) state.bank = bankNow;
+      state.screen = 'config'; render();
+    }}, 'Start Exam \u25b8'));
+    startRow.appendChild(el('span',{class:'note'}, 'Jump straight to exam setup — no CSV upload needed'));
+    sb.appendChild(startRow);
+
+    sp.appendChild(sb);
+    root.appendChild(sp);
+  }
+
+  const panel = el('div',{class:'panel'});
+  panel.appendChild(el('div',{class:'phead'}, bankNow.length ? '1. Add another CSV (or replace the bank)' : '1. Load your question bank'));
+  const body = el('div',{class:'pbody'});
+
+  body.appendChild(el('div',{class:'field'},[
+    el('label',{},'Tag this upload as'),
+    (()=>{ const s = el('select',{id:'uploadSource'});
+      ['(use source column from CSV)','eMRCS','Pastest','Mixed','Other'].forEach(v => s.appendChild(el('option',{value:v},v)));
+      return s;
+    })(),
+    el('div',{class:'hint'},'Every question in this CSV will be tagged with this label so you can filter by source later.'),
+  ]));
+
+  // Append vs replace — default to Append if a bank already exists
+  body.appendChild(el('div',{class:'field'},[
+    el('label',{},'When uploading this CSV'),
+    (()=>{ const s = el('select',{id:'uploadMode'});
+      const addOpt = (v,t) => s.appendChild(el('option',{value:v},t));
+      if (bankNow.length){
+        addOpt('append', `Append to existing bank (${bankNow.length} already loaded) — recommended`);
+        addOpt('replace','Replace — wipe the existing bank first');
+      } else {
+        addOpt('append','Add to bank');
+        addOpt('replace','Replace bank');
+      }
+      return s;
+    })(),
+    el('div',{class:'hint'},'Append de-duplicates by question text (same question won\u2019t be added twice). You can upload as many CSVs as you want — eMRCS + Pastest + a focused mock CSV from a friend, all in one bank.')
+  ]));
+
+  const drop = el('div',{class:'drop', id:'drop'},[
+    el('div',{html:'<b>Drag & drop</b> your CSV here, or <u style="cursor:pointer">click to browse</u>'}),
+    el('div',{class:'note', style:{marginTop:'6px'}},'Supported delimiters: , ; | TAB. First row must be column headers. Drop multiple files one after the other to merge banks.'),
+    el('input',{type:'file',accept:'.csv,.tsv,.txt',id:'fileInp', multiple:'multiple'})
+  ]);
+  body.appendChild(drop);
+
+  const hintRow = el('div',{class:'row', style:{marginTop:'10px'}},[
+    el('span',{class:'chip'},'Auto-detects: question / options A–E / correct / explanation / topic'),
+    el('span',{class:'chip'},'Manual column mapping if needed'),
+    el('span',{class:'chip'},'Multi-file drop supported'),
+  ]);
+  body.appendChild(hintRow);
+
+  const saved = loadLS(LS_BANK);
+  if (saved && saved.bank && saved.bank.length){
+    // Backfill qhash on older saved banks
+    saved.bank.forEach(q => { if (!q.qhash) q.qhash = hashStem(q.stem); });
+    const savedRow = el('div',{class:'row', style:{marginTop:'14px', padding:'10px', background:'#eef4fb', border:'1px solid #b8cae6', borderRadius:'2px'}},[
+      el('div',{style:{flex:'1'}},[
+        el('div',{},'Last uploaded bank: '),
+        el('b',{},`${saved.bank.length} questions`),
+        el('span',{class:'note'},` · saved ${new Date(saved.savedAt).toLocaleString()}`)
+      ]),
+      el('button',{class:'vbtn primary', onClick: () => {
+        state.bank = saved.bank;
+        state.screen = 'config'; render();
+      }},'Use this bank ▸'),
+      el('button',{class:'vbtn', onClick: () => {
+        if (!confirm('Clear the loaded bank? The built-in eMRCS + Pastest bank will be restored automatically on next page load.')) return;
+        localStorage.removeItem(LS_BANK);
+        localStorage.removeItem('mrcs-vue:bank-version');
+        state.bank = [];
+        render();
+      }},'Discard')
+    ]);
+    body.appendChild(savedRow);
+  }
+
+  const hist = loadHistory();
+  const att = loadAttempts();
+  const attKeys = Object.keys(att);
+  if (hist.length || attKeys.length){
+    const histRow = el('div',{class:'row', style:{marginTop:'10px', padding:'10px', background:'#f6f8fa', border:'1px solid #d5dae0', borderRadius:'2px'}},[
+      el('div',{style:{flex:'1'}},[
+        el('b',{},`${hist.length} past sessions`),
+        el('span',{class:'note'},` · ${attKeys.length} unique questions attempted`)
+      ]),
+      el('button',{class:'vbtn primary', onClick:()=>{ state.screen='history'; render(); }},'View history & focus list ▸'),
+    ]);
+    body.appendChild(histRow);
+
+    // Top-3 teaser on home page
+    try {
+      const items = buildFocusList('all').slice(0,3);
+      if (items.length){
+        const teaser = el('div',{style:{marginTop:'10px', padding:'10px', background:'#fffaef', border:'1px solid #e5c27a', borderRadius:'2px'}});
+        teaser.appendChild(el('div',{style:{fontSize:'12px',color:'#6f7889',letterSpacing:'.3px',textTransform:'uppercase',marginBottom:'6px'}},'Top 3 topics to focus on'));
+        items.forEach((b,i) => {
+          const pct = Math.round((b.errorRate||0)*100);
+          teaser.appendChild(el('div',{style:{display:'flex',gap:'8px',alignItems:'baseline',padding:'2px 0'}},[
+            el('b',{style:{minWidth:'18px'}}, String(i+1)+'.'),
+            el('span',{style:{flex:'1'}}, b.label),
+            el('span',{class:'note'}, `${isFinite(pct)?(pct+'%'):'—'} error · weight ${Math.round((b.weight||0)*100)}%`)
+          ]));
+        });
+        body.appendChild(teaser);
+      }
+    } catch(e){ /* no-op if bank too thin */ }
+  }
+
+  const sess = loadLS(LS_KEY);
+  if (sess && sess.session && !sess.session.submitted){
+    const s = sess.session;
+    const answered = s.questions.filter(q=>q.selected).length;
+    const resumePanel = el('div',{style:{marginTop:'14px', padding:'14px', background:'#fff8e1', border:'2px solid #e5c27a', borderRadius:'6px'}});
+    resumePanel.appendChild(el('div',{style:{fontWeight:'bold', fontSize:'15px', marginBottom:'6px'}}, 'In-progress exam'));
+    resumePanel.appendChild(el('div',{style:{marginBottom:'4px'}}, `${s.paper} · ${s.questions.length} questions · ${answered} answered`));
+    resumePanel.appendChild(el('div',{class:'note', style:{marginBottom:'10px'}}, `Started ${new Date(s.startedAt).toLocaleString()}` + (s.durationMs > 0 ? ` · ${fmtHMS(s.timeLeftMs)} remaining` : ' · Untimed')));
+    const btnRow = el('div',{class:'row', style:{gap:'8px'}});
+    btnRow.appendChild(el('button',{class:'vbtn primary', style:{fontSize:'15px', padding:'8px 24px'}, onClick: () => {
+      // Bank is already in state.bank via seedEmbeddedBank / LS_BANK — no need to load from session save
+      state.session = s;
+      state.session.paused = false;
+      state.screen = 'exam'; render(); startTimer();
+    }},'Resume exam ▸'));
+    btnRow.appendChild(el('button',{class:'vbtn danger', onClick: () => {
+      if (!confirm('Abandon this exam? All progress will be lost.')) return;
+      localStorage.removeItem(LS_KEY); state.session = null; render();
+    }},'Abandon'));
+    btnRow.appendChild(el('button',{class:'vbtn', onClick: () => {
+      if (!confirm('Start a fresh exam? The in-progress session will be discarded.')) return;
+      localStorage.removeItem(LS_KEY); state.session = null; state.screen = 'config'; render();
+    }},'New exam'));
+    resumePanel.appendChild(btnRow);
+    body.appendChild(resumePanel);
+  }
+
+  body.appendChild(el('div',{class:'divider'}));
+  body.appendChild(el('div',{class:'note'},
+    `Your CSV should have columns like: Question, A, B, C, D, E, Correct, Explanation, Topic. Other names are auto-mapped.`
+  ));
+
+  panel.appendChild(body);
+  root.appendChild(panel);
+
+  // file handlers — allow multiple files, processed one at a time
+  const inp = $('#fileInp', root);
+  drop.addEventListener('click', ()=> inp.click());
+  drop.addEventListener('dragover', e=>{e.preventDefault(); drop.classList.add('over');});
+  drop.addEventListener('dragleave', ()=> drop.classList.remove('over'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('over');
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.length) queueFiles(files);
+  });
+  inp.addEventListener('change', e => {
+    const files = Array.from(e.target.files || []);
+    if (files.length) queueFiles(files);
+  });
+}
+
+/* When multiple CSVs are dropped, queue them so that after mapping one we
+   automatically start the next. On the first file we show the mapping screen;
+   for subsequent files we auto-apply the same mapping if headers match.  */
+function queueFiles(files){
+  state.fileQueue = files.slice();
+  loadNextQueuedFile();
+}
+function loadNextQueuedFile(){
+  if (!state.fileQueue || !state.fileQueue.length) return false;
+  const f = state.fileQueue.shift();
+  loadFile(f);
+  return true;
+}
+
+function loadFile(file){
+  const sourceSel = document.getElementById('uploadSource');
+  const modeSel = document.getElementById('uploadMode');
+  state.uploadSourceOverride = sourceSel ? (sourceSel.value === '(use source column from CSV)' ? '' : sourceSel.value) : '';
+  state.uploadAppend = modeSel ? (modeSel.value === 'append') : !!(state.bank && state.bank.length);
+  state.uploadingFileName = file.name;
+  const fr = new FileReader();
+  fr.onload = () => {
+    const text = String(fr.result || '');
+    try{
+      const parsed = parseCSV(text);
+      if (!parsed.headers.length){ alert('CSV appears empty or unreadable.'); return; }
+      state.rawCsv = parsed;
+      // If we already have a mapping and the headers match, auto-apply and skip
+      // the mapping screen — nice for batch uploads of the same template.
+      const prevMap = state.lastMapping;
+      const headerSet = new Set(parsed.headers);
+      const reusable = prevMap && ['stem','optA','optB','correct'].every(k => !prevMap[k] || headerSet.has(prevMap[k]));
+      if (reusable && state.fileQueue){ /* multi-file mode */
+        state.mapping = {...prevMap};
+        autoBuildAndContinue();
+      } else {
+        state.mapping = autoMap(parsed.headers);
+        state.screen = 'mapping'; render();
+      }
+    }catch(e){ alert('CSV parse failed: '+e.message); }
+  };
+  fr.readAsText(file);
+}
+
+/* Auto-build bank & either continue with queued files or head to config */
+function autoBuildAndContinue(){
+  const {bank, skipped} = buildBank(state.rawCsv, state.mapping);
+  if (bank.length){
+    if (state.uploadSourceOverride) bank.forEach(q => { q.source = state.uploadSourceOverride; });
+    bank.forEach(q => { q.topicRaw = q.topic; q.topicCanon = canonTopic(q.topic, q.subject); });
+    if (state.uploadAppend && Array.isArray(state.bank) && state.bank.length){
+      const seen = new Set(state.bank.map(q => q.qhash));
+      const add = bank.filter(q => !seen.has(q.qhash));
+      state.bank = state.bank.concat(add);
+    } else {
+      state.bank = bank;
+      state.uploadAppend = true; // subsequent files in the queue should append
+    }
+    saveLS(LS_BANK, {bank: state.bank, savedAt: Date.now()});
+  }
+  if (state.fileQueue && state.fileQueue.length){
+    loadNextQueuedFile();
+  } else {
+    state.screen = 'config'; render();
+  }
+}
+
+function renderMapping(root){
+  const {headers, rows} = state.rawCsv;
+  const m = state.mapping;
+
+  const panel = el('div',{class:'panel'});
+  panel.appendChild(el('div',{class:'phead'},'2. Map CSV columns  (auto-detected — adjust if anything is wrong)'));
+  const body = el('div',{class:'pbody'});
+
+  body.appendChild(el('div',{class:'crumb'},[
+    el('span',{},'Parsed '),el('b',{},`${rows.length} rows`),el('span',{},' · '),
+    el('span',{},'Delimiter: '),el('b',{},JSON.stringify(state.rawCsv.delim).replace(/"/g,''))
+  ]));
+
+  const grid = el('div',{class:'grid2'});
+  const mkField = (key,label,hint)=>{
+    const f = el('div',{class:'field'});
+    f.appendChild(el('label',{},label));
+    const sel = el('select',{});
+    sel.appendChild(el('option',{value:''},'— none —'));
+    headers.forEach(h => {
+      const opt = el('option',{value:h}, h);
+      if (h === m[key]) opt.setAttribute('selected','selected');
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', ()=> { m[key] = sel.value; refreshPreview(); });
+    f.appendChild(sel);
+    if (hint) f.appendChild(el('div',{class:'hint'},hint));
+    return f;
+  };
+  grid.appendChild(mkField('stem','Question / stem','Required'));
+  grid.appendChild(mkField('correct','Correct answer','Letter A–E, number 1–5, or full text'));
+  grid.appendChild(mkField('optA','Option A','Required (min 2 options)'));
+  grid.appendChild(mkField('optB','Option B'));
+  grid.appendChild(mkField('optC','Option C'));
+  grid.appendChild(mkField('optD','Option D'));
+  grid.appendChild(mkField('optE','Option E'));
+  grid.appendChild(mkField('explanation','Explanation / rationale'));
+  grid.appendChild(mkField('topic','Topic / specialty'));
+  grid.appendChild(mkField('source','Source (eMRCS / Pastest)'));
+  body.appendChild(grid);
+
+  body.appendChild(el('div',{class:'divider'}));
+  body.appendChild(el('div',{class:'phead',style:{background:'#f6f8fa',border:'1px solid #d5dae0',borderRadius:'2px',padding:'6px 10px',marginBottom:'6px'}},'Preview'));
+  const prev = el('div',{id:'mapPreview'});
+  body.appendChild(prev);
+
+  const actions = el('div',{class:'row',style:{justifyContent:'flex-end',marginTop:'16px'}},[
+    el('button',{class:'vbtn', onClick:()=>{state.screen='home';render();}}, '◂ Back'),
+    el('button',{class:'vbtn primary', id:'btnBuildBank', onClick:()=>{
+      const {bank, skipped} = buildBank(state.rawCsv, state.mapping);
+      if (!bank.length){ alert('No valid questions could be built. Check the mapping.'); return; }
+      // Apply upload source override
+      if (state.uploadSourceOverride){
+        bank.forEach(q => { q.source = state.uploadSourceOverride; });
+      }
+      // Normalise topic to canonical MRCS syllabus bucket (keeps original in q.topicRaw)
+      bank.forEach(q => { q.topicRaw = q.topic; q.topicCanon = canonTopic(q.topic, q.subject); });
+      // Merge / replace
+      if (state.uploadAppend && Array.isArray(state.bank) && state.bank.length){
+        // dedupe by qhash
+        const seen = new Set(state.bank.map(q => q.qhash));
+        const add = bank.filter(q => !seen.has(q.qhash));
+        state.bank = state.bank.concat(add);
+      } else {
+        state.bank = bank;
+      }
+      saveLS(LS_BANK, {bank: state.bank, savedAt: Date.now()});
+      if (skipped>0) console.warn(`Skipped ${skipped} rows with missing data.`);
+      state.screen = 'config'; render();
+    }}, 'Continue ▸')
+  ]);
+  body.appendChild(actions);
+  panel.appendChild(body);
+  root.appendChild(panel);
+
+  refreshPreview();
+}
+function refreshPreview(){
+  const host = $('#mapPreview'); if (!host) return;
+  const {bank, skipped} = buildBank(state.rawCsv, state.mapping);
+  host.innerHTML = '';
+  const summary = el('div',{class:'row', style:{marginBottom:'8px'}},[
+    el('span',{class:'chip'}, `Built ${bank.length} questions`),
+    el('span',{class:'chip'}, `Skipped ${skipped}`),
+  ]);
+  host.appendChild(summary);
+
+  if (!bank.length){
+    host.appendChild(el('div',{class:'note'},'No valid questions yet — make sure Question and at least Options A & B are mapped.'));
+    return;
+  }
+  const q = bank[0];
+  const box = el('div',{style:{background:'#f6f8fa',border:'1px solid #d5dae0',padding:'10px',borderRadius:'2px'}});
+  box.appendChild(el('div',{style:{fontWeight:'bold',marginBottom:'6px'}},'Sample question (row 1)'));
+  box.appendChild(el('div',{style:{whiteSpace:'pre-wrap',marginBottom:'8px'}}, q.stem));
+  q.options.forEach(o => box.appendChild(el('div',{style:{margin:'2px 0'}}, `${o.letter}. ${o.text}`)));
+  box.appendChild(el('div',{style:{marginTop:'6px'}},[
+    el('span',{class:'chip'}, `Correct: ${q.correctLetter || '— none detected —'}`),
+    q.topic ? el('span',{class:'chip'}, `Topic: ${q.topic}`) : null,
+    q.source ? el('span',{class:'chip'}, `Source: ${q.source}`) : null,
+  ]));
+  if (q.explanation){
+    const d = el('details');
+    d.appendChild(el('summary',{},'Explanation'));
+    d.appendChild(el('div',{style:{whiteSpace:'pre-wrap',marginTop:'6px'}}, q.explanation));
+    box.appendChild(d);
+  }
+  host.appendChild(box);
+}
+
+function renderConfig(root){
+  // Ensure every bank entry has a qhash (in case loaded from older saved bank)
+  state.bank.forEach(q => { if (!q.qhash) q.qhash = hashStem(q.stem); });
+
+  const panel = el('div',{class:'panel'});
+  panel.appendChild(el('div',{class:'phead'}, `3. Configure exam session  ·  bank: ${state.bank.length} questions`));
+  const body = el('div',{class:'pbody'});
+
+  // Paper preset
+  body.appendChild(el('div',{class:'field'},[
+    el('label',{},'Exam format'),
+    (() => {
+      const sel = el('select',{id:'paper'});
+      [
+        {v:'paper1', t:'MRCS Part A — Paper 1 (ABS): 180 questions, 180 min (2 × 90 min + break)'},
+        {v:'paper2', t:'MRCS Part A — Paper 2 (POSG): 120 questions, 120 min'},
+        {v:'fullday',t:'Full exam day — Paper 1 + Paper 2 (300 questions, 5h)'},
+        {v:'mini30', t:'Mini block — 30 questions, 40 min'},
+        {v:'mini50', t:'Mini block — 50 questions, 67 min'},
+        {v:'custom', t:'Custom — set your own count & timer'},
+      ].forEach(o => sel.appendChild(el('option',{value:o.v},o.t)));
+      sel.addEventListener('change', ()=> onPaperChange());
+      return sel;
+    })(),
+  ]));
+
+  const grid = el('div',{class:'grid2'});
+  grid.appendChild(el('div',{class:'field'},[
+    el('label',{},'Number of questions'),
+    el('input',{type:'number',id:'qCount',min:'1', value:String(Math.min(180, state.bank.length))}),
+    el('div',{class:'hint', id:'qCountHint'},`Available in your bank: ${state.bank.length}`)
+  ]));
+  grid.appendChild(el('div',{class:'field'},[
+    el('label',{},'Total time (minutes)'),
+    el('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},[
+      el('input',{type:'number',id:'mins',min:'1',value:'180', style:{flex:'1'}}),
+      el('label',{class:'chk',style:{whiteSpace:'nowrap'}},[
+        el('input',{type:'checkbox',id:'untimed', onChange:()=>{
+          const m=$('#mins'); m.disabled=$('#untimed').checked; if(m.disabled) m.style.opacity='0.4'; else m.style.opacity='1';
+        }}),
+        el('span',{},'Untimed')
+      ])
+    ]),
+    el('div',{class:'hint'},'MRCS pace: Paper 1 = 60s/Q (180Q/180min) · Paper 2 = 60s/Q (120Q/120min)')
+  ]));
+  body.appendChild(grid);
+
+  body.appendChild(el('div',{class:'field'},[
+    el('label',{},'Mode'),
+    (()=>{ const s=el('select',{id:'mode'});
+      s.appendChild(el('option',{value:'strict'}, 'Strict exam — no feedback until you end the paper'));
+      s.appendChild(el('option',{value:'tutor'}, 'Tutor mode — reveal answer + explanation as you go'));
+      s.appendChild(el('option',{value:'toggle'}, 'On-demand — a "Reveal Answer" button per question'));
+      return s;
+    })(),
+  ]));
+
+  body.appendChild(el('div',{class:'row'},[
+    el('label',{class:'chk'},[el('input',{type:'checkbox',id:'shuffleOpts'}),el('span',{},'Shuffle option order (per question)')]),
+    el('label',{class:'chk'},[el('input',{type:'checkbox',id:'onlyWithCorrect',checked:'checked', onChange:refreshFilterPreview}),el('span',{},'Only questions with a known correct answer')]),
+  ]));
+
+  /* --- Filter by attempt history --- */
+  body.appendChild(el('div',{class:'divider'}));
+  body.appendChild(el('div',{class:'phead',style:{background:'#f6f8fa',border:'1px solid #d5dae0',borderRadius:'2px',padding:'6px 10px',marginBottom:'8px'}},'Filter by what you\u2019ve already attempted'));
+
+  body.appendChild(el('div',{class:'row'},[
+    el('label',{class:'chk'},[el('input',{type:'checkbox',id:'fNeverSeen', onChange:refreshFilterPreview}),el('span',{},'Only questions I\u2019ve never attempted')]),
+    el('label',{class:'chk'},[el('input',{type:'checkbox',id:'fLastWrong', onChange:refreshFilterPreview}),el('span',{},'Only ones I got wrong last time')]),
+    el('label',{class:'chk'},[el('input',{type:'checkbox',id:'fNeverCorrect', onChange:refreshFilterPreview}),el('span',{},'Only ones I\u2019ve never gotten right')]),
+  ]));
+  body.appendChild(el('div',{class:'row'},[
+    el('label',{class:'chk'},[
+      el('input',{type:'checkbox',id:'fMastered', onChange:refreshFilterPreview}),
+      el('span',{},'Exclude "mastered" (correct at least '),
+      el('input',{type:'number',id:'masterN',min:'1',max:'20',value:'2',style:{width:'54px',margin:'0 6px'}, onChange:refreshFilterPreview}),
+      el('span',{},'time(s))'),
+    ]),
+  ]));
+  const histList = loadHistory();
+  if (histList.length){
+    const sel = el('select',{id:'fExcludeSession', onChange:refreshFilterPreview});
+    sel.appendChild(el('option',{value:''},'— no exclusion —'));
+    histList.slice(0,30).forEach(h => {
+      sel.appendChild(el('option',{value:h.id}, `${new Date(h.startedAt).toLocaleString()} · ${h.paper.slice(0,38)} · ${h.totalQ}Q · ${h.scorePct}%`));
+    });
+    body.appendChild(el('div',{class:'field'},[
+      el('label',{},'Exclude questions already in a previous session'),
+      sel,
+      el('div',{class:'hint'},'Pick a session to skip every question it contained.')
+    ]));
+  }
+
+  /* --- Subject + Topic filter + arrangement --- */
+  body.appendChild(el('div',{class:'divider'}));
+  body.appendChild(el('div',{class:'phead',style:{background:'#f6f8fa',border:'1px solid #d5dae0',borderRadius:'2px',padding:'6px 10px',marginBottom:'8px'}},'Subjects & topics'));
+
+  // Build subject → topics mapping and counts
+  const subjectTopics = {};  // subject → Set of topics
+  const subjectCounts = {};  // subject → question count
+  const topicToSubject = {}; // topic → subject
+  const topicCounts = {};
+  state.bank.forEach(q => {
+    const s = q.subject || 'General';
+    const t = q.topic || '(untagged)';
+    if (!subjectTopics[s]) subjectTopics[s] = new Set();
+    subjectTopics[s].add(t);
+    subjectCounts[s] = (subjectCounts[s]||0) + 1;
+    topicCounts[t] = (topicCounts[t]||0) + 1;
+    topicToSubject[t] = s;
+  });
+  const topicKeys = Object.keys(topicCounts).sort();
+
+  // Subject checkboxes — big categories user can toggle
+  const subjectOrder = [
+    "Anatomy","Physiology","Pathology","Peri-operative care",
+    "Post-operative management and critical care","Surgical technique and technology",
+    "Management and legal issues in surgery","Clinical microbiology",
+    "Emergency medicine and management of trauma","Principles of surgical oncology",
+    "The abdomen","Upper gastrointestinal surgery","Hepatobiliary and pancreatic surgery",
+    "Colorectal surgery","Breast and endocrine surgery","Vascular surgery","Urology",
+    "Organ transplantation","Head and neck surgery","Skin lesions","Hand disorders",
+    "Surgical disorders of the brain","Paediatric surgery","Orthopaedics"
+  ];
+  const subjectKeys = subjectOrder.filter(s => subjectCounts[s]);
+  // add any extra subjects not in the predefined order
+  Object.keys(subjectCounts).sort().forEach(s => { if (!subjectKeys.includes(s)) subjectKeys.push(s); });
+
+  const subjectsHost = el('div',{id:'subjectsHost', style:{
+    display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:'2px',
+    maxHeight:'320px', overflow:'auto',
+    border:'1px solid #d5dae0', padding:'8px', background:'#fbfcfd', borderRadius:'2px'
+  }});
+
+  function toggleSubjectTopics(subj, checked) {
+    const topics = subjectTopics[subj];
+    if (!topics) return;
+    $$('#topicsHost input[type=checkbox]').forEach(c => {
+      if (topics.has(c.getAttribute('data-topic'))) c.checked = checked;
+    });
+    refreshFilterPreview();
+  }
+
+  subjectKeys.forEach(s => {
+    const cnt = subjectCounts[s]||0;
+    const pct = ((cnt / state.bank.length)*100).toFixed(0);
+    const bar = el('div',{style:{
+      position:'absolute', left:0, top:0, bottom:0,
+      width: pct+'%', background:'rgba(40,167,69,0.15)', borderRadius:'3px', pointerEvents:'none'
+    }});
+    const row = el('label',{class:'chk', 'data-subject':s, style:{
+      fontSize:'13px', position:'relative', padding:'4px 6px', borderRadius:'3px',
+      background:'#f0f3f6', border:'1px solid #e1e4e8', cursor:'pointer'
+    }},[
+      bar,
+      el('input',{type:'checkbox', 'data-subject':s, checked:'checked', onChange:(e)=>{
+        toggleSubjectTopics(s, e.target.checked);
+      }}),
+      el('span',{style:{position:'relative',zIndex:1,fontWeight:'500'}}, ` ${s} `),
+      el('span',{class:'note',style:{position:'relative',zIndex:1}}, `(${cnt})`)
+    ]);
+    subjectsHost.appendChild(row);
+  });
+
+  body.appendChild(el('div',{class:'row', style:{marginBottom:'6px', gap:'6px', flexWrap:'wrap'}},[
+    el('button',{class:'vbtn', onClick:(e)=>{
+      e.preventDefault();
+      $$('#subjectsHost input[type=checkbox]').forEach(c=>{c.checked=true});
+      $$('#topicsHost input[type=checkbox]').forEach(c=>{c.checked=true});
+      refreshFilterPreview();
+    }},'Select all subjects'),
+    el('button',{class:'vbtn', onClick:(e)=>{
+      e.preventDefault();
+      $$('#subjectsHost input[type=checkbox]').forEach(c=>{c.checked=false});
+      $$('#topicsHost input[type=checkbox]').forEach(c=>{c.checked=false});
+      refreshFilterPreview();
+    }},'Clear all'),
+    el('span',{class:'note'}, `${subjectKeys.length} subjects, ${state.bank.length} questions`)
+  ]));
+  body.appendChild(subjectsHost);
+
+  // Collapsible granular topic filter
+  const topicToggle = el('button',{class:'vbtn', style:{marginTop:'8px',fontSize:'12px'}, onClick:(e)=>{
+    e.preventDefault();
+    const host = document.getElementById('topicsHost');
+    const vis = host.style.display !== 'none';
+    host.style.display = vis ? 'none' : 'grid';
+    e.target.textContent = vis ? '▸ Show individual topics' : '▾ Hide individual topics';
+  }}, '▸ Show individual topics');
+  body.appendChild(topicToggle);
+
+  const topicsHost = el('div',{id:'topicsHost', style:{
+    display:'none',
+    gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:'4px',
+    maxHeight:'200px', overflow:'auto',
+    border:'1px solid #d5dae0', padding:'8px', background:'#fbfcfd', borderRadius:'2px',
+    marginTop:'4px'
+  }});
+  topicKeys.forEach(t => {
+    const id = 'topic-'+hashStem(t);
+    topicsHost.appendChild(el('label',{class:'chk', style:{fontSize:'12.5px'}},[
+      el('input',{type:'checkbox', 'data-topic':t, id, checked:'checked', onChange:refreshFilterPreview}),
+      el('span',{}, `${t} `),
+      el('span',{class:'note'}, `(${topicCounts[t]})`)
+    ]));
+  });
+  body.appendChild(topicsHost);
+
+  /* --- Source filter --- */
+  const sourceCounts = {};
+  state.bank.forEach(q => { const s = q.source || '(unknown)'; sourceCounts[s] = (sourceCounts[s]||0) + 1; });
+  const sourceKeys = Object.keys(sourceCounts).sort();
+  if (sourceKeys.length > 1){
+    body.appendChild(el('div',{class:'field', style:{marginTop:'10px'}},[
+      el('label',{},'Source'),
+      (()=>{
+        const host = el('div',{class:'row', id:'sourcesHost'});
+        sourceKeys.forEach(s => {
+          host.appendChild(el('label',{class:'chk',style:{fontSize:'12.5px'}},[
+            el('input',{type:'checkbox','data-source':s, checked:'checked', onChange:refreshFilterPreview}),
+            el('span',{}, `${s} `),
+            el('span',{class:'note'}, `(${sourceCounts[s]})`)
+          ]));
+        });
+        return host;
+      })(),
+      el('div',{class:'hint'},'Whatever you tagged at upload (eMRCS / Pastest / etc.) appears here — uncheck to exclude that source.')
+    ]));
+  }
+
+  body.appendChild(el('div',{class:'field', style:{marginTop:'10px'}},[
+    el('label',{},'Question arrangement'),
+    (()=>{ const s=el('select',{id:'arrange', onChange:refreshFilterPreview});
+      s.appendChild(el('option',{value:'blueprint_p1'}, 'MRCS Paper 1 blueprint (Anatomy 40 / Physio 25 / Path 20 / Pharm, Micro, Stats 15)'));
+      s.appendChild(el('option',{value:'blueprint_p2'}, 'MRCS Paper 2 blueprint (POSG weighted)'));
+      s.appendChild(el('option',{value:'blueprint_all'}, 'Full MRCS blueprint (Paper 1 + 2 combined)'));
+      s.appendChild(el('option',{value:'random'}, 'Random (MRCS-style mix)'));
+      s.appendChild(el('option',{value:'interleaved'}, 'Interleaved by topic (round-robin)'));
+      s.appendChild(el('option',{value:'grouped'}, 'Grouped by topic (block per specialty)'));
+      s.appendChild(el('option',{value:'csv'}, 'Keep CSV order'));
+      return s;
+    })(),
+    el('div',{class:'hint'},'Blueprint modes sample your pool at the official MRCS Part A proportions so your mock matches the real exam\u2019s topic balance. Random / interleaved / grouped ignore weights.')
+  ]));
+
+  body.appendChild(el('div',{class:'divider'}));
+  body.appendChild(el('div',{id:'filterPreview', class:'row', style:{padding:'8px',background:'#eef4fb',border:'1px solid #b8cae6',borderRadius:'2px'}}));
+
+  body.appendChild(el('div',{class:'row',style:{justifyContent:'space-between', marginTop:'12px'}},[
+    el('button',{class:'vbtn', onClick:()=>{state.screen = state.rawCsv ? 'mapping' : 'home'; render();}}, '◂ Back'),
+    el('button',{class:'vbtn primary', id:'btnStartExam', onClick: startExam}, 'Start Exam ▸'),
+  ]));
+
+  panel.appendChild(body);
+  root.appendChild(panel);
+
+  refreshFilterPreview();
+
+  function onPaperChange(){
+    const v = $('#paper').value;
+    const map = {paper1:[180,180], paper2:[120,120], fullday:[300,300], mini30:[30,40], mini50:[50,67], custom:[null,null]};
+    const [qc, mn] = map[v];
+    if (qc!=null) $('#qCount').value = Math.min(qc, state.bank.length);
+    if (mn!=null) $('#mins').value = mn;
+  }
+
+  function gatherCfg(){
+    const selTopics = $$('#topicsHost input[type=checkbox]').filter(c => c.checked).map(c => c.getAttribute('data-topic'));
+    const sourceHost = document.getElementById('sourcesHost');
+    const selSources = sourceHost
+      ? Array.from(sourceHost.querySelectorAll('input[type=checkbox]')).filter(c => c.checked).map(c => c.getAttribute('data-source'))
+      : null;
+    return {
+      onlyWithCorrect: $('#onlyWithCorrect').checked,
+      onlyNeverSeen: $('#fNeverSeen').checked,
+      onlyLastWrong: $('#fLastWrong').checked,
+      onlyNeverCorrect: $('#fNeverCorrect').checked,
+      excludeMastered: $('#fMastered').checked,
+      masterN: parseInt($('#masterN').value,10)||2,
+      excludeSeenInSession: !!($('#fExcludeSession') && $('#fExcludeSession').value),
+      excludeSessionId: $('#fExcludeSession') ? $('#fExcludeSession').value : '',
+      topicFilter: selTopics,
+      sourceFilter: selSources,
+      arrange: $('#arrange').value,
+      shuffleOpts: $('#shuffleOpts').checked,
+    };
+  }
+
+  function computePool(cfg){
+    let pool = state.bank.slice();
+    if (cfg.onlyWithCorrect) pool = pool.filter(q => q.correctLetter);
+    pool = filterBankByAttempts(pool, cfg);
+    return pool;
+  }
+
+  function refreshFilterPreview(){
+    const cfg = gatherCfg();
+    const pool = computePool(cfg);
+    const host = $('#filterPreview');
+    host.innerHTML = '';
+    host.appendChild(el('span',{},[
+      el('b',{}, `${pool.length}`),
+      el('span',{}, ` question${pool.length===1?'':'s'} match your filters out of ${state.bank.length} in bank`),
+    ]));
+    // adjust qCount cap if needed
+    const qc = $('#qCount');
+    if (parseInt(qc.value,10) > pool.length) qc.value = String(pool.length);
+    $('#qCountHint').textContent = `Available after filters: ${pool.length}`;
+    $('#btnStartExam').disabled = pool.length === 0;
+  }
+
+  function startExam(){
+    const cfg = gatherCfg();
+    const pool = computePool(cfg);
+    if (!pool.length){ alert('No questions match your filters. Loosen the filters or pick more topics.'); return; }
+    const paperLabel = $('#paper').selectedOptions[0].textContent;
+    const qCount = Math.max(1, Math.min(pool.length, parseInt($('#qCount').value,10)||pool.length));
+    const isUntimed = $('#untimed') && $('#untimed').checked;
+    const mins = isUntimed ? 0 : Math.max(1, parseInt($('#mins').value,10)||60);
+    const modeVal = $('#mode').value;
+
+    let arranged;
+    if (cfg.arrange === 'blueprint_p1') arranged = arrangeByBlueprint(pool, 'paper1', qCount);
+    else if (cfg.arrange === 'blueprint_p2') arranged = arrangeByBlueprint(pool, 'paper2', qCount);
+    else if (cfg.arrange === 'blueprint_all') arranged = arrangeByBlueprint(pool, 'all', qCount);
+    else arranged = arrangePool(pool, cfg.arrange);
+    const trimmed = arranged.slice(0, qCount);
+
+    const sess = newSession({
+      bank: trimmed,
+      paper: paperLabel,
+      mode: modeVal,
+      durationMs: isUntimed ? -1 : mins*60*1000,  // -1 = untimed (survives JSON)
+      shuffleQ: false,            // arrangement already decided
+      shuffleOpts: cfg.shuffleOpts,
+      questionCount: trimmed.length,
+      showAnswers: modeVal === 'tutor'
+    });
+    state.session = sess;
+    persist();
+    state.screen = 'exam';
+    render();
+    startTimer();
+  }
+}
+
+/* ---------- Focus List ----------
+   Prioritises which MRCS topics to revise by combining:
+     - syllabus weight  (how much of the exam is on that topic)
+     - your error rate  (wrongs / attempts in that topic)
+     - volume tilt      (a small log-penalty for topics you've barely seen)
+   Score = syllabus_weight * errorRate * volumeFactor
+   Where volumeFactor = min(1, log2(1 + seen) / 3) so 1-2 attempts don't dominate.
+   Result: expected "points recoverable per unit revision time".
+*/
+function buildFocusList(paper /* 'paper1'|'paper2'|'all' */){
+  const att = loadAttempts();
+  const blueprint = paper === 'paper1' ? MRCS_SYLLABUS.paper1
+                 : paper === 'paper2' ? MRCS_SYLLABUS.paper2
+                 : [...MRCS_SYLLABUS.paper1, ...MRCS_SYLLABUS.paper2].map(b=>({...b,weight:b.weight/2}));
+  // aggregate per canonical bucket from the attempt log
+  const per = {};
+  blueprint.forEach(b => per[b.key] = {key:b.key, label:b.label, weight:b.weight, seen:0, correct:0, wrong:0, blank:0, never:0, wrongExamples:[], neverExamples:[]});
+  const other = {key:'_other', label:'(Unmapped topics)', weight:0, seen:0, correct:0, wrong:0, blank:0, never:0, wrongExamples:[], neverExamples:[]};
+
+  // also fold in bank-level "never seen" counts so focus ≠ just what you've attempted
+  const bank = state.bank || [];
+  bank.forEach(q => {
+    const key = q.topicCanon || canonTopic(q.topicRaw || q.topic, q.subject);
+    const bucket = per[key] || other;
+    if (!att[q.qhash]){
+      bucket.never++;
+      if (bucket.neverExamples.length < 3) bucket.neverExamples.push(q.stem.slice(0,120));
+    }
+  });
+
+  Object.values(att).forEach(r => {
+    const key = canonTopic(r.topic, r.subject);
+    const bucket = per[key] || other;
+    bucket.seen += r.seen||0;
+    bucket.correct += r.correct||0;
+    bucket.wrong += r.wrong||0;
+    bucket.blank += r.blank||0;
+    if ((r.wrong||0) > 0 && bucket.wrongExamples.length < 3){
+      bucket.wrongExamples.push((r.stem||'').slice(0,120));
+    }
+  });
+
+  const items = [...blueprint.map(b => per[b.key]), other].filter(b => b.seen + b.never > 0);
+
+  items.forEach(b => {
+    const attempts = b.correct + b.wrong; // ignore blanks for rate
+    const errRate = attempts > 0 ? (b.wrong / attempts) : 0.5; // unknown → assume 50%
+    const volumeFactor = Math.min(1, Math.log2(1 + b.seen) / 3);
+    // If a topic has lots of never-seen qs it should still surface
+    const neverBoost = (b.never > 0) ? Math.min(0.15, b.never / (bank.length||1)) : 0;
+    b.errorRate = errRate;
+    b.volumeFactor = volumeFactor;
+    b.neverBoost = neverBoost;
+    b.priority = (b.weight || 0.02) * (errRate + neverBoost) * (0.4 + 0.6*volumeFactor);
+  });
+
+  items.sort((a,b) => b.priority - a.priority);
+  return items;
+}
+
+/* ---------- History screen ---------- */
+function renderHistory(root){
+  $('#barTitle').textContent = 'MRCS VUE — History';
+  const hist = loadHistory();
+  const att = loadAttempts();
+
+  const hero = el('div',{class:'hero'},[
+    el('h1',{}, `${hist.length} past session${hist.length===1?'':'s'}`),
+    el('p',{}, `${Object.keys(att).length} unique questions attempted · aggregated from every ended exam.`),
+    el('button',{class:'vbtn danger', style:{marginTop:'10px'}, onClick:()=>{
+      if (!confirm('Clear ALL sessions, attempt logs, and in-progress exams? This resets everything so you start fresh. Your question bank is NOT affected.')) return;
+      localStorage.removeItem(LS_HIST);
+      localStorage.removeItem(LS_ATT);
+      localStorage.removeItem(LS_KEY);
+      state.session = null;
+      render();
+    }}, 'Reset all session data (start fresh)'),
+  ]);
+  root.appendChild(hero);
+
+  /* In-progress session banner (with Resume + Abandon) */
+  const inProg = loadLS(LS_KEY);
+  if (inProg && inProg.session && !inProg.session.submitted){
+    const s = inProg.session;
+    const answered = s.questions.filter(q=>q.selected).length;
+    const ip = el('div',{class:'panel', style:{marginBottom:'14px', border:'2px solid #e5c27a', background:'#fffdf5'}});
+    ip.appendChild(el('div',{class:'phead', style:{background:'#fff8e1'}}, 'In-progress exam'));
+    const ipb = el('div',{class:'pbody'});
+    ipb.appendChild(el('div',{class:'row', style:{alignItems:'center'}},[
+      el('div',{style:{flex:1}},[
+        el('div',{}, `${s.paper} · ${s.questions.length} questions · ${answered} answered`),
+        el('div',{class:'note'}, `Started ${new Date(s.startedAt).toLocaleString()}` + (s.durationMs > 0 ? ` · ${fmtHMS(s.timeLeftMs)} remaining` : ' · Untimed')),
+      ]),
+      el('button',{class:'vbtn primary', onClick:()=>{
+        state.bank = inProg.bank || state.bank;
+        state.session = s;
+        state.session.paused = false;
+        state.screen = 'exam'; render(); startTimer();
+      }}, 'Resume \u25b8'),
+      el('button',{class:'vbtn danger', style:{marginLeft:'6px'}, onClick:()=>{
+        if (!confirm('Abandon this exam? All progress will be lost.')) return;
+        localStorage.removeItem(LS_KEY); state.session = null; render();
+      }}, 'Abandon'),
+    ]));
+    ip.appendChild(ipb);
+    root.appendChild(ip);
+  }
+
+  /* ---- Selective reset by source/subject ---- */
+  {
+    const bankSrcs = [...new Set((state.bank||[]).map(q=>q.source).filter(Boolean))].sort();
+    const bankSubs = [...new Set((state.bank||[]).map(q=>q.subject).filter(Boolean))].sort();
+
+    const rp = el('div',{class:'panel'});
+    rp.appendChild(el('div',{class:'phead'},'Selective reset — clear attempts for one source or one subject'));
+    const rb = el('div',{class:'pbody'});
+
+    const srcSel = el('select',{id:'resetSrc'});
+    srcSel.appendChild(el('option',{value:'__all__'},'All sources'));
+    bankSrcs.forEach(s => srcSel.appendChild(el('option',{value:s}, s)));
+
+    const subSel = el('select',{id:'resetSub'});
+    subSel.appendChild(el('option',{value:'__all__'},'All subjects'));
+    bankSubs.forEach(s => subSel.appendChild(el('option',{value:s}, s)));
+
+    rb.appendChild(el('div',{class:'row',style:{marginBottom:'8px'}},[
+      el('label',{class:'chk'},[el('span',{},'Source:'), srcSel]),
+      el('label',{class:'chk',style:{marginLeft:'12px'}},[el('span',{},'Subject:'), subSel]),
+    ]));
+
+    const summary = el('div',{id:'resetSummary',class:'note',style:{marginTop:'6px'}});
+    rb.appendChild(summary);
+
+    const matches = () => {
+      const src = srcSel.value, sub = subSel.value;
+      const hashes = new Set((state.bank||[])
+        .filter(q => (src==='__all__'||q.source===src) && (sub==='__all__'||q.subject===sub))
+        .map(q => q.qhash));
+      const att = loadAttempts();
+      const attHashes = Object.keys(att).filter(h => hashes.has(h));
+      const hist = loadHistory();
+      const histSess = hist.filter(h => (h.qhashes||[]).some(qh => hashes.has(qh)));
+      const histFull = hist.filter(h => (h.qhashes||[]).length>0 && (h.qhashes||[]).every(qh => hashes.has(qh)));
+      return {hashes, attHashes, histSess, histFull};
+    };
+    const updateSummary = () => {
+      const m = matches();
+      summary.textContent = `Selection covers ${m.hashes.size} bank question${m.hashes.size===1?'':'s'} · ${m.attHashes.length} attempted · ${m.histSess.length} session${m.histSess.length===1?'':'s'} touched these (${m.histFull.length} session${m.histFull.length===1?'':'s'} are 100% within selection).`;
+    };
+    srcSel.addEventListener('change', updateSummary);
+    subSel.addEventListener('change', updateSummary);
+    updateSummary();
+
+    const btnAtt = el('button',{class:'vbtn',style:{marginTop:'10px'}, onClick:()=>{
+      const m = matches();
+      if (!m.attHashes.length){ alert('No attempts match this selection.'); return; }
+      const label = `${srcSel.value==='__all__'?'all sources':srcSel.value}${subSel.value==='__all__'?'':(' · '+subSel.value)}`;
+      if (!confirm(`Clear attempt records for ${m.attHashes.length} question${m.attHashes.length===1?'':'s'} in ${label}? Those questions will appear unseen again. Session history is kept untouched.`)) return;
+      const att = loadAttempts();
+      m.attHashes.forEach(h => delete att[h]);
+      saveAttempts(att);
+      alert(`Cleared ${m.attHashes.length} attempt record${m.attHashes.length===1?'':'s'}.`);
+      render();
+    }}, 'Reset attempts for selection');
+
+    const btnBoth = el('button',{class:'vbtn danger',style:{marginLeft:'6px',marginTop:'10px'}, onClick:()=>{
+      const m = matches();
+      if (!m.attHashes.length && !m.histFull.length){ alert('Nothing to reset for this selection.'); return; }
+      const label = `${srcSel.value==='__all__'?'all sources':srcSel.value}${subSel.value==='__all__'?'':(' · '+subSel.value)}`;
+      if (!confirm(`Clear ${m.attHashes.length} attempt record${m.attHashes.length===1?'':'s'} AND delete ${m.histFull.length} session${m.histFull.length===1?'':'s'} that are 100% within "${label}"? Mixed sessions (questions from this selection + other questions) are kept.`)) return;
+      const att = loadAttempts();
+      m.attHashes.forEach(h => delete att[h]);
+      saveAttempts(att);
+      const fullSet = new Set(m.histFull.map(h => h.startedAt+':'+(h.paper||'')));
+      let hist = loadHistory();
+      hist = hist.filter(h => !fullSet.has(h.startedAt+':'+(h.paper||'')));
+      saveHistory(hist);
+      alert(`Cleared ${m.attHashes.length} attempt record${m.attHashes.length===1?'':'s'} and deleted ${m.histFull.length} session${m.histFull.length===1?'':'s'}.`);
+      render();
+    }}, 'Reset attempts + delete fully-matching sessions');
+
+    rb.appendChild(el('div',{},[btnAtt, btnBoth]));
+    rp.appendChild(rb);
+    root.appendChild(rp);
+  }
+
+  /* ---- Focus List ---- */
+  const fp = el('div',{class:'panel'});
+  fp.appendChild(el('div',{class:'phead'},'Focus List — where to revise next (syllabus-weighted)'));
+  const fb = el('div',{class:'pbody'});
+
+  fb.appendChild(el('div',{class:'row', style:{marginBottom:'8px'}},[
+    el('label',{class:'chk'},[
+      el('span',{},'Scope:'),
+      (()=>{ const s=el('select',{id:'focusPaper'});
+        s.appendChild(el('option',{value:'all'}, 'Whole exam (Paper 1 + 2)'));
+        s.appendChild(el('option',{value:'paper1'}, 'Paper 1 — Applied Basic Sciences'));
+        s.appendChild(el('option',{value:'paper2'}, 'Paper 2 — Principles of Surgery-in-General'));
+        return s;
+      })()
+    ]),
+    el('span',{class:'note'},'Priority = syllabus weight × your error rate × volume factor. Higher = bigger expected point gain per hour revising.')
+  ]));
+
+  const focusHost = el('div',{id:'focusHost'});
+  fb.appendChild(focusHost);
+
+  // Keep a direct reference to the select (not yet in the document, so $ won't find it)
+  const focusPaperSel = fb.querySelector('#focusPaper');
+
+  function renderFocus(){
+    const paper = focusPaperSel.value;
+    const items = buildFocusList(paper);
+    focusHost.innerHTML = '';
+    if (!items.length){
+      focusHost.appendChild(el('div',{class:'note'}, 'Not enough data yet — attempt some questions or upload a bank with topics to see a focus list.'));
+      return;
+    }
+    const maxP = items[0].priority || 1;
+
+    const tbl = el('table',{class:'tbl'});
+    tbl.appendChild(el('thead',{},el('tr',{},[
+      el('th',{},'#'),
+      el('th',{},'Topic (MRCS)'),
+      el('th',{},'Weight'),
+      el('th',{},'Attempts'),
+      el('th',{},'Err %'),
+      el('th',{},'Never seen'),
+      el('th',{},'Priority'),
+      el('th',{},'Verdict / Action')
+    ])));
+    const tb = el('tbody',{});
+    items.forEach((b,i) => {
+      const pct = Math.round((b.errorRate||0)*100);
+      const bar = Math.round(100 * (b.priority / maxP));
+      const verdict = (() => {
+        if (b.priority === 0) return 'No data — add questions';
+        if (pct >= 50 && b.weight >= 0.1) return 'High-yield: revise HARD first';
+        if (pct >= 50) return 'Weak spot — revise';
+        if (pct >= 30 && b.weight >= 0.1) return 'Big topic, mediocre accuracy — drill';
+        if (b.never > 10) return 'Lots of unseen questions — cover breadth';
+        if (pct < 20 && b.seen > 10) return 'Solid — light review only';
+        return 'Moderate — targeted block';
+      })();
+      const action = el('div',{},[
+        el('div',{},verdict),
+        el('div',{style:{height:'6px',background:'#eef2f6',marginTop:'4px',borderRadius:'2px',overflow:'hidden'}},
+          el('div',{style:{height:'100%',width:bar+'%',background:'#1f3a5f'}})
+        ),
+      ]);
+      tb.appendChild(el('tr',{},[
+        el('td',{}, String(i+1)),
+        el('td',{}, b.label),
+        el('td',{}, b.weight ? (Math.round(b.weight*100)+'%') : '—'),
+        el('td',{}, `${b.seen} (✔${b.correct} / ✘${b.wrong})`),
+        el('td',{style:{color: pct>=50?'#b71c1c':(pct>=30?'#a86b00':'#2e7d32'),fontWeight:'bold'}}, isFinite(pct)?(pct+'%'):'—'),
+        el('td',{}, String(b.never)),
+        el('td',{style:{fontWeight:'bold'}}, b.priority ? b.priority.toFixed(3) : '—'),
+        el('td',{}, action)
+      ]));
+    });
+    tbl.appendChild(tb);
+    focusHost.appendChild(tbl);
+
+    // Build-an-exam shortcut
+    focusHost.appendChild(el('div',{class:'row', style:{marginTop:'10px'}},[
+      el('button',{class:'vbtn primary', onClick:()=>{
+        buildFocusExam(items.slice(0,3).map(x => x.label), 30, 40);
+      }},'▶ Build 30-Q block on my top 3 weak topics'),
+      el('button',{class:'vbtn', onClick:()=>{
+        buildFocusExam(items.slice(0,5).map(x => x.label), 50, 67);
+      }},'Build 50-Q block on top 5'),
+      el('button',{class:'vbtn', onClick:()=>{
+        downloadFocusList(items, paper);
+      }},'Download focus list CSV'),
+    ]));
+
+    focusHost.appendChild(el('div',{class:'note',style:{marginTop:'6px'}},
+      'Verdicts combine your error-rate with the topic\u2019s weight on the exam. "Never seen" counts questions in your bank you haven\u2019t attempted yet.'));
+  }
+  focusPaperSel.addEventListener('change', renderFocus);
+  renderFocus();
+
+  fp.appendChild(fb);
+  root.appendChild(fp);
+
+  /* Sessions table — with detail drill-down */
+  const sp = el('div',{class:'panel'});
+  sp.appendChild(el('div',{class:'phead'},'Sessions'));
+  const sb = el('div',{class:'pbody'});
+
+  /* Session detail host (hidden by default) */
+  const sessionDetailHost = el('div',{id:'sessionDetailHost', style:{display:'none'}});
+  const sessionListHost = el('div',{id:'sessionListHost'});
+
+  if (!hist.length){
+    sessionListHost.appendChild(el('div',{class:'note'},'No completed sessions yet. Finish an exam and it will appear here.'));
+  } else {
+    const tbl = el('table',{class:'tbl'});
+    tbl.appendChild(el('thead',{},el('tr',{},[
+      el('th',{},'When'), el('th',{},'Paper'), el('th',{},'Mode'), el('th',{},'Total'), el('th',{},'Correct'), el('th',{},'Wrong'), el('th',{},'Blank'), el('th',{},'Score'), el('th',{},'Duration'), el('th',{})
+    ])));
+    const tb = el('tbody',{});
+    hist.forEach((h, idx) => {
+      const openSessionReview = () => {
+        // Navigate to the dedicated full-screen session review page
+        // (questions listed one below the other with filters + explanations).
+        // navigateTo() pushes current screen onto the history stack so the
+        // top-bar Back button returns to this sessions list.
+        state.reviewSession = { hist: h, histIdx: idx };
+        navigateTo('sessionReview');
+      };
+      const row = el('tr',{style:{cursor:'pointer'}, onClick:openSessionReview},[
+        el('td',{}, new Date(h.startedAt).toLocaleString()),
+        el('td',{}, (h.paper||'').slice(0,42)),
+        el('td',{}, h.mode||''),
+        el('td',{}, String(h.totalQ)),
+        el('td',{style:{color:'#2e7d32',fontWeight:'bold'}}, String(h.correct)),
+        el('td',{style:{color:'#b71c1c'}}, String(h.wrong)),
+        el('td',{style:{color:'#6f7889'}}, String(h.blank)),
+        el('td',{style:{fontWeight:'bold'}}, `${h.scorePct}%`),
+        el('td',{}, fmtHMS(h.durationMs||0)),
+        el('td',{}, [
+          el('button',{class:'vbtn', style:{fontSize:'11px',padding:'2px 8px',marginRight:'4px'}, title:'Show topic breakdown', onClick:(e)=>{
+            e.stopPropagation();
+            showSessionDetail(h, idx);
+          }}, '\u2630'),
+          el('button',{class:'vbtn', style:{fontSize:'11px',padding:'2px 8px'}, onClick:(e)=>{
+            e.stopPropagation();
+            if (!confirm('Delete this session log? Questions from this session will be marked as unattempted.')) return;
+            const all = loadHistory();
+            const deleted = all[idx];
+            revertSessionAttempts(deleted);
+            all.splice(idx, 1); saveHistory(all); render();
+          }}, '\u2715'),
+        ]),
+      ]);
+      tb.appendChild(row);
+    });
+    tbl.appendChild(tb);
+    sessionListHost.appendChild(tbl);
+  }
+
+  function showSessionDetail(h, idx){
+    sessionListHost.style.display = 'none';
+    sessionDetailHost.style.display = 'block';
+    sessionDetailHost.innerHTML = '';
+
+    sessionDetailHost.appendChild(el('button',{class:'vbtn', style:{marginBottom:'10px'}, onClick:()=>{
+      sessionDetailHost.style.display = 'none';
+      sessionListHost.style.display = 'block';
+    }}, '\u25c2 Back to all sessions'));
+
+    sessionDetailHost.appendChild(el('div',{style:{marginBottom:'10px'}},[
+      el('strong',{}, `${h.paper||'Session'}`),
+      el('span',{class:'note', style:{marginLeft:'8px'}}, `${new Date(h.startedAt).toLocaleString()} \u00b7 ${h.scorePct}% (${h.correct}/${h.totalQ}) \u00b7 ${fmtHMS(h.durationMs||0)}`),
+    ]));
+
+    // Topic breakdown table if available
+    if (h.topicBreakdown && Object.keys(h.topicBreakdown).length > 0){
+      const tkeys = Object.keys(h.topicBreakdown).sort((a,b) => {
+        const ae = h.topicBreakdown[a].wrong / (h.topicBreakdown[a].total||1);
+        const be = h.topicBreakdown[b].wrong / (h.topicBreakdown[b].total||1);
+        return be - ae;
+      });
+      const dtbl = el('table',{class:'tbl'});
+      dtbl.appendChild(el('thead',{},el('tr',{},[
+        el('th',{},'Topic'), el('th',{},'Total'), el('th',{},'\u2714'), el('th',{},'\u2718'), el('th',{},'\u2014'), el('th',{},'Score')
+      ])));
+      const dtb = el('tbody',{});
+      tkeys.forEach(t => {
+        const d = h.topicBreakdown[t];
+        const pct = d.total ? Math.round(100*d.correct/d.total) : 0;
+        dtb.appendChild(el('tr',{},[
+          el('td',{}, t),
+          el('td',{}, String(d.total)),
+          el('td',{style:{color:'#2e7d32'}}, String(d.correct)),
+          el('td',{style:{color:'#b71c1c'}}, String(d.wrong)),
+          el('td',{style:{color:'#6f7889'}}, String(d.blank)),
+          el('td',{style:{fontWeight:'bold', color: pct>=70?'#2e7d32':(pct>=50?'#a86b00':'#b71c1c')}}, pct+'%'),
+        ]));
+      });
+      dtbl.appendChild(dtb);
+      sessionDetailHost.appendChild(dtbl);
+    }
+
+    // List the actual questions from this session (matched via qhashes)
+    if (h.qhashes && h.qhashes.length){
+      sessionDetailHost.appendChild(el('div',{style:{marginTop:'12px',fontWeight:'bold',marginBottom:'6px'}}, `Questions in this session (${h.qhashes.length})`));
+      const qHashSet = new Set(h.qhashes);
+      const bankMap = {};
+      state.bank.forEach(q => { bankMap[q.qhash] = q; });
+      const sessionQs = h.qhashes.map(qh => bankMap[qh]).filter(Boolean);
+
+      const sqtbl = el('table',{class:'tbl'});
+      sqtbl.appendChild(el('thead',{},el('tr',{},[
+        el('th',{},'#'), el('th',{},'Topic'), el('th',{},'Stem preview'), el('th',{},'Result')
+      ])));
+      const sqtb = el('tbody',{});
+      sessionQs.forEach((q, qi) => {
+        const attRec = att[q.qhash];
+        // Try to find the result for THIS session from the attempt history
+        let result = '';
+        if (attRec && attRec.history) {
+          const sessionMatch = attRec.history.find(hr => Math.abs((hr.at||hr.t||0) - h.startedAt) < 24*60*60*1000);
+          if (sessionMatch) result = sessionMatch.r === 'correct' ? '\u2714' : (sessionMatch.r === 'wrong' ? '\u2718' : '\u2014');
+        }
+        const resColor = result === '\u2714' ? '#2e7d32' : (result === '\u2718' ? '#b71c1c' : '#6f7889');
+        sqtb.appendChild(el('tr',{style:{cursor:'pointer'}, onClick:()=>{
+          showQuestionDetail(sessionQs, qi, ()=>{
+            showSessionDetail(h, idx);
+          });
+        }},[
+          el('td',{}, String(qi+1)),
+          el('td',{}, q.topic||''),
+          el('td',{style:{maxWidth:'440px',color:'#1a5276',textDecoration:'underline'}}, (q.stem||'').slice(0,140)),
+          el('td',{style:{color:resColor,fontWeight:'bold',fontSize:'16px'}}, result),
+        ]));
+      });
+      sqtbl.appendChild(sqtb);
+      sessionDetailHost.appendChild(sqtbl);
+    }
+  }
+
+  sb.appendChild(sessionDetailHost);
+  sb.appendChild(sessionListHost);
+  sp.appendChild(sb);
+  root.appendChild(sp);
+
+  /* ---------- Full question detail viewer (used by both sessions and attempted-Q list) ---------- */
+  function showQuestionDetail(qList, currentIdx, goBackFn){
+    // Guard: if no questions to show, bail out
+    if (!qList || !qList.length) { console.warn('[MRCS-VUE] showQuestionDetail: empty qList'); return; }
+    if (currentIdx < 0 || currentIdx >= qList.length) { console.warn('[MRCS-VUE] showQuestionDetail: idx out of range', currentIdx, qList.length); return; }
+
+    // Remove any existing overlay first, then create fresh
+    const old = document.getElementById('questionDetailOverlay');
+    if (old) old.remove();
+
+    const host = document.createElement('div');
+    host.id = 'questionDetailOverlay';
+    host.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:20px;';
+    document.body.appendChild(host);
+
+    let curIdx = currentIdx;
+
+    function closeOverlay(){
+      host.remove();
+      if(goBackFn) goBackFn();
+    }
+
+    function renderQ(idx){
+      curIdx = idx;
+      host.innerHTML = '';
+      if (idx < 0 || idx >= qList.length) { closeOverlay(); return; }
+      const q = qList[idx];
+      const attRec = att[q.qhash];
+
+      const card = document.createElement('div');
+      card.style.cssText = 'background:#fff;border-radius:6px;max-width:800px;width:100%;max-height:90vh;overflow:auto;padding:24px;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.3);';
+
+      // Top bar
+      let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid #e1e4e8;padding-bottom:12px">';
+      html += '<div style="display:flex;gap:8px;align-items:center">';
+      html += '<button class="vbtn" id="qdBack">\u25c2 Back</button>';
+      html += '<span class="note">Question '+(idx+1)+' of '+qList.length+'</span>';
+      html += '</div><div style="display:flex;gap:6px">';
+      html += '<button class="vbtn" id="qdPrev"'+(idx===0?' disabled':'')+' >\u25c0 Prev</button>';
+      html += '<button class="vbtn" id="qdNext"'+(idx===qList.length-1?' disabled':'')+'>Next \u25b6</button>';
+      html += '</div></div>';
+
+      // Badges
+      html += '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">';
+      if (q.topic) html += '<span style="background:#eef4fb;border:1px solid #b8cae6;border-radius:3px;padding:2px 8px;font-size:12px">'+escH(q.topic)+'</span>';
+      if (q.subject) html += '<span style="background:#f0f3f6;border:1px solid #d5dae0;border-radius:3px;padding:2px 8px;font-size:12px">'+escH(q.subject)+'</span>';
+      if (q.source) html += '<span style="background:#f6f0ff;border:1px solid #d4c3f0;border-radius:3px;padding:2px 8px;font-size:12px">'+escH(q.source)+'</span>';
+      html += '</div>';
+
+      // Stem
+      html += '<div style="font-size:15px;line-height:1.6;margin-bottom:16px;white-space:pre-wrap">'+escH(q.stem)+'</div>';
+
+      // Options
+      html += '<div style="margin-bottom:16px">';
+      (q.options||[]).forEach(function(opt){
+        const isC = opt.letter === q.correctLetter;
+        const bg = isC ? '#e8f5e9':'#fff';
+        const bd = isC ? '2px solid #4caf50':'1px solid #e1e4e8';
+        const clr = isC ? '#2e7d32':'#333';
+        html += '<div style="padding:10px 14px;margin-bottom:6px;border-radius:4px;background:'+bg+';border:'+bd+';display:flex;align-items:flex-start;gap:10px">';
+        html += '<strong style="color:'+clr+';min-width:24px">'+escH(opt.letter)+'.</strong>';
+        html += '<span>'+escH(opt.text)+'</span>';
+        if(isC) html += '<span style="margin-left:auto;color:#2e7d32;font-weight:bold;font-size:13px">\u2714 Correct</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+
+      // Explanation
+      if (q.explanation){
+        html += '<div style="background:#fffde7;border:1px solid #e5c27a;border-radius:4px;padding:12px 16px;margin-bottom:16px;line-height:1.6">';
+        html += '<div style="font-weight:bold;margin-bottom:6px;color:#6d5b00">Explanation</div>';
+        html += '<div style="white-space:pre-wrap">'+escH(q.explanation)+'</div></div>';
+      }
+
+      // Attempt history
+      if (attRec){
+        html += '<div style="border-top:1px solid #e1e4e8;padding-top:12px;margin-top:8px">';
+        html += '<div style="font-weight:bold;margin-bottom:6px;font-size:13px">Your attempt history</div>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
+        (attRec.history||[]).slice(-10).forEach(function(h){
+          const icon = h.r==='correct'?'\u2714':(h.r==='wrong'?'\u2718':'\u2014');
+          const color = h.r==='correct'?'#2e7d32':(h.r==='wrong'?'#b71c1c':'#6f7889');
+          const dt = (h.at||h.t) ? ' '+new Date(h.at||h.t).toLocaleDateString() : '';
+          html += '<span style="color:'+color+';margin-right:6px;font-size:14px">'+icon+dt+'</span>';
+        });
+        html += '</div>';
+        html += '<div class="note" style="margin-top:4px">Seen '+(attRec.seen||0)+'\u00d7 \u00b7 \u2714'+(attRec.correct||0)+' \u00b7 \u2718'+(attRec.wrong||0)+' \u00b7 \u2014'+(attRec.blank||0)+'</div>';
+        html += '</div>';
+      }
+
+      // Bottom nav
+      html += '<div style="display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #e1e4e8">';
+      html += '<button class="vbtn" id="qdPrev2"'+(idx===0?' disabled':'')+' >\u25c0 Previous</button>';
+      html += '<button class="vbtn" id="qdClose">Close</button>';
+      html += '<button class="vbtn" id="qdNext2"'+(idx===qList.length-1?' disabled':'')+'>Next \u25b6</button>';
+      html += '</div>';
+
+      card.innerHTML = html;
+      host.appendChild(card);
+
+      // Attach event handlers
+      card.querySelector('#qdBack').onclick = closeOverlay;
+      card.querySelector('#qdClose').onclick = closeOverlay;
+      card.querySelector('#qdPrev').onclick = function(){ renderQ(idx-1); };
+      card.querySelector('#qdNext').onclick = function(){ renderQ(idx+1); };
+      card.querySelector('#qdPrev2').onclick = function(){ renderQ(idx-1); };
+      card.querySelector('#qdNext2').onclick = function(){ renderQ(idx+1); };
+      card.scrollTop = 0;
+    }
+
+    function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    renderQ(currentIdx);
+
+    // Close on background click
+    host.addEventListener('click', function(e){ if(e.target === host) closeOverlay(); });
+    // Close on Escape
+    function keyHandler(e){
+      if (!document.getElementById('questionDetailOverlay')) { document.removeEventListener('keydown', keyHandler); return; }
+      if (e.key === 'Escape') { closeOverlay(); document.removeEventListener('keydown', keyHandler); }
+      else if (e.key === 'ArrowLeft' && curIdx > 0) { e.preventDefault(); renderQ(curIdx - 1); }
+      else if (e.key === 'ArrowRight' && curIdx < qList.length - 1) { e.preventDefault(); renderQ(curIdx + 1); }
+    }
+    document.addEventListener('keydown', keyHandler);
+  }
+
+  /* Per-question leaderboard */
+  const qp = el('div',{class:'panel', style:{marginTop:'16px'}});
+  qp.appendChild(el('div',{class:'phead'},'Questions you have attempted'));
+  const qb = el('div',{class:'pbody'});
+
+  const rows = Object.values(att).sort((a,b)=>(b.lastAt||0)-(a.lastAt||0));
+  if (!rows.length){
+    qb.appendChild(el('div',{class:'note'},'No per-question history yet.'));
+  } else {
+    // filter controls
+    const filterWrap = el('div',{class:'row',style:{marginBottom:'8px',flexWrap:'wrap',gap:'8px'}});
+    const search = el('input',{type:'text',id:'histSearch',placeholder:'Filter by stem text or topic\u2026',style:{flex:'1',minWidth:'200px',border:'1px solid #b8bfc8',padding:'6px 8px',borderRadius:'2px'}});
+    const onlyWrongCb = el('input',{type:'checkbox',id:'histOnlyWrong'});
+    const onlyWrong = el('label',{class:'chk'},[onlyWrongCb, el('span',{},'Only questions I\u2019ve ever gotten wrong')]);
+    const notMasteredCb = el('input',{type:'checkbox',id:'histNotMastered'});
+    const onlyNotMastered = el('label',{class:'chk'},[notMasteredCb, el('span',{},'Exclude mastered (correct \u22652)')]);
+    filterWrap.appendChild(search);
+    filterWrap.appendChild(onlyWrong);
+    filterWrap.appendChild(onlyNotMastered);
+    qb.appendChild(filterWrap);
+
+    const tblHost = el('div',{id:'histQTbl'});
+    qb.appendChild(tblHost);
+
+    // Keep a reference to the last filtered list for navigation
+    let lastFiltered = [];
+
+    const build = () => {
+      tblHost.innerHTML = '';
+      const q = (search.value||'').toLowerCase().trim();
+      const ow = onlyWrongCb.checked;
+      const nm = notMasteredCb.checked;
+      const filtered = rows.filter(r => {
+        if (ow && (r.wrong||0) === 0) return false;
+        if (nm && (r.correct||0) >= 2) return false;
+        if (q && !(String(r.stem||'').toLowerCase().includes(q) || String(r.topic||'').toLowerCase().includes(q))) return false;
+        return true;
+      });
+
+      // Map filtered attempt records to bank questions for the detail viewer
+      const bankMap = {};
+      state.bank.forEach(bq => { bankMap[bq.qhash] = bq; });
+      lastFiltered = [];
+      // Build index mapping: for each displayed row, track its position in lastFiltered
+      const rowToFilteredIdx = [];
+      filtered.forEach(r => {
+        const bq = bankMap[r.qhash];
+        if (bq) { rowToFilteredIdx.push(lastFiltered.length); lastFiltered.push(bq); }
+        else { rowToFilteredIdx.push(-1); }
+      });
+
+      const tbl = el('table',{class:'tbl'});
+      tbl.appendChild(el('thead',{},el('tr',{},[
+        el('th',{},'Topic'), el('th',{},'Source'), el('th',{},'Stem preview'), el('th',{},'Seen'), el('th',{},'\u2714'), el('th',{},'\u2718'), el('th',{},'\u2014'), el('th',{},'Last'), el('th',{},'Trend'), el('th',{})
+      ])));
+      const tb = el('tbody',{});
+      filtered.slice(0,500).forEach((r, fi) => {
+        const trend = (r.history||[]).slice(-8).map(h => h.r==='correct'?'\u2714':(h.r==='wrong'?'\u2718':'\u2014')).join(' ');
+        const lfIdx = rowToFilteredIdx[fi];
+        tb.appendChild(el('tr',{},[
+          el('td',{}, r.topic||''),
+          el('td',{}, r.source||''),
+          el('td',{style:{maxWidth:'440px', color:'#1a5276', textDecoration:'underline', cursor:'pointer'}, onClick:()=>{
+            if (lfIdx < 0 || lfIdx >= lastFiltered.length) return;
+            showQuestionDetail(lastFiltered, lfIdx, null);
+          }}, (r.stem||'').slice(0,140)),
+          el('td',{}, String(r.seen||0)),
+          el('td',{style:{color:'#2e7d32'}}, String(r.correct||0)),
+          el('td',{style:{color:'#b71c1c'}}, String(r.wrong||0)),
+          el('td',{style:{color:'#6f7889'}}, String(r.blank||0)),
+          el('td',{}, r.lastAt ? new Date(r.lastAt).toLocaleDateString() : ''),
+          el('td',{style:{fontSize:'11px',letterSpacing:'2px'}}, trend),
+          el('td',{}, el('button',{class:'vbtn', style:{fontSize:'11px',padding:'2px 8px'}, onClick:()=>{
+            const a = loadAttempts(); delete a[r.qhash]; saveAttempts(a); render();
+          }}, '\u2715')),
+        ]));
+      });
+      tbl.appendChild(tb);
+      tblHost.appendChild(tbl);
+      tblHost.appendChild(el('div',{class:'note',style:{marginTop:'6px'}}, `${filtered.length} questions shown \u00b7 showing up to 500`));
+    };
+    search.addEventListener('input', build);
+    onlyWrongCb.addEventListener('change', build);
+    notMasteredCb.addEventListener('change', build);
+    build();
+  }
+
+  qp.appendChild(qb);
+  root.appendChild(qp);
+
+  /* Actions */
+  const actions = el('div',{class:'row',style:{marginTop:'14px',justifyContent:'space-between'}},[
+    el('button',{class:'vbtn', onClick:()=>{ state.screen='home'; render(); }},'◂ Back'),
+    el('div',{},[
+      el('button',{class:'vbtn', onClick:()=>{
+        if (!confirm('Clear per-question attempt log? This cannot be undone.')) return;
+        localStorage.removeItem(LS_ATT); render();
+      }}, 'Clear attempt log'),
+      el('button',{class:'vbtn danger', style:{marginLeft:'6px'}, onClick:()=>{
+        if (!confirm('Clear ALL session history? This cannot be undone.')) return;
+        localStorage.removeItem(LS_HIST); render();
+      }}, 'Clear all history'),
+    ]),
+  ]);
+  root.appendChild(actions);
+}
+
+/* ---------- Dedicated session review screen ----------
+   Lists every question from a chosen history session one below the other,
+   with filter controls and explanations visible. Per-question result
+   (correct/wrong/blank) is reconstructed from the attempt log entries
+   within ±24h of the session's startedAt. */
+function renderSessionReview(root){
+  const rs = state.reviewSession || {};
+  const h = rs.hist;
+  if (!h){
+    root.appendChild(el('div',{class:'note'},'No session selected.'));
+    root.appendChild(el('button',{class:'vbtn', onClick:()=>{ goBack(); }},'◂ Back'));
+    return;
+  }
+  const bankMap = {};
+  (state.bank||[]).forEach(q => { bankMap[q.qhash] = q; });
+  const sessionQs = (h.qhashes||[]).map(qh => bankMap[qh]).filter(Boolean);
+  const missing = (h.qhashes||[]).length - sessionQs.length;
+
+  // Reconstruct per-question result from attempt log (within ±24h of startedAt).
+  // Attempt log stores {at, r:'correct'|'wrong'} — blank = no matching entry.
+  const att = loadAttempts();
+  const sessionTime = h.startedAt || 0;
+  const resultMap = {}; // qhash -> 'correct' | 'wrong' | 'blank'
+  (h.qhashes||[]).forEach(qh => {
+    const rec = att[qh];
+    let r = 'blank';
+    if (rec && rec.history && rec.history.length){
+      const match = rec.history.find(x => Math.abs((x.at||x.t||0) - sessionTime) < 24*60*60*1000);
+      if (match && match.r) r = match.r;
+    }
+    resultMap[qh] = r;
+  });
+
+  /* Header panel with session meta + Back button */
+  const head = el('div',{class:'panel'});
+  head.appendChild(el('div',{class:'phead'}, `Session review — ${new Date(h.startedAt).toLocaleString()}`));
+  const hbody = el('div',{class:'pbody'});
+  hbody.appendChild(el('div',{style:{display:'flex',flexWrap:'wrap',gap:'14px',alignItems:'center',fontSize:'13px'}},[
+    el('div',{},[el('b',{},'Paper: '), el('span',{}, h.paper||'')]),
+    el('div',{},[el('b',{},'Mode: '), el('span',{}, h.mode||'')]),
+    el('div',{},[el('b',{},'Total: '), el('span',{}, String(h.totalQ||sessionQs.length))]),
+    el('div',{style:{color:'#2e7d32'}},[el('b',{},'Correct: '), el('span',{}, String(h.correct||0))]),
+    el('div',{style:{color:'#b71c1c'}},[el('b',{},'Wrong: '), el('span',{}, String(h.wrong||0))]),
+    el('div',{style:{color:'#6f7889'}},[el('b',{},'Blank: '), el('span',{}, String(h.blank||0))]),
+    el('div',{},[el('b',{},'Score: '), el('span',{}, `${h.scorePct||0}%`)]),
+    el('div',{},[el('b',{},'Duration: '), el('span',{}, fmtHMS(h.durationMs||0))]),
+  ]));
+  hbody.appendChild(el('div',{style:{marginTop:'10px',display:'flex',gap:'8px'}},[
+    el('button',{class:'vbtn', onClick:()=>{ goBack(); }},'◂ Back to history'),
+    el('button',{class:'vbtn', onClick:()=>{ screenHistory.length=0; state.screen='home'; render(); }},'Home'),
+  ]));
+  if (missing > 0){
+    hbody.appendChild(el('div',{class:'note',style:{marginTop:'8px',color:'#b71c1c'}},
+      `${missing} question(s) from this session are no longer in the current bank and cannot be shown.`));
+  }
+  head.appendChild(hbody);
+  root.appendChild(head);
+
+  /* Filter controls */
+  const filters = { res:'all', subject:'__all__', search:'' };
+  const subjects = [...new Set(sessionQs.map(q => q.subject).filter(Boolean))].sort();
+
+  const filterPanel = el('div',{class:'panel',style:{marginTop:'12px'}});
+  filterPanel.appendChild(el('div',{class:'phead'},'Filters'));
+  const fbody = el('div',{class:'pbody'});
+
+  // Result pills
+  const pillRow = el('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px',marginBottom:'8px'}});
+  const countsByRes = { all: sessionQs.length, correct:0, wrong:0, blank:0 };
+  sessionQs.forEach(q => { countsByRes[resultMap[q.qhash]||'blank']++; });
+  const pills = [
+    {k:'all', label:`All (${countsByRes.all})`, color:'#1a1a1a'},
+    {k:'correct', label:`✔ Correct (${countsByRes.correct})`, color:'#2e7d32'},
+    {k:'wrong', label:`✘ Wrong (${countsByRes.wrong})`, color:'#b71c1c'},
+    {k:'blank', label:`◌ Blank (${countsByRes.blank})`, color:'#6f7889'},
+  ];
+  const pillEls = {};
+  pills.forEach(p => {
+    const b = el('button',{
+      class:'vbtn',
+      style:{fontSize:'12px',padding:'4px 10px',color:p.color,borderColor:p.color,
+             fontWeight: filters.res===p.k ? 'bold':'normal',
+             background: filters.res===p.k ? '#eef3ff':'#fff'},
+      onClick:()=>{ filters.res = p.k; applyFilters(); }
+    }, p.label);
+    pillEls[p.k] = b;
+    pillRow.appendChild(b);
+  });
+  fbody.appendChild(pillRow);
+
+  // Subject + search row
+  const subSel = el('select',{id:'sr_sub'});
+  subSel.appendChild(el('option',{value:'__all__'}, `All subjects (${sessionQs.length})`));
+  subjects.forEach(s => {
+    const n = sessionQs.filter(q => q.subject===s).length;
+    subSel.appendChild(el('option',{value:s}, `${s} (${n})`));
+  });
+  subSel.onchange = () => { filters.subject = subSel.value; applyFilters(); };
+
+  const searchInp = el('input',{type:'text',placeholder:'Search stem, topic, explanation…',
+                                style:{padding:'4px 8px',minWidth:'260px'}});
+  searchInp.oninput = () => { filters.search = (searchInp.value||'').toLowerCase(); applyFilters(); };
+
+  fbody.appendChild(el('div',{style:{display:'flex',flexWrap:'wrap',gap:'12px',alignItems:'center'}},[
+    el('label',{class:'chk'},[el('span',{},'Subject: '), subSel]),
+    el('label',{class:'chk'},[el('span',{},'Search: '), searchInp]),
+    el('span',{id:'sr_count',style:{fontSize:'12px',color:'#555',marginLeft:'8px'}},''),
+  ]));
+  filterPanel.appendChild(fbody);
+  root.appendChild(filterPanel);
+
+  /* Questions list */
+  const listPanel = el('div',{class:'panel',style:{marginTop:'12px'}});
+  listPanel.appendChild(el('div',{class:'phead'},'Questions — one below the other, with explanations'));
+  const listBody = el('div',{class:'pbody'});
+  listPanel.appendChild(listBody);
+  root.appendChild(listPanel);
+
+  function buildQuestionBlock(q, origIdx){
+    const r = resultMap[q.qhash] || 'blank';
+    const isCorrect = (r === 'correct');
+    const isWrong   = (r === 'wrong');
+    const block = el('div',{style:{border:'1px solid #d5dae0',borderRadius:'2px',marginBottom:'10px'}});
+    const hdrBg = isCorrect?'#e9f5ea':(isWrong?'#fbeaea':'#f6f8fa');
+    const hdrRight = isCorrect?'✔ Correct':(isWrong?'✘ Wrong':'◌ Blank');
+    block.appendChild(el('div',{
+      style:{padding:'8px 12px',background:hdrBg,borderBottom:'1px solid #d5dae0',
+             fontSize:'12px',display:'flex',justifyContent:'space-between',gap:'10px',flexWrap:'wrap'}
+    },[
+      el('b',{}, `Q${origIdx+1}`),
+      el('span',{style:{color:'#555'}}, `${q.topic||''}${q.subject ? ' · '+q.subject : ''}`),
+      el('span',{style:{color:'#555'}}, q.source||''),
+      el('span',{style:{fontWeight:'bold',color:isCorrect?'#2e7d32':(isWrong?'#b71c1c':'#6f7889')}}, hdrRight),
+    ]));
+    const b = el('div',{style:{padding:'10px 12px'}});
+    b.appendChild(el('div',{style:{whiteSpace:'pre-wrap',marginBottom:'8px'}}, q.stem));
+    (q.options||[]).forEach(o => {
+      const ok = q.correctLetter === o.letter;
+      const color = ok ? '#2e7d32' : '#1a1a1a';
+      const tag = ok ? ' (correct answer)' : '';
+      b.appendChild(el('div',{style:{color,margin:'2px 0',fontWeight:ok?'bold':'normal'}},
+                            `${o.letter}. ${o.text}${tag}`));
+    });
+    if (q.explanation){
+      b.appendChild(el('div',{style:{marginTop:'10px',padding:'8px 10px',background:'#f9fafb',
+                                     border:'1px solid #e3e6eb',borderRadius:'2px',
+                                     whiteSpace:'pre-wrap',fontSize:'13px'}},
+                          q.explanation));
+    }
+    if (isWrong){
+      b.appendChild(el('div',{class:'note',style:{marginTop:'6px',color:'#888',fontSize:'11px'}},
+        'Note: the specific option you picked is not stored in the attempt log — only pass/fail is recorded.'));
+    }
+    block.appendChild(b);
+    return block;
+  }
+
+  function applyFilters(){
+    // Update pill styling
+    pills.forEach(p => {
+      const b = pillEls[p.k];
+      b.style.fontWeight = filters.res===p.k ? 'bold':'normal';
+      b.style.background = filters.res===p.k ? '#eef3ff':'#fff';
+    });
+    listBody.innerHTML = '';
+    let shown = 0;
+    sessionQs.forEach((q, i) => {
+      const r = resultMap[q.qhash] || 'blank';
+      if (filters.res !== 'all' && r !== filters.res) return;
+      if (filters.subject !== '__all__' && q.subject !== filters.subject) return;
+      if (filters.search){
+        const hay = `${q.stem||''} ${q.topic||''} ${q.explanation||''}`.toLowerCase();
+        if (hay.indexOf(filters.search) < 0) return;
+      }
+      listBody.appendChild(buildQuestionBlock(q, i));
+      shown++;
+    });
+    const cnt = $('#sr_count');
+    if (cnt) cnt.textContent = `Showing ${shown} of ${sessionQs.length} question(s).`;
+    if (shown === 0){
+      listBody.appendChild(el('div',{class:'note'},'No questions match the current filters.'));
+    }
+  }
+  applyFilters();
+}
+
+/* ---------- Exam screen ---------- */
+function renderExam(root){
+  const sess = state.session;
+  const q = sess.questions[sess.idx];
+  q.visited = true;
+
+  // If session was restored paused (e.g. after refresh), show pause overlay
+  if (sess.paused && !document.getElementById('pauseOverlay')){
+    setTimeout(pauseExam, 0);
+  }
+
+  $('#barTitle').textContent = sess.paper;
+  $('#qNow').textContent = (sess.idx+1);
+  $('#qTotal').textContent = sess.questions.length;
+  $('#qFlagged').textContent = sess.questions.filter(x=>x.flagged).length;
+  $('#barMeta').style.display='flex';
+
+  // Show answer + explanation as soon as an option is selected (any mode), or if revealed/tutor
+  const showFeedback =
+    (sess.mode === 'tutor') ||
+    (sess.mode === 'toggle' && q.revealed) ||
+    (!!q.selected);
+
+  const wrap = el('div',{class:'qwrap'});
+  const head = el('div',{class:'qhead'},[
+    el('div',{},[
+      el('span',{class:'tag'},'Question ' + (sess.idx+1) + ' of ' + sess.questions.length),
+      (showFeedback || sess.submitted) && q.topic ? el('span',{class:'chip',style:{marginLeft:'8px'}}, q.topic) : null,
+      (showFeedback || sess.submitted) && q.source ? el('span',{class:'chip'}, q.source) : null,
+    ]),
+    el('div',{class:'right'},[
+      q.flagged ? el('span',{html:'⚑ <b>Flagged</b>',style:{color:'#a86b00'}}) : null,
+      el('span',{},'Select the single best answer.'),
+    ]),
+  ]);
+  wrap.appendChild(head);
+
+  const body = el('div',{class: 'qbody' + (showFeedback ? '' : ' single')});
+  const left = el('div');
+  left.appendChild(el('div',{class:'qstem'}, q.stem));
+  const opts = el('div',{class:'qoptions'});
+  q.options.forEach(o => {
+    const isSel = q.selected === o.letter;
+    const isCorrect = q.correctLetter === o.letter;
+    let cls = 'qopt';
+    if (isSel) cls += ' selected';
+    if (showFeedback){
+      if (isCorrect) cls += ' correct';
+      if (isSel && !isCorrect) cls += ' incorrect';
+    }
+    const row = el('label',{class:cls},[
+      el('input',{type:'radio', name:'opt', value:o.letter, ...(isSel?{checked:'checked'}:{}), onChange: ()=> {
+        q.selected = o.letter;
+        persist();
+        render();
+      }}),
+      el('span',{class:'letter'}, o.letter+'.'),
+      el('span',{}, o.text),
+    ]);
+    opts.appendChild(row);
+  });
+  left.appendChild(opts);
+  body.appendChild(left);
+
+  if (showFeedback){
+    const side = el('div',{class:'qside'});
+    side.appendChild(el('h4',{},'Answer & Rationale'));
+    const correctTxt = (q.options.find(o => o.letter === q.correctLetter)?.text) || '(unknown)';
+    const fb = el('div',{class:'feedback ' + (q.selected ? (q.selected === q.correctLetter ? 'correct' : 'wrong') : '')});
+    const header = el('div',{style:{marginBottom:'6px'}},[
+      el('b',{}, `Correct: ${q.correctLetter}. `),
+      el('span',{}, correctTxt),
+    ]);
+    fb.appendChild(header);
+    if (q.selected){
+      fb.appendChild(el('div',{style:{marginBottom:'6px'}},
+        q.selected === q.correctLetter ? '✔ Your answer was correct.' : `✘ Your answer: ${q.selected}. ${q.options.find(o=>o.letter===q.selected)?.text||''}`));
+    }
+    if (q.explanation){
+      fb.appendChild(el('div',{style:{whiteSpace:'pre-wrap',marginTop:'4px'}}, q.explanation));
+    } else {
+      fb.appendChild(el('div',{class:'note'}, 'No explanation provided in CSV.'));
+    }
+    side.appendChild(fb);
+    body.appendChild(side);
+  }
+  wrap.appendChild(body);
+  root.appendChild(wrap);
+
+  // Bottom bar bindings — reset any disabled state left by renderReview
+  $('#btnPrev').disabled = sess.idx === 0;
+  $('#btnNext').disabled = false;
+  $('#btnFlag').disabled = false;
+  $('#btnStrike').disabled = false;
+  $('#btnReview').disabled = false;
+  $('#btnNext').textContent = (sess.idx === sess.questions.length - 1) ? 'Review ▸' : 'Next ▸';
+  $('#btnFlag').innerHTML = q.flagged ? '⚑ Unflag' : '⚑ Flag for Review';
+  $('#btnReveal').style.display = (sess.mode === 'toggle') ? '' : 'none';
+  $('#btnReveal').textContent = q.revealed ? 'Hide Answer' : 'Reveal Answer';
+
+  // (Re)bind (labels may have changed, safer to rebind each render)
+  $('#btnPrev').onclick = ()=> { if (sess.idx>0){ sess.idx--; persist(); render(); }};
+  $('#btnNext').onclick = ()=> {
+    if (sess.idx < sess.questions.length-1){ sess.idx++; persist(); render(); }
+    else { state.screen='review'; render(); }
+  };
+  $('#btnFlag').onclick = ()=> { q.flagged = !q.flagged; persist(); render(); };
+  $('#btnStrike').onclick = ()=> alert('In the real exam you can draw a line through options. This is a placeholder button to replicate the VUE UI.');
+  $('#btnReveal').onclick = ()=> { q.revealed = !q.revealed; persist(); render(); };
+  $('#btnReview').onclick = ()=> { state.screen='review'; render(); };
+  $('#btnEnd').onclick = confirmEnd;
+}
+
+/* ---------- Review screen ---------- */
+function renderReview(root){
+  const sess = state.session;
+  $('#barTitle').textContent = sess.paper + ' — Review';
+
+  const panel = el('div',{class:'panel'});
+  panel.appendChild(el('div',{class:'phead'}, 'Review — jump to any question, or end the exam'));
+  const body = el('div',{class:'pbody'});
+
+  const flagged = sess.questions.filter(q=>q.flagged).length;
+  const answered = sess.questions.filter(q=>q.selected).length;
+  const unanswered = sess.questions.length - answered;
+
+  body.appendChild(el('div',{class:'kpis'},[
+    el('div',{class:'kpi'},[el('div',{class:'v'}, sess.questions.length),el('div',{class:'k'},'Total')]),
+    el('div',{class:'kpi'},[el('div',{class:'v'}, answered),el('div',{class:'k'},'Answered')]),
+    el('div',{class:'kpi'},[el('div',{class:'v',style:{color:'#b71c1c'}}, unanswered),el('div',{class:'k'},'Unanswered')]),
+    el('div',{class:'kpi'},[el('div',{class:'v',style:{color:'#a86b00'}}, flagged),el('div',{class:'k'},'Flagged')]),
+  ]));
+
+  body.appendChild(el('div',{class:'legend'},[
+    el('span',{},[el('span',{class:'sw', style:{background:'#d9e8fb',borderColor:'#2e63a6'}}), 'Answered']),
+    el('span',{},[el('span',{class:'sw', style:{background:'#fff'}}), 'Unanswered']),
+    el('span',{},[el('span',{class:'sw', style:{background:'#fff',position:'relative'}}), 'Flagged = corner tag']),
+  ]));
+
+  const grid = el('div',{class:'rev-grid'});
+  sess.questions.forEach((q,i) => {
+    let cls = 'rev-cell ' + (q.selected ? 'answered' : 'unanswered');
+    if (q.flagged) cls += ' flagged';
+    const cell = el('div',{class:cls, onClick:()=>{ sess.idx = i; state.screen='exam'; render(); }}, String(i+1));
+    grid.appendChild(cell);
+  });
+  body.appendChild(grid);
+
+  body.appendChild(el('div',{class:'row', style:{marginTop:'14px',justifyContent:'flex-end'}},[
+    el('button',{class:'vbtn', onClick:()=>{ state.screen='exam'; render(); }},'◂ Return to Question'),
+    el('button',{class:'vbtn danger', onClick: confirmEnd},'End Exam'),
+  ]));
+
+  panel.appendChild(body);
+  root.appendChild(panel);
+
+  // lower bar bindings: repurpose
+  $('#btnPrev').onclick = ()=>{ state.screen='exam'; render(); };
+  $('#btnNext').textContent='Return';
+  $('#btnNext').onclick = ()=>{ state.screen='exam'; render(); };
+  $('#btnFlag').disabled = true;
+  $('#btnStrike').disabled = true;
+  $('#btnReveal').style.display='none';
+  $('#btnEnd').onclick = confirmEnd;
+  $('#btnReview').disabled = true;
+}
+
+function confirmEnd(){
+  const sess = state.session;
+  const unanswered = sess.questions.filter(q=>!q.selected).length;
+  const flagged = sess.questions.filter(q=>q.flagged).length;
+  openConfirm({
+    title:'End Exam',
+    body:`You have ${unanswered} unanswered and ${flagged} flagged questions.\n\nOnce you end the exam, your answers will be scored and you won't be able to change them. Continue?`,
+    ok:'End Exam', okCls:'vbtn danger',
+    onOk: () => { endExam(); }
+  });
+}
+
+function endExam(){
+  stopTimer();
+  const sess = state.session;
+  sess.submitted = true;
+  sess.endedAt = Date.now();
+
+  // Write per-question attempt log — only for ATTEMPTED questions (skip blanks)
+  sess.questions.forEach(q => {
+    if (!q.qhash || !q.selected) return;
+    const result = q.selected === q.correctLetter ? 'correct' : 'wrong';
+    recordAttempt(q, result);
+  });
+
+  // Append to history — only count ATTEMPTED questions (not blanks)
+  const attemptedQs = sess.questions.filter(q => q.selected);
+  const totalQ = attemptedQs.length;
+  const correct = attemptedQs.filter(q => q.correctLetter && q.selected === q.correctLetter).length;
+  const wrong = attemptedQs.filter(q => q.selected && q.correctLetter && q.selected !== q.correctLetter).length;
+  const blank = 0; // only attempted questions are tracked
+  const topicBreakdown = {};
+  attemptedQs.forEach(q => {
+    const t = q.topic || '(untagged)';
+    topicBreakdown[t] = topicBreakdown[t] || {total:0, correct:0, wrong:0, blank:0};
+    topicBreakdown[t].total++;
+    if (q.selected === q.correctLetter) topicBreakdown[t].correct++;
+    else topicBreakdown[t].wrong++;
+  });
+  const hist = loadHistory();
+  hist.unshift({
+    id: sess.id, paper: sess.paper, mode: sess.mode,
+    startedAt: sess.startedAt, endedAt: sess.endedAt,
+    durationMs: sess.endedAt - sess.startedAt,
+    totalQ, correct, wrong, blank,
+    scorePct: totalQ ? Math.round(100*correct/totalQ) : 0,
+    topicBreakdown,
+    qhashes: attemptedQs.map(q => q.qhash)
+  });
+  saveHistory(hist.slice(0,200));
+
+  persist();
+  state.screen = 'results';
+  render();
+}
+
+/* ---------- Results ---------- */
+function renderResults(root){
+  const sess = state.session;
+  $('#barTitle').textContent = sess.paper + ' — Results';
+  $('#barMeta').style.display='none';
+  $('#bottombar').style.display='none';
+
+  const allQs = sess.questions;
+  const qs = allQs.filter(q => q.selected); // only attempted questions
+  const correct = qs.filter(q => q.correctLetter && q.selected === q.correctLetter).length;
+  const wrong = qs.filter(q => q.selected && q.correctLetter && q.selected !== q.correctLetter).length;
+  const blank = 0;
+  const pct = qs.length ? Math.round(100*correct / qs.length) : 0;
+  const durUsed = (sess.endedAt||Date.now()) - sess.startedAt;
+
+  const hero = el('div',{class:'hero'},[
+    el('h1',{}, `${pct}% — ${correct}/${qs.length} correct`),
+    el('p',{}, `Completed in ${fmtHMS(durUsed)} · ${sess.paper} · ${qs.length} of ${allQs.length} questions attempted`),
+  ]);
+  root.appendChild(hero);
+
+  const panel = el('div',{class:'panel'});
+  panel.appendChild(el('div',{class:'phead'},'Summary'));
+  const body = el('div',{class:'pbody'});
+  body.appendChild(el('div',{class:'kpis'},[
+    el('div',{class:'kpi'},[el('div',{class:'v', style:{color:'#2e7d32'}}, correct),el('div',{class:'k'},'Correct')]),
+    el('div',{class:'kpi'},[el('div',{class:'v', style:{color:'#b71c1c'}}, wrong),el('div',{class:'k'},'Wrong')]),
+    el('div',{class:'kpi'},[el('div',{class:'v'}, `${pct}%`),el('div',{class:'k'},'Score')]),
+  ]));
+
+  // topic breakdown — attempted questions only
+  const byTopic = {};
+  qs.forEach(q => {
+    const t = q.topic || '(untagged)';
+    byTopic[t] = byTopic[t] || {total:0, correct:0, wrong:0};
+    byTopic[t].total++;
+    if (q.selected === q.correctLetter) byTopic[t].correct++;
+    else byTopic[t].wrong++;
+  });
+  const tbl = el('table',{class:'tbl'});
+  tbl.appendChild(el('thead',{},el('tr',{},[
+    el('th',{},'Topic'),el('th',{},'Total'),el('th',{},'Correct'),el('th',{},'Wrong'),el('th',{},'Score')
+  ])));
+  const tb = el('tbody',{});
+  Object.keys(byTopic).sort().forEach(t => {
+    const r = byTopic[t];
+    const sp = r.total ? Math.round(100*r.correct/r.total) : 0;
+    tb.appendChild(el('tr',{},[
+      el('td',{}, t),el('td',{},String(r.total)),el('td',{},String(r.correct)),el('td',{},String(r.wrong||0)),el('td',{},`${sp}%`)
+    ]));
+  });
+  tbl.appendChild(tb);
+  body.appendChild(tbl);
+
+  body.appendChild(el('div',{class:'divider'}));
+
+  // Quick question list — only attempted questions (wrong first, then correct)
+  const qlPanel = el('div',{style:{marginTop:'10px'}});
+  const wrongQs = qs.filter(q => q.correctLetter && q.selected !== q.correctLetter);
+  const correctQs = qs.filter(q => q.correctLetter && q.selected === q.correctLetter);
+
+  const filterBtns = el('div',{class:'row', style:{marginBottom:'8px', gap:'6px'}});
+  let activeFilter = 'wrong';
+  const filterOpts = [
+    {key:'wrong', label:`Wrong (${wrongQs.length})`, list: wrongQs, color:'#b71c1c'},
+    {key:'correct', label:`Correct (${correctQs.length})`, list: correctQs, color:'#2e7d32'},
+    {key:'all', label:`All (${qs.length})`, list: qs, color:'#1a1a1a'},
+  ];
+  const qlHost = el('div',{id:'qlHost'});
+
+  function renderQuestionList(filterKey){
+    activeFilter = filterKey;
+    qlHost.innerHTML = '';
+    filterBtns.querySelectorAll('button').forEach(b => b.style.fontWeight = b.getAttribute('data-key')===filterKey ? 'bold' : 'normal');
+    const opt = filterOpts.find(f=>f.key===filterKey);
+    const list = opt ? opt.list : qs;
+    if (!list.length){ qlHost.appendChild(el('div',{class:'note'},'None.')); return; }
+    list.forEach((q, i) => {
+      const idx = qs.indexOf(q);
+      const isCorrect = q.correctLetter && q.selected === q.correctLetter;
+      const isBlank = !q.selected;
+      const icon = isCorrect ? '✔' : (isBlank ? '—' : '✘');
+      const clr = isCorrect ? '#2e7d32' : (isBlank ? '#6f7889' : '#b71c1c');
+      const row = el('div',{style:{padding:'6px 10px',borderBottom:'1px solid #eee',display:'flex',gap:'10px',alignItems:'flex-start',cursor:'pointer'}, onClick:()=>{
+        // Jump to this question in the post-review
+        state._reviewScrollTo = idx;
+        state.screen='examReviewAll'; render();
+      }});
+      row.appendChild(el('span',{style:{color:clr,fontWeight:'bold',minWidth:'24px'}}, icon));
+      row.appendChild(el('span',{style:{color:'#888',minWidth:'32px',fontSize:'12px'}}, `Q${idx+1}`));
+      row.appendChild(el('span',{style:{flex:1,fontSize:'13px'}}, q.stem.slice(0,120)));
+      row.appendChild(el('span',{style:{fontSize:'12px',color:'#888'}}, q.topic || ''));
+      if (!isCorrect && !isBlank){
+        row.appendChild(el('span',{style:{fontSize:'11px',color:'#b71c1c'}}, `You: ${q.selected} · Correct: ${q.correctLetter}`));
+      }
+      qlHost.appendChild(row);
+    });
+  }
+
+  filterOpts.forEach(f => {
+    const btn = el('button',{class:'vbtn', style:{fontSize:'12px',padding:'4px 12px'}, onClick:()=>renderQuestionList(f.key)}, f.label);
+    btn.setAttribute('data-key', f.key);
+    filterBtns.appendChild(btn);
+  });
+  qlPanel.appendChild(filterBtns);
+  qlPanel.appendChild(qlHost);
+  body.appendChild(qlPanel);
+  renderQuestionList('wrong'); // default to wrong
+
+  body.appendChild(el('div',{class:'divider'}));
+  body.appendChild(el('div',{class:'row'},[
+    el('button',{class:'vbtn primary', onClick:()=>{ state.screen='examReviewAll'; render(); }},'Review all answers with explanations ▸'),
+    el('button',{class:'vbtn', onClick:()=>{ downloadResults(sess); }},'Download results CSV'),
+    el('button',{class:'vbtn', onClick:()=>{ downloadWrongCSV(sess); }},'Download wrong-only CSV'),
+    el('button',{class:'vbtn', onClick:()=>{ localStorage.removeItem(LS_KEY); state.session=null; state.screen='home'; render(); }},'New session'),
+  ]));
+
+  panel.appendChild(body);
+  root.appendChild(panel);
+
+  // If requested, render a full post-exam review
+  if (state.screen === 'examReviewAll') renderPostReview(root);
+}
+// A simple extra screen for per-question review after exam
+function renderPostReview(root){
+  const sess = state.session;
+  const panel = el('div',{class:'panel', style:{marginTop:'16px'}});
+  panel.appendChild(el('div',{class:'phead'},'All questions — answers, your response & explanations'));
+  const body = el('div',{class:'pbody'});
+  sess.questions.forEach((q,i) => {
+    const correct = q.correctLetter && q.selected === q.correctLetter;
+    const block = el('div',{style:{border:'1px solid #d5dae0',borderRadius:'2px',marginBottom:'10px'}});
+    block.appendChild(el('div',{
+      style:{padding:'8px 12px',background:correct?'#e9f5ea':(q.selected?'#fbeaea':'#f6f8fa'),borderBottom:'1px solid #d5dae0',fontSize:'12px',display:'flex',justifyContent:'space-between'}
+    },[
+      el('b',{}, `Q${i+1}`),
+      el('span',{}, q.topic || ''),
+      el('span',{}, q.selected ? (correct?'✔ Correct':'✘ Wrong') : 'Blank'),
+    ]));
+    const b = el('div',{style:{padding:'10px 12px'}});
+    b.appendChild(el('div',{style:{whiteSpace:'pre-wrap',marginBottom:'6px'}}, q.stem));
+    q.options.forEach(o=>{
+      const you = q.selected === o.letter;
+      const ok  = q.correctLetter === o.letter;
+      const color = ok ? '#2e7d32' : (you ? '#b71c1c' : '#1a1a1a');
+      const tag = ok ? ' (correct)' : (you ? ' (your answer)' : '');
+      b.appendChild(el('div',{style:{color,margin:'2px 0',fontWeight:(ok||you)?'bold':'normal'}}, `${o.letter}. ${o.text}${tag}`));
+    });
+    if (q.explanation){
+      const d=el('details');
+      d.appendChild(el('summary',{}, 'Explanation'));
+      d.appendChild(el('div',{style:{whiteSpace:'pre-wrap',marginTop:'6px'}}, q.explanation));
+      b.appendChild(d);
+    }
+    block.appendChild(b);
+    body.appendChild(block);
+  });
+  panel.appendChild(body);
+  root.appendChild(panel);
+}
+
+function downloadResults(sess){
+  const head = ['#','Topic','Source','YourAnswer','CorrectAnswer','Correct?','Stem'];
+  const rows = sess.questions.map((q,i)=>[
+    String(i+1),
+    q.topic||'', q.source||'',
+    q.selected||'', q.correctLetter||'',
+    q.selected ? (q.selected === q.correctLetter ? 'Y':'N') : 'BLANK',
+    q.stem.replace(/\s+/g,' ').slice(0,600)
+  ]);
+  downloadCsv('mrcs-results-'+new Date().toISOString().slice(0,10)+'.csv', [head, ...rows]);
+}
+function downloadWrongCSV(sess){
+  const head = ['Question','A','B','C','D','E','Correct','Explanation','Topic','Source','YourAnswer'];
+  const rows = sess.questions
+    .filter(q => q.selected && q.correctLetter && q.selected !== q.correctLetter)
+    .map(q => {
+      const letters = ['A','B','C','D','E'];
+      const cells = letters.map(L => (q.options.find(o=>o.letter===L)?.text)||'');
+      return [q.stem, ...cells, q.correctLetter, q.explanation||'', q.topic||'', q.source||'', q.selected||''];
+    });
+  if (!rows.length){ alert('No wrong questions to export.'); return; }
+  downloadCsv('mrcs-wrong-'+new Date().toISOString().slice(0,10)+'.csv', [head, ...rows]);
+}
+function downloadCsv(filename, rows){
+  const esc = s => { const t = String(s==null?'':s); return /[",\n]/.test(t) ? `"${t.replace(/"/g,'""')}"` : t; };
+  const text = rows.map(r => r.map(esc).join(',')).join('\n');
+  const blob = new Blob([text], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{a.remove(); URL.revokeObjectURL(a.href);},200);
+}
+
+/* ---------- Focus exam shortcut ---------- */
+function buildFocusExam(canonLabels, qCount, mins){
+  // Map canonical labels back to all bank questions whose topic canonicalises to any of these
+  const labelToKey = {};
+  [...MRCS_SYLLABUS.paper1, ...MRCS_SYLLABUS.paper2].forEach(b => labelToKey[b.label] = b.key);
+  const wantKeys = new Set(canonLabels.map(l => labelToKey[l]).filter(Boolean));
+  const pool = (state.bank||[]).filter(q => wantKeys.has(q.topicCanon || canonTopic(q.topic, q.subject)) && q.correctLetter);
+  if (!pool.length){ alert('No matching questions in your bank for those topics. Upload more, or loosen the topic mapping.'); return; }
+  // Prioritise ones you got wrong / never seen
+  const att = loadAttempts();
+  pool.sort((a,b) => {
+    const ra = att[a.qhash], rb = att[b.qhash];
+    const aScore = (ra ? ((ra.wrong||0) - (ra.correct||0)) : 1);
+    const bScore = (rb ? ((rb.wrong||0) - (rb.correct||0)) : 1);
+    return bScore - aScore;
+  });
+  const picked = pool.slice(0, qCount);
+  shuffle(picked);
+  const sess = newSession({
+    bank: picked,
+    paper: `Focus block — ${canonLabels.join(' / ')}`,
+    mode: 'strict',
+    durationMs: mins*60*1000,
+    shuffleQ:false, shuffleOpts:false,
+    questionCount: picked.length,
+    showAnswers: false
+  });
+  state.session = sess;
+  persist();
+  state.screen = 'exam';
+  render();
+  startTimer();
+}
+function downloadFocusList(items, paper){
+  const head = ['Rank','Topic','SyllabusWeight%','Attempts','Correct','Wrong','NeverSeen','ErrorRate%','Priority','Action'];
+  const rows = items.map((b,i) => [
+    i+1, b.label,
+    b.weight ? Math.round(b.weight*100) : '',
+    b.seen, b.correct, b.wrong, b.never,
+    isFinite(b.errorRate) ? Math.round(b.errorRate*100) : '',
+    b.priority ? b.priority.toFixed(4) : '',
+    ''
+  ]);
+  downloadCsv(`mrcs-focuslist-${paper}-${new Date().toISOString().slice(0,10)}.csv`, [head, ...rows]);
+}
+
+/* ---------- Timer ---------- */
+function startTimer(){
+  stopTimer();
+  const sess = state.session;
+  if (!sess) return;
+  const isUntimed = sess.durationMs < 0;
+  if (isUntimed && !sess._elapsedMs) sess._elapsedMs = 0;
+  const tick = () => {
+    if (!state.session || state.session.submitted) return stopTimer();
+    const t = $('#timer');
+    if (isUntimed){
+      sess._elapsedMs = (sess._elapsedMs||0) + 1000;
+      if (t){ t.textContent = fmtHMS(sess._elapsedMs); t.classList.remove('warn'); }
+    } else {
+      sess.timeLeftMs -= 1000;
+      if (t){
+        t.textContent = fmtHMS(sess.timeLeftMs);
+        if (sess.timeLeftMs <= 5*60*1000) t.classList.add('warn'); else t.classList.remove('warn');
+      }
+      if (sess.timeLeftMs <= 0){ stopTimer(); alert('Time is up. Submitting.'); endExam(); }
+    }
+    // persist every 15s
+    const counter = isUntimed ? Math.floor((sess._elapsedMs||0)/1000) : Math.floor(sess.timeLeftMs/1000);
+    if (counter % 15 === 0) persist();
+  };
+  const t = $('#timer');
+  if (t){
+    if (isUntimed){
+      t.textContent = fmtHMS(sess._elapsedMs||0);
+      const lbl = $('#timerLabel');
+      if (lbl) lbl.textContent = 'Time Elapsed';
+    } else {
+      t.textContent = fmtHMS(sess.timeLeftMs);
+    }
+  }
+  state.timerHandle = setInterval(tick, 1000);
+}
+function stopTimer(){ if (state.timerHandle){ clearInterval(state.timerHandle); state.timerHandle=null; } }
+
+/* ---------- Persistence ---------- */
+function persist(){
+  if (!state.session) return;
+  // Only save session data — NOT the full bank (which is already in LS_BANK).
+  // Storing both caused localStorage quota (~5 MB) to silently overflow,
+  // losing session data on refresh.
+  saveLS(LS_KEY, {session: state.session});
+}
+
+/* ---------- Confirm modal ---------- */
+function openConfirm({title,body,ok='OK',okCls='vbtn primary',onOk}){
+  const back = el('div',{class:'confirm-backdrop'});
+  const box = el('div',{class:'confirm-box'});
+  box.appendChild(el('div',{class:'hd'}, title));
+  box.appendChild(el('div',{class:'bd', style:{whiteSpace:'pre-wrap'}}, body));
+  const ft = el('div',{class:'ft'});
+  const cancel = el('button',{class:'vbtn'}, 'Cancel');
+  cancel.addEventListener('click', ()=> back.remove());
+  const okb = el('button',{class:okCls}, ok);
+  okb.addEventListener('click', ()=> { back.remove(); onOk && onOk(); });
+  ft.appendChild(cancel); ft.appendChild(okb);
+  box.appendChild(ft); back.appendChild(box);
+  document.body.appendChild(back);
+}
+
+/* ---------- Back button ---------- */
+$('#btnBack').addEventListener('click', ()=>{
+  // During exam, confirm before leaving
+  if (state.screen === 'exam' || state.screen === 'review'){
+    if (!confirm('Leave the exam? Your progress is saved — you can resume from the home screen.')) return;
+    stopTimer();
+    state.session.paused = true;
+    persist();
+    screenHistory.length = 0; // clear history stack
+    state.screen = 'home'; render();
+  } else {
+    goBack();
+  }
+});
+
+/* ---------- Pause button ---------- */
+$('#btnPause').addEventListener('click', pauseExam);
+
+/* ---------- Help modal ---------- */
+$('#btnHelp').addEventListener('click', ()=>{
+  openConfirm({
+    title:'Keyboard shortcuts',
+    body:`A–E : select option\n← / → : previous / next question\nF : flag / unflag\nR : review screen\nSpace : reveal answer (on-demand mode)\nCtrl+Enter : end exam`,
+    ok:'Close'
+  });
+});
+
+document.addEventListener('keydown', (e)=>{
+  if (state.screen !== 'exam') return;
+  const sess = state.session; if (!sess) return;
+  const q = sess.questions[sess.idx];
+  const k = e.key.toLowerCase();
+  if (['a','b','c','d','e'].includes(k)){
+    const letter = k.toUpperCase();
+    if (q.options.find(o=>o.letter===letter)){ q.selected = letter; persist(); render(); }
+  } else if (e.key === 'ArrowLeft'){ if (sess.idx>0){ sess.idx--; persist(); render(); } }
+  else if (e.key === 'ArrowRight'){
+    if (sess.idx < sess.questions.length-1){ sess.idx++; persist(); render(); }
+    else { state.screen='review'; render(); }
+  }
+  else if (k === 'f'){ q.flagged = !q.flagged; persist(); render(); }
+  else if (k === 'r'){ state.screen='review'; render(); }
+  else if (k === ' '){ if (sess.mode === 'toggle'){ q.revealed = !q.revealed; persist(); render(); e.preventDefault(); } }
+  else if (e.ctrlKey && e.key === 'Enter'){ confirmEnd(); }
+});
+
+/* ---------- Refresh protection ---------- */
+window.addEventListener('beforeunload', (e) => {
+  if (state.session && !state.session.submitted){
+    persist(); // save state one last time
+    e.preventDefault();
+    e.returnValue = ''; // triggers browser "are you sure?" dialog
+  }
+});
+
+const _origPersist = persist;
+persist = function(){
+  _origPersist();
+};
+
+/* ---------- Bootstrap ---------- */
+/*__EMBEDDED_BANK_BOOT_START__*/
+(async function seedBank(){
+  try {
+    const existing = loadLS(LS_BANK);
+    const isCustomUpload = existing && existing.bank && existing.bank.length && !existing.embedded;
+    if (isCustomUpload) {
+      existing.bank.forEach(q => { if (!q.qhash) q.qhash = hashStem(q.stem); });
+      state.bank = existing.bank;
+      console.log('[MRCS-VUE] Loaded custom bank from localStorage:', state.bank.length, 'questions');
+    } else {
+      const resp = await fetch('data/questions_bank.json');
+      if (!resp.ok) throw new Error('Bank fetch failed: ' + resp.status);
+      const bank = await resp.json();
+      state.bank = bank;
+      try { localStorage.removeItem(LS_BANK); } catch(e){}
+      try { localStorage.removeItem('mrcs-vue:bank-version'); } catch(e){}
+      console.log('[MRCS-VUE] Loaded bank from JSON:', bank.length, 'questions');
+    }
+  } catch (e) {
+    console.warn('[MRCS-VUE] seedBank failed:', e);
+    const root = document.getElementById('root');
+    if (root && !state.bank.length) {
+      root.innerHTML = '<div style="padding:40px;text-align:center;color:#b71c1c"><h2>Could not load question bank</h2><p>Check that <code>data/questions_bank.json</code> is in the same directory as this file.</p><p style="color:#6f7889;font-size:13px">Error: '+e.message+'</p></div>';
+    }
+  }
+  render();
+  if (state.screen === 'exam' && state.session) startTimer();
+})();
+/*__EMBEDDED_BANK_BOOT_END__*/
+
+/* ---------- Auto-resume on refresh ---------- */
+// If there's an in-progress session in localStorage, jump straight back
+// into the exam instead of making the user click "Resume".
+(function autoResume(){
+  try {
+    const saved = loadLS(LS_KEY);
+    if (saved && saved.session && !saved.session.submitted){
+      state.session = saved.session;
+      state.session.paused = false;
+      state.screen = 'exam';
+      console.log('[MRCS-VUE] Auto-resumed in-progress exam');
+    }
+  } catch(e){ console.warn('[MRCS-VUE] autoResume failed:', e); }
+})();
+
+// render() and startTimer() are called inside seedBank() above
+</script>
+</body>
+</html>
