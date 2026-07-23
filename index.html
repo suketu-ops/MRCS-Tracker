@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max V115 — Stack Image Fixes (iPad/iPhone)</title>
+<title>MRCS QBank Tracker Pro Max — v118 (Supabase single source)</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -7580,11 +7580,93 @@ function openReclearWizard() {
 }
 function closeReclearWizard() { $('reclear-wizard').classList.remove('active'); }
 
-// STEP 8b: load drill questions from the bundled question bank (extracted from the simulator).
+// STEP 8b: load drill questions from the bundled question bank.
 // Transient in-memory pool — deliberately NOT persisted via setReclearQueue, so the bank
 // never bloats the mrcs_settings singleton / Supabase sync.
-let _reclearBankCache = {};   // scope -> array
+//
+// v118: the bank now lives in Supabase (mrcs_questions), the same single source
+// of truth the Simulator reads. It's cached in IndexedDB under the SAME
+// database/store names the Simulator uses (mrcs-vue-bank / questions / meta) —
+// same-origin browsers share one on-disk copy, so if the Simulator has already
+// synced on this device, drill mode reads it with no network call at all.
+// data/questions_csc.json and data/questions_full.json are the pre-migration
+// fallback, used only if IndexedDB is empty AND Supabase isn't reachable.
+const BANK_IDB_NAME = 'mrcs-vue-bank';
+const BANK_IDB_STORE = 'questions';
+const BANK_IDB_META = 'meta';
+
+function _reclearIdbOpen() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open(BANK_IDB_NAME, 1);
+        req.onupgradeneeded = () => {
+            const db = req.result;
+            if(!db.objectStoreNames.contains(BANK_IDB_STORE)) db.createObjectStore(BANK_IDB_STORE, {keyPath:'id'});
+            if(!db.objectStoreNames.contains(BANK_IDB_META)) db.createObjectStore(BANK_IDB_META, {keyPath:'key'});
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+function _reclearIdbGetAll(db) {
+    return new Promise((resolve, reject) => {
+        const req = db.transaction(BANK_IDB_STORE, 'readonly').objectStore(BANK_IDB_STORE).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+    });
+}
+function _reclearIdbReplaceAll(db, rows, version) {
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction([BANK_IDB_STORE, BANK_IDB_META], 'readwrite');
+        tx.objectStore(BANK_IDB_STORE).clear();
+        rows.forEach(r => tx.objectStore(BANK_IDB_STORE).put(r));
+        tx.objectStore(BANK_IDB_META).put({key:'version', value:version});
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+    });
+}
+// Adapts a mrcs_questions row (rich shape: stem, options array, correct_letter)
+// into the legacy shape reclearRenderCurrent/reclearReveal/reclearGrade expect
+// (question_text, options object keyed A-E, correct_answer). Zero changes
+// needed to the render/scoring code below -- it has always spoken this shape.
+function _reclearRowToLegacy(row) {
+    const optsObj = {};
+    (row.options || []).forEach(o => { optsObj[o.letter] = o.text; });
+    return {
+        question_text: row.stem, options: optsObj, correct_answer: row.correct_letter,
+        explanation: row.explanation || '', topic: row.topic || '',
+        qhash: row.qhash, source: row.source || ''
+    };
+}
+
+let _reclearBankCache = {};   // scope -> array (legacy-shaped, ready for the drill UI)
 let _reclearBankMode = false;
+
+async function _reclearFetchFromCloud(scope) {
+    if (!isSupabaseConfigured()) return null;
+    const filter = scope === 'csc' ? '&is_csc=eq.true' : '';
+    // PostgREST caps a single response at 1000 rows by default (Supabase's
+    // db-max-rows setting), well under the 2367-question bank. Page through
+    // with the Range header until a short page signals the end.
+    const PAGE = 1000;
+    const out = [];
+    try {
+        for (let offset = 0; ; offset += PAGE) {
+            const res = await fetch(SUPABASE_URL + '/rest/v1/mrcs_questions?select=*' + filter, {
+                headers: {
+                    'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY,
+                    'Range': offset + '-' + (offset + PAGE - 1)
+                }
+            });
+            if (!res.ok && res.status !== 206) throw new Error('HTTP ' + res.status);
+            const page = await res.json();
+            if (!Array.isArray(page)) throw new Error('bad data');
+            out.push(...page);
+            if (page.length < PAGE) break;
+        }
+        return out;
+    } catch(e) { console.warn('[reclear] cloud fetch failed:', e); return null; }
+}
+
 async function reclearLoadFromBank(scope) {
     const file = scope === 'all' ? 'data/questions_full.json' : 'data/questions_csc.json';
     const statusEl = $('reclear-parse-status');
@@ -7593,10 +7675,37 @@ async function reclearLoadFromBank(scope) {
     try {
         let pool = _reclearBankCache[scope];
         if(!pool) {
-            const res = await fetch(file, { cache: 'force-cache' });
-            if(!res.ok) throw new Error('HTTP ' + res.status);
-            pool = await res.json();
-            if(!Array.isArray(pool)) throw new Error('bad data');
+            // 1) IndexedDB cache -- instant, works offline, shared with the
+            //    Simulator if same-origin and it has already synced on this device.
+            let dbRows = null;
+            try {
+                const db = await _reclearIdbOpen();
+                const cached = await _reclearIdbGetAll(db);
+                if (cached.length) dbRows = cached;
+            } catch(e) { console.warn('[reclear] IndexedDB read failed:', e); }
+
+            // 2) Cloud (Supabase) -- only if the cache was empty (first run on
+            //    this device/browser). Always pull the FULL table so the cache
+            //    serves both 'csc' and 'all' scopes without a second round-trip.
+            if (!dbRows) {
+                dbRows = await _reclearFetchFromCloud('all');
+                if (dbRows && dbRows.length) {
+                    try {
+                        const db = await _reclearIdbOpen();
+                        await _reclearIdbReplaceAll(db, dbRows, dbRows[0] && dbRows[0].bank_version || '');
+                    } catch(e) { console.warn('[reclear] IndexedDB write failed:', e); }
+                }
+            }
+
+            if (dbRows && dbRows.length) {
+                pool = (scope === 'csc' ? dbRows.filter(r => r.is_csc) : dbRows).map(_reclearRowToLegacy);
+            } else {
+                // 3) Last-resort fallback -- pre-migration bundled JSON files.
+                const res = await fetch(file, { cache: 'force-cache' });
+                if(!res.ok) throw new Error('HTTP ' + res.status);
+                pool = await res.json();
+                if(!Array.isArray(pool)) throw new Error('bad data');
+            }
             _reclearBankCache[scope] = pool;
         }
         const arr = pool.slice();
