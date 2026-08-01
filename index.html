@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max — v118 (Supabase single source)</title>
+<title>MRCS QBank Tracker Pro Max — v119 (drill intelligence)</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1509,6 +1509,14 @@
         transition:all 0.15s;
     }
     .tk-bulk-chip.on { background:var(--accent2); color:#111; border-color:var(--accent2); font-weight:700; }
+    /* === v119: objective verdict banner (replaces the self-grade buttons) === */
+    .rc-verdict { text-align:center; font-family:'JetBrains Mono',monospace; font-size:0.7rem; font-weight:700;
+                  line-height:1.5; padding:9px 12px; border-radius:var(--r-md,10px); margin:14px 0 10px 0; border:1px solid; }
+    .rc-verdict.ok   { color:var(--ok);      border-color:var(--ok);      background:rgba(74,222,128,0.10); }
+    .rc-verdict.bad  { color:var(--err-red); border-color:var(--err-red); background:rgba(255,82,82,0.10); }
+    .rc-verdict.warn { color:var(--warn);    border-color:var(--warn);    background:rgba(255,171,0,0.10); }
+    @media (max-width: 480px) { .rc-verdict { font-size:0.64rem; padding:8px 10px; } }
+
     /* === v117 drill: desktop split layout (sidebar | content) === */
     .rc-sidebar { display:none; }
     @media (min-width: 768px) {
@@ -1597,11 +1605,15 @@
         <input type="file" id="reclear-csv-input" accept=".csv" class="input-field" style="font-size:0.75rem; padding:9px; cursor:pointer;" onchange="reclearHandleCsvFile(event)">
         <div id="reclear-parse-status" style="font-size:0.7rem; margin-top:8px; min-height:1.2rem; font-family:'JetBrains Mono',monospace; opacity:0.85;"></div>
         <div class="dash-lbl" style="margin-top:16px; margin-bottom:6px; font-size:0.65rem; opacity:0.85;">— OR DRILL THE BUILT-IN QUESTION BANK —</div>
-        <div class="row" style="justify-content:center; gap:8px; flex-wrap:wrap;">
-            <button class="btn btn-sm" id="btn-reclear-bank-csc" style="background:var(--accent2); color:#111;" onclick="reclearLoadFromBank('csc')">📚 CSC bank (547)</button>
-            <button class="btn btn-sm btn-ghost" id="btn-reclear-bank-all" style="font-size:0.7rem;" onclick="reclearLoadFromBank('all')">🌐 All domains (2367)</button>
+        <div class="row" style="justify-content:center; gap:6px; flex-wrap:wrap;">
+            <button class="btn btn-sm" id="btn-reclear-bank-csc" style="background:var(--accent2); color:#111;" onclick="reclearLoadFromBank('csc')">🎯 CSC</button>
+            <button class="btn btn-sm btn-ghost" id="btn-reclear-bank-posg" style="font-size:0.66rem;" onclick="reclearLoadFromBank('posg')">📕 PoSG</button>
+            <button class="btn btn-sm btn-ghost" id="btn-reclear-bank-periop" style="font-size:0.66rem;" onclick="reclearLoadFromBank('periop')">🏥 Periop</button>
+            <button class="btn btn-sm btn-ghost" id="btn-reclear-bank-trauma" style="font-size:0.66rem;" onclick="reclearLoadFromBank('trauma')">🚑 Trauma</button>
+            <button class="btn btn-sm btn-ghost" id="btn-reclear-bank-mine" style="font-size:0.66rem;" onclick="reclearLoadFromBank('mine')">💥 My QBank fails</button>
+            <button class="btn btn-sm btn-ghost" id="btn-reclear-bank-all" style="font-size:0.66rem;" onclick="reclearLoadFromBank('all')">🌐 All</button>
         </div>
-        <div class="dash-lbl" style="margin-top:14px; margin-bottom:2px; font-size:0.65rem; opacity:0.8;">FILTER BY CSC PRIORITY TOPIC (optional)</div>
+        <div class="dash-lbl" style="margin-top:14px; margin-bottom:2px; font-size:0.65rem; opacity:0.8;">NARROW TO A TOPIC (optional)</div>
         <div id="reclear-topic-filter"></div>
         <div class="row" style="justify-content:center; gap:6px; margin-bottom:6px;">
             <button class="btn btn-sm btn-ghost" style="font-size:0.6rem; padding:4px 10px;" onclick="reclearSetAllTopics(true)">All</button>
@@ -2621,10 +2633,10 @@
     </div>
     <div id="reclear-reveal" style="display:none;">
         <div id="reclear-explanation" class="rc-explanation md-content"></div>
-        <div class="dash-lbl" style="text-align:center; margin-top:14px; color:var(--accent2);">Did you clear it this time?</div>
+        <div id="reclear-verdict" class="rc-verdict"></div>
         <div class="rc-grade-row">
-            <button class="btn btn-sm" style="background:var(--err); color:#fff;" onclick="reclearGrade(false)">✗ Still Wrong</button>
-            <button class="btn btn-sm" style="background:var(--ok); color:#111;" onclick="reclearGrade(true)">✓ Got It</button>
+            <button class="btn btn-sm btn-ghost" id="reclear-misclick" style="display:none; font-size:0.6rem; border-color:var(--stroke);" onclick="drillOverrideCorrect()">↺ Misclick — I knew this</button>
+            <button class="btn btn-sm" style="background:var(--accent2); color:#111;" onclick="reclearGrade()">Next →</button>
         </div>
     </div>
     <div class="row" style="justify-content:center; gap:8px; margin-top:18px;">
@@ -7472,9 +7484,265 @@ function incError(type) {
 }
 function resetErrors() { errorCounts = { know:0, retrieval:0, reasoning:0, note:'' }; errDebriefDone = false; ['know','retrieval','reasoning'].forEach(t => { if($('err-'+t+'-n')) $('err-'+t+'-n').textContent = '0'; }); }
 
+
+// =================== v119: DRILL INTELLIGENCE LAYER ===================
+// Fixes the four things that stopped the drill being a revision *system*:
+//   1. objective grading (was self-graded after seeing the answer)
+//   2. per-question history that persists across sessions (was: reshuffle everything, forget everything)
+//   3. weakest-first ordering driven by that history (was: pure Fisher-Yates)
+//   4. a failed question now creates an SRS card (the drill never touched REVIEW_BANK before)
+// Plus real scopes (CSC / PoSG / Periop / Trauma / my-QBank-fails) and a
+// client-side CSC purge so a stale IndexedDB copy of the bank can't reintroduce
+// the anatomy/physiology questions that were mis-flagged is_csc.
+
+const DRILL_HIST_LS = 'mrcs-drill-history';
+const DRILL_MAX_CARDS_PER_SESSION = 30;   // stops one bad session dumping 200 cards into the deck
+
+let DRILL_HISTORY = (function(){
+    try { return JSON.parse(localStorage.getItem(DRILL_HIST_LS) || '{}') || {}; }
+    catch(e) { return {}; }
+})();
+
+function drillSaveHistory() {
+    try { localStorage.setItem(DRILL_HIST_LS, JSON.stringify(DRILL_HISTORY)); }
+    catch(e) { console.warn('[drill] history save failed', e); }
+}
+
+// Stable per-question key. Prefers the cloud qhash; falls back to a djb2 of the stem
+// so the CSV and bundled-JSON paths key identically to the cloud path.
+function drillKey(item) {
+    if(item && item.qhash) return String(item.qhash);
+    const s = String((item && item.question_text) || '');
+    let h = 5381;
+    for(let i = 0; i < s.length; i++) { h = ((h * 33) ^ s.charCodeAt(i)) >>> 0; }
+    return 'h' + h.toString(36);
+}
+
+// Topics wrongly carrying is_csc in the bank. These are Paper 1 (ABS) basic science
+// sitting inside the CSC drill — curated by hand, NOT regex: a regex on /cell /
+// swallowed "Renal Cell Carcinoma", which is genuinely CSC.
+const DRILL_NOT_CSC = new Set([
+    // regional anatomy
+    'small bowel regional anatomy','scrotal and testicular anatomy','anorectal triangle regional anatomy',
+    'biliary tree regional anatomy','oesophagus regional anatomy','pancreas regional anatomy',
+    'bladder anatomy','colon regional anatomy','hepatobiliary anatomy','liver regional anatomy',
+    'parathyroid glands- anatomy','prostate regional anatomy','rectal blood supply','scrotal anatomy',
+    'the breast regional anatomy','thyroid gland regional anatomy',
+    'external carotid artery','common carotid artery','internal carotid artery','epigastric artery',
+    // physiology
+    'gastric secretions','pancreas physiology','pancreas exocrine physiology','parathyroid gland physiology',
+    'bladder physiology','breast and lactation physiology','gi physiology','gi physiology / pancreas',
+    'gastric physiology','hormonal control of gastric acid secretion','pancreatic physiology',
+    'prostate physiology','potassium secretion -gi tract','gastric emptying','thyroid hormones',
+    'stress response: endocrine and metabolic changes',
+    // embryology
+    'testicular embryology','embryology of the diaphragm and diaphragmatic hernia','pancreas embryology',
+    'pancreatic embryology','thyroid and parathyroid embryology',
+    // stats
+    'power calculations and statistical error'
+]);
+
+// Fallback CSC detector — only used when the item carries no is_csc flag
+// (i.e. the last-resort bundled questions_full.json path).
+const DRILL_CSC_RX = /breast|thyroid|parathyroid|prostate|testic|scrotal|bladder|renal|kidney|urolog|calculi|stone|hernia|fistula|colorect|colon|rectal|rectum|anal |anorectal|polyp|diverticul|bowel|appendic|crohn|ulcerative colitis|inflammatory bowel|oesophag|gastric|stomach|peptic|pancrea|liver|hepat|biliary|gallstone|gallbladder|cholecys|jaundice|varice|aneurysm|aortic|vascular|claudication|ischaem|varicose|venous|ulcer|lymphoedema|carotid|melanoma|sarcoma|skin cancer|basal cell|squamous cell|salivary|parotid|submandibular|neck lump|goitre|adrenal|carcinoid|insulinoma|men syndrome|multiple endocrine|hyperparathyroid|hypercalca|intussusception|pyloric stenosis|hirschsprung|malrotation|paediatric surg|endocrine|hernia/i;
+
+const DRILL_TRAUMA_RX = /trauma|fracture|dislocat|\bburn|head injur|spinal injur|thoracic injur|chest injur|abdominal injur|pelvic injur|limb injur|atls|primary survey|secondary survey|compartment syndrome|ballistic|blast injur|penetrating|degloving|amputation|glasgow coma|cervical spine/i;
+
+const DRILL_PERIOP_RX = /peri-?operative|pre-?operative|post-?operative|post-op|pre-op|anaesthe|analgesi|sedation|consent|day case|wound heal|wound clos|suture|skin graft|drain|steril|asepsis|diathermy|tourniquet|nutrition|fluid balance|fluid replacement|transfus|blood product|coagulat|thrombo|\bdvt\b|pulmonary embol|prophylaxis|sepsis|septic|antibiotic|antimicrobial|microbiolog|infection control|audit|statistic|ethic|medico|governance|critical care|\bicu\b|ventilat|inotrop|\bshock\b|metabolic response|stress response|screening programme|risk assess|asa grade|day surgery|theatre|surgical site|catheter|stoma|nutritional support|enteral|parenteral|dying|palliat|transplant|donor/i;
+
+// One classifier, used by every scope. Returns 'csc' | 'trauma' | 'periop' | 'abs'.
+function drillDomain(item) {
+    if(!item) return 'abs';
+    const raw = String(item.topic || '');
+    const t = raw.trim().toLowerCase();
+    const purged = DRILL_NOT_CSC.has(t);
+    if(!purged) {
+        if(item._isCsc === true) return 'csc';
+        if(item._isCsc !== false && DRILL_CSC_RX.test(raw)) return 'csc';
+    }
+    if(DRILL_TRAUMA_RX.test(raw)) return 'trauma';
+    if(DRILL_PERIOP_RX.test(raw)) return 'periop';
+    return 'abs';
+}
+
+// His own logged QBank failures, as opposed to the mock-paper questions that
+// were merged into the same bank. src/source is the only provenance we have —
+// your_answer is empty on all 2367 rows.
+const DRILL_MINE_SRC = /emrcs|pastest/i;
+
+function drillInScope(item, scope) {
+    if(!item) return false;
+    if(scope === 'all') return true;
+    if(scope === 'mine') return DRILL_MINE_SRC.test(String(item.source || item.src || ''));
+    const d = drillDomain(item);
+    if(scope === 'posg') return d === 'csc' || d === 'periop' || d === 'trauma';
+    return d === scope;
+}
+
+const DRILL_SCOPE_LABEL = {
+    csc: 'CSC', posg: 'PoSG (Paper 2)', periop: 'Perioperative', trauma: 'Trauma',
+    mine: 'your own QBank fails', all: 'full bank'
+};
+
+// Priority band — lower sorts first. Questions that have BEATEN you lead, then
+// new material, then things you've cleared, sinking as the streak grows. The
+// order matters: your revision plan's highest-yield instruction is to re-clear
+// your own failures before touching fresh questions, so failed < unseen.
+function drillPriority(item) {
+    const h = DRILL_HISTORY[drillKey(item)];
+    if(!h || !h.seen) return 1;                  // never attempted
+    if((h.streak || 0) <= 0) return 0;           // failed last time — re-clear first
+    if(h.streak === 1) return 2;                 // cleared once (or a lucky guess)
+    return 2 + Math.min(h.streak, 6);            // increasingly settled
+}
+
+// Shuffle within priority bands: order is deterministic by weakness but never
+// identical question-to-question between sessions.
+function drillOrderQueue(pool) {
+    const arr = pool.slice();
+    for(let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr.sort((a, b) => drillPriority(a) - drillPriority(b));
+}
+
+// A drill failure becomes a real SRS card, due now, already in the rotation.
+// Matches the card shape used everywhere else in REVIEW_BANK.
+function drillMakeCardFromFail(item) {
+    if(!item || typeof REVIEW_BANK === 'undefined') return false;
+    const topic = String(item.topic || '').trim() || 'CSC';
+    const stem = String(item.question_text || '').replace(/\s+/g, ' ').trim();
+    if(!stem) return false;
+    const word = (topic + ' — ' + stem.slice(0, 60) + (stem.length > 60 ? '…' : '')).slice(0, 140);
+    if(REVIEW_BANK.some(b => b.word === word)) return false;
+    const now = Date.now();
+    const ck = String(item.correct_answer || '').trim().toUpperCase();
+    const correctText = (item.options && item.options[ck]) ? String(item.options[ck]) : '';
+    const card = {
+        word: word, reviewed: true, img: '',
+        notes: (correctText ? '**Answer:** ' + correctText + '\n\n' : '') + String(item.explanation || ''),
+        reps: 0, ease: 2.5, interval: 0, dueDate: now, createdAt: now, updatedAt: now,
+        srsState: 'learning', learningStep: 0, lapseCount: 0,
+        topic: topic,
+        errorType: (item._confidence === 'confident' ? 'know' : 'retrieval'),
+        notesSource: 'drill'
+    };
+    REVIEW_BANK.push(card);
+    if(typeof markBankItem === 'function') markBankItem(card);
+    return true;
+}
+
+// Record the OBJECTIVE result. Called once per question, at reveal — so an
+// abandoned session still counts the questions actually answered.
+function _drillRecordAttempt(item) {
+    if(!item || item._recorded) return;
+    item._recorded = true;
+    const ok = item._objCorrect === true;
+    const k = drillKey(item);
+    const h = DRILL_HISTORY[k] || { seen: 0, right: 0, wrong: 0, streak: 0, last: 0 };
+    h.seen++;
+    if(ok) {
+        h.right++;
+        // A correct answer you flagged 'hesitant' is a guess, not knowledge — it is
+        // held at streak 1 so it resurfaces soon instead of climbing out of rotation.
+        h.streak = (item._confidence === 'hesitant') ? 1 : (h.streak > 0 ? h.streak : 0) + 1;
+    } else { h.wrong++; h.streak = 0; }
+    h.last = Date.now();
+    h.conf = item._confidence || '';
+    h.topic = String(item.topic || '');
+    DRILL_HISTORY[k] = h;
+    drillSaveHistory();
+
+    const s = reclearSession;
+    if(!s) return;
+    if(ok) {
+        s.correct++;
+        if(item._confidence === 'hesitant') s.luckyGuess = (s.luckyGuess || 0) + 1;
+    } else {
+        s.wrong++;
+        s.flagged.push(item.question_text);
+        if(item._confidence === 'confident') s.confidentWrong = (s.confidentWrong || 0) + 1;
+        if((s.cardsMade || 0) < DRILL_MAX_CARDS_PER_SESSION && drillMakeCardFromFail(item)) {
+            s.cardsMade = (s.cardsMade || 0) + 1;
+        }
+    }
+    if(typeof _rcRenderSidebar === 'function') _rcRenderSidebar();
+}
+
+function _drillRenderVerdict(item) {
+    const el = $('reclear-verdict');
+    if(!el || !item) return;
+    const ok = item._objCorrect === true;
+    const lucky = ok && item._confidence === 'hesitant';
+    const blind = !ok && item._confidence === 'confident';
+    let txt, cls;
+    if(ok && lucky)      { txt = '✓ Correct — but you were hesitant. Treat this as not yet known.'; cls = 'rc-verdict warn'; }
+    else if(ok)          { txt = '✓ Correct'; cls = 'rc-verdict ok'; }
+    else if(blind)       { txt = '✗ Wrong — and you were confident. This is a knowledge gap, not a slip.'; cls = 'rc-verdict bad'; }
+    else                 { txt = '✗ Wrong — card added to your SRS stack.'; cls = 'rc-verdict bad'; }
+    el.textContent = txt;
+    el.className = cls;
+    const ov = $('reclear-misclick');
+    if(ov) ov.style.display = ok ? 'none' : 'inline-block';
+}
+
+// Escape hatch for a genuine misclick — the only way the objective grade can be
+// overridden, and it costs a deliberate extra tap.
+function drillOverrideCorrect() {
+    const s = reclearSession; if(!s) return;
+    const item = s.items[s.idx];
+    if(!item || item._objCorrect === true) return;
+    const h = DRILL_HISTORY[drillKey(item)];
+    if(h) { h.wrong = Math.max(0, h.wrong - 1); h.right++; h.streak = 1; drillSaveHistory(); }
+    item._objCorrect = true;
+    s.wrong = Math.max(0, s.wrong - 1); s.correct++;
+    const i = s.flagged.indexOf(item.question_text);
+    if(i > -1) s.flagged.splice(i, 1);
+    _drillRenderVerdict(item);
+    if(typeof _rcRenderSidebar === 'function') _rcRenderSidebar();
+}
+
+// Coverage readout for the wizard: how much of this scope you've actually cleared.
+function drillScopeStats(pool) {
+    let unseen = 0, weak = 0, solid = 0;
+    pool.forEach(it => {
+        const h = DRILL_HISTORY[drillKey(it)];
+        if(!h || !h.seen) unseen++;
+        else if((h.streak || 0) <= 0) weak++;
+        else solid++;
+    });
+    return { unseen: unseen, weak: weak, solid: solid };
+}
+
 // =================== STEP 8: RE-CLEAR MODE ===================
 // CSC priority themes (from April 2026 score context). Used for the wizard topic filter.
-const RECLEAR_CSC_TOPICS = ['Malignant Breast Disease','Prostate Cancer','Fistulas','Thyroid Cancer','AAA','Peripheral Vascular Disease','Gastric Cancer','Pancreatic Cancer','Oesophagus','Liver','Colonic Polyps','Urinary Tract Calculi','BPH','Testicular Disorders','Sarcomas'];
+// CSC priority themes (April 2026 score report). Chips are {label, rx} because the
+// bank stores full topic names: the old list matched on the literal strings 'AAA'
+// and 'BPH', which appear nowhere in the bank, so those two chips silently matched
+// zero questions. The last four reach the catch-all buckets ('General surgery' etc.)
+// that no chip could previously reach — 97 CSC questions were filter-invisible.
+const RECLEAR_CSC_TOPICS = [
+    { label: 'Malignant Breast Disease', rx: /malignant breast|breast cancer|breast.*malign|familial breast|hereditary breast/i },
+    { label: 'Prostate Cancer',          rx: /prostate cancer/i },
+    { label: 'Fistulas',                 rx: /fistula/i },
+    { label: 'Thyroid Cancer',           rx: /thyroid cancer|thyroid malignancy|medullary thyroid|thyroid neoplasm|thyroid gland disorders-cancer/i },
+    { label: 'AAA',                      rx: /aortic aneurysm|\baaa\b/i },
+    { label: 'Peripheral Vascular Dis.', rx: /peripheral vascular|claudication|limb ischaem/i },
+    { label: 'Gastric Cancer',           rx: /gastric cancer/i },
+    { label: 'Pancreatic Cancer',        rx: /pancreatic cancer/i },
+    { label: 'Oesophagus',               rx: /oesophag/i },
+    { label: 'Liver / HPB',              rx: /liver|hepatobiliary|hepatocellular|cirrhosis/i },
+    { label: 'Colonic Polyps',           rx: /polyp/i },
+    { label: 'Urinary Tract Calculi',    rx: /calculi|renal stones|management of renal stones/i },
+    { label: 'BPH',                      rx: /benign prostatic|\bbph\b/i },
+    { label: 'Testicular Disorders',     rx: /testic/i },
+    { label: 'Sarcomas',                 rx: /sarcoma/i },
+    { label: '…General surgery',         rx: /^general surgery$/i },
+    { label: '…Breast & endocrine',      rx: /^breast and endocrine surgery$/i },
+    { label: '…Urology (general)',       rx: /^urology$/i },
+    { label: '…Vascular (general)',      rx: /^vascular surgery$/i }
+];
 const RECLEAR_MAX = 200;
 
 // Live state for the wizard + active re-clear session
@@ -7634,7 +7902,8 @@ function _reclearRowToLegacy(row) {
     return {
         question_text: row.stem, options: optsObj, correct_answer: row.correct_letter,
         explanation: row.explanation || '', topic: row.topic || '',
-        qhash: row.qhash, source: row.source || ''
+        qhash: row.qhash, source: row.source || '',
+        _isCsc: row.is_csc === true
     };
 }
 
@@ -7643,7 +7912,10 @@ let _reclearBankMode = false;
 
 async function _reclearFetchFromCloud(scope) {
     if (!isSupabaseConfigured()) return null;
-    const filter = scope === 'csc' ? '&is_csc=eq.true' : '';
+    // v119: always pull the whole table; every scope is resolved client-side by
+    // drillInScope(), which also purges the mis-flagged is_csc rows a stale
+    // IndexedDB copy would otherwise reintroduce.
+    const filter = '';
     // PostgREST caps a single response at 1000 rows by default (Supabase's
     // db-max-rows setting), well under the 2367-question bank. Page through
     // with the Range header until a short page signals the end.
@@ -7668,7 +7940,7 @@ async function _reclearFetchFromCloud(scope) {
 }
 
 async function reclearLoadFromBank(scope) {
-    const file = scope === 'all' ? 'data/questions_full.json' : 'data/questions_csc.json';
+    const file = scope === 'csc' ? 'data/questions_csc.json' : 'data/questions_full.json';
     const statusEl = $('reclear-parse-status');
     if($('btn-reclear-start')) $('btn-reclear-start').disabled = true;
     if(statusEl) statusEl.textContent = 'Loading ' + (scope === 'all' ? 'full' : 'CSC') + ' bank\u2026';
@@ -7698,21 +7970,48 @@ async function reclearLoadFromBank(scope) {
             }
 
             if (dbRows && dbRows.length) {
-                pool = (scope === 'csc' ? dbRows.filter(r => r.is_csc) : dbRows).map(_reclearRowToLegacy);
+                pool = dbRows.map(_reclearRowToLegacy).filter(it => drillInScope(it, scope));
             } else {
                 // 3) Last-resort fallback -- pre-migration bundled JSON files.
                 const res = await fetch(file, { cache: 'force-cache' });
                 if(!res.ok) throw new Error('HTTP ' + res.status);
                 pool = await res.json();
                 if(!Array.isArray(pool)) throw new Error('bad data');
+                if(scope === 'csc') {
+                    // The bundled CSC file IS the csc set.
+                    pool = pool.map(q => Object.assign({}, q, { _isCsc: true }));
+                } else {
+                    // Derive the flag from the companion file so this offline fallback
+                    // classifies identically to the cloud path. Without it drillDomain()
+                    // falls through to DRILL_CSC_RX, which over-matches — PoSG came out
+                    // ~150 questions too large and stole them from the periop scope.
+                    let cscSet = null;
+                    try {
+                        const r2 = await fetch('data/questions_csc.json', { cache: 'force-cache' });
+                        if(r2.ok) {
+                            const cscRows = await r2.json();
+                            if(Array.isArray(cscRows)) cscSet = new Set(cscRows.map(q => q.question_text));
+                        }
+                    } catch(e) { console.warn('[reclear] csc companion fetch failed:', e); }
+                    if(cscSet) pool = pool.map(q => Object.assign({}, q, { _isCsc: cscSet.has(q.question_text) }));
+                }
+                pool = pool.filter(it => drillInScope(it, scope));
             }
             _reclearBankCache[scope] = pool;
         }
-        const arr = pool.slice();
-        for(let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+        const arr = drillOrderQueue(pool);   // v119: weakest-first, not blind shuffle
         RECLEAR_QUEUE = arr;          // in-memory only — do NOT setReclearQueue()
         _reclearBankMode = true;
-        if(statusEl) statusEl.textContent = '\u2713 Loaded ' + arr.length + ' ' + (scope === 'all' ? 'bank' : 'CSC') + ' questions. Pick topics (optional) \u2192 Start.';
+        if(statusEl) {
+            if(arr.length === 0) {
+                statusEl.textContent = '\u26a0\ufe0f No questions in scope: ' + (DRILL_SCOPE_LABEL[scope] || scope);
+            } else {
+                const st = drillScopeStats(arr);
+                statusEl.textContent = '\u2713 ' + arr.length + ' ' + (DRILL_SCOPE_LABEL[scope] || scope) +
+                    ' questions \u2014 ' + st.unseen + ' new, ' + st.weak + ' previously failed, ' + st.solid +
+                    ' cleared. Weakest served first.';
+            }
+        }
         if($('btn-reclear-start')) $('btn-reclear-start').disabled = false;
     } catch(err) {
         if(statusEl) statusEl.textContent = '\u26a0\ufe0f Could not load bank: ' + (err && err.message ? err.message : 'unknown') + ' (is data/questions_csc.json deployed?)';
@@ -7723,21 +8022,20 @@ async function reclearLoadFromBank(scope) {
 function reclearRenderTopicFilter() {
     const wrap = $('reclear-topic-filter');
     wrap.innerHTML = '';
-    RECLEAR_CSC_TOPICS.forEach(t => {
+    RECLEAR_CSC_TOPICS.forEach(spec => {
         const chip = document.createElement('div');
-        chip.className = 'reclear-topic-chip' + (_reclearTopicSel[t.toLowerCase()] ? ' on' : '');
-        chip.textContent = t;
+        chip.className = 'reclear-topic-chip' + (_reclearTopicSel[spec.label] ? ' on' : '');
+        chip.textContent = spec.label;
         chip.onclick = () => {
-            const k = t.toLowerCase();
-            _reclearTopicSel[k] = !_reclearTopicSel[k];
-            chip.classList.toggle('on', _reclearTopicSel[k]);
+            _reclearTopicSel[spec.label] = !_reclearTopicSel[spec.label];
+            chip.classList.toggle('on', _reclearTopicSel[spec.label]);
         };
         wrap.appendChild(chip);
     });
 }
 function reclearSetAllTopics(on) {
     _reclearTopicSel = {};
-    if(on) RECLEAR_CSC_TOPICS.forEach(t => { _reclearTopicSel[t.toLowerCase()] = true; });
+    if(on) RECLEAR_CSC_TOPICS.forEach(spec => { _reclearTopicSel[spec.label] = true; });
     reclearRenderTopicFilter();
 }
 
@@ -7770,11 +8068,11 @@ function reclearHandleCsvFile(ev) {
 
 // Apply the topic filter to the loaded queue. No chips selected => use everything.
 function reclearFilteredQueue() {
-    const anySel = Object.keys(_reclearTopicSel).some(k => _reclearTopicSel[k]);
-    if(!anySel) return RECLEAR_QUEUE.slice();
+    const sel = RECLEAR_CSC_TOPICS.filter(spec => _reclearTopicSel[spec.label]);
+    if(sel.length === 0) return RECLEAR_QUEUE.slice();
     return RECLEAR_QUEUE.filter(item => {
-        const t = String(item.topic || '').toLowerCase();
-        return Object.keys(_reclearTopicSel).some(k => _reclearTopicSel[k] && t.indexOf(k) !== -1);
+        const t = String(item.topic || '');
+        return sel.some(spec => spec.rx.test(t));
     });
 }
 
@@ -7784,7 +8082,8 @@ function startReclearSession() {
     if(pool.length === 0) { _reclearToast('⚠️ No questions match that filter'); return; }
     reclearSession = {
         items: pool, idx: 0, correct: 0, wrong: 0,
-        flagged: [], startIso: Date.now()
+        flagged: [], startIso: Date.now(),
+        cardsMade: 0, confidentWrong: 0, luckyGuess: 0
     };
     closeReclearWizard();
     show('v-reclear'); applyTheme();
@@ -7972,15 +8271,26 @@ function reclearReveal() {
     });
     const expl = item.explanation || '';
     $('reclear-explanation').innerHTML = (typeof renderMarkdown === 'function' && expl) ? renderMarkdown(expl) : (expl || '<em style="opacity:0.5;">No explanation in CSV.</em>');
+    // v119: the objective result was always computed here and then thrown away —
+    // the old flow asked you to self-grade AFTER reading the answer. Now it counts.
+    item._objCorrect = (pickedKey === correctKey);
+    _drillRecordAttempt(item);
+    _drillRenderVerdict(item);
     $('reclear-reveal').style.display = 'block';
 }
 
-// Self-grade: true = cleared, false = still wrong (flag it)
-function reclearGrade(gotIt) {
+// v119: advance only. The grade itself was recorded objectively at reveal, so this
+// no longer takes a verdict from the user. Argument kept for call-site compatibility.
+function reclearGrade(_ignored) {
     const s = reclearSession; if(!s) return;
     const item = s.items[s.idx];
-    if(gotIt) { s.correct++; if(typeof haptic === 'function') haptic(15); }
-    else { s.wrong++; s.flagged.push(item.question_text); if(typeof haptic === 'function') haptic(30); }
+    if(item && !item._recorded) {           // safety net if reveal was bypassed
+        item._objCorrect = false;
+        _drillRecordAttempt(item);
+    }
+    if(typeof haptic === 'function') haptic(item && item._objCorrect ? 15 : 30);
+    const vd = $('reclear-verdict'); if(vd) { vd.textContent = ''; vd.className = 'rc-verdict'; }
+    const ov = $('reclear-misclick'); if(ov) ov.style.display = 'none';
     _rcRenderSidebar();
     s.idx++;
     if(s.idx >= s.items.length) { _reclearFinish(); }
@@ -8014,13 +8324,20 @@ function _reclearFinish() {
         sessionType: 'reclear',
         reclearRate: rate,
         reclearAnswered: answered,
-        reclearFlagged: s.flagged.slice(0, 50)
+        reclearFlagged: s.flagged.slice(0, 50),
+        reclearCardsMade: s.cardsMade || 0,
+        reclearConfidentWrong: s.confidentWrong || 0,
+        reclearLuckyGuess: s.luckyGuess || 0,
+        reclearObjective: true
     };
     sessions.push(newSession);
     if(typeof markSession === 'function') markSession(newSession);
     persistData(); pushToCloud();
     reclearSession = null;
-    _reclearToast('🔁 Re-Clear rate: ' + rate + '% (' + s.correct + '/' + answered + ')');
+    let msg = '🔁 ' + rate + '% (' + s.correct + '/' + answered + ')';
+    if(s.cardsMade) msg += ' · ' + s.cardsMade + ' card' + (s.cardsMade === 1 ? '' : 's') + ' added';
+    if(s.confidentWrong) msg += ' · ' + s.confidentWrong + ' confident-wrong';
+    _reclearToast(msg);
     show('v-setup'); applyTheme();
     if(typeof renderHome === 'function') renderHome();
 }
