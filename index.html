@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max — v119 (drill intelligence)</title>
+<title>MRCS QBank Tracker Pro Max — v120 (offline)</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2671,7 +2671,8 @@
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<!-- v120: Chart.js vendored same-origin so charts survive offline (was cdnjs; SW precaches it) -->
+<script src="chart.umd.js"></script>
 <script>
 window.onerror = function(msg, url, lineNo, columnNo, error) { 
     const consoleEl = document.getElementById('debug-console'); 
@@ -16073,6 +16074,30 @@ function initApp() {
 }
 
 initApp();
+
+// =================== v120: OFFLINE SUPPORT (service worker) ===================
+// Registers a real same-origin sw.js (deployed next to index.html). The V79-era
+// blocker — blob service workers being cross-origin on Netlify — doesn't apply
+// on GitHub Pages, so the Tracker can finally open cold in airplane mode.
+// sw.js precaches the app shell + bank-fallback JSONs and serves network-first,
+// so online behaviour (and fresh deploys) are completely unchanged.
+// Guard: live origin only, so localhost preview during development never gets
+// cache-poisoned. Append ?sw=1 to a local URL to test the worker deliberately.
+(function(){
+    if(!('serviceWorker' in navigator)) return;
+    let allow = false;
+    try { allow = location.hostname.endsWith('github.io') || new URLSearchParams(location.search).has('sw'); } catch(e) {}
+    if(!allow) return;
+    const regSW = () => {
+        navigator.serviceWorker.register('sw.js').then(r => {
+            logDebug('v120: service worker registered (scope ' + r.scope + ')');
+        }).catch(e => {
+            console.warn('[v120] service worker registration failed:', e);
+        });
+    };
+    if(document.readyState === 'complete') regSW();
+    else window.addEventListener('load', regSW);
+})();
 
 </script>
 </body>
