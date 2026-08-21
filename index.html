@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max — v121 (offline resync)</title>
+<title>MRCS QBank Tracker Pro Max — v122 (drill sync)</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -5135,6 +5135,30 @@ create policy "anon read"   on mrcs_settings for select using (true);
 create policy "anon write"  on mrcs_settings for insert with check (true);
 create policy "anon update" on mrcs_settings for update using (true) with check (true);
 create policy "anon delete" on mrcs_settings for delete using (true);
+
+-- v122: cross-device drill history (one row per drilled question).
+-- n_right/n_wrong because RIGHT is a SQL reserved word; timestamps are ms epoch.
+create table if not exists mrcs_drill_history (
+  qkey text primary key,
+  seen integer not null default 0,
+  n_right integer not null default 0,
+  n_wrong integer not null default 0,
+  streak integer not null default 0,
+  last bigint not null default 0,
+  conf text not null default '',
+  topic text not null default '',
+  updated_at bigint not null default 0
+);
+create index if not exists mrcs_drill_history_updated_at_idx on mrcs_drill_history (updated_at desc);
+alter table mrcs_drill_history enable row level security;
+drop policy if exists "anon read"   on mrcs_drill_history;
+drop policy if exists "anon write"  on mrcs_drill_history;
+drop policy if exists "anon update" on mrcs_drill_history;
+drop policy if exists "anon delete" on mrcs_drill_history;
+create policy "anon read"   on mrcs_drill_history for select using (true);
+create policy "anon write"  on mrcs_drill_history for insert with check (true);
+create policy "anon update" on mrcs_drill_history for update using (true) with check (true);
+create policy "anon delete" on mrcs_drill_history for delete using (true);
 `;
 
 function showV111SetupSql() {
@@ -7659,6 +7683,7 @@ function _drillRecordAttempt(item) {
     h.topic = String(item.topic || '');
     DRILL_HISTORY[k] = h;
     drillSaveHistory();
+    drillSyncMarkDirty(k);   // v122: queue this question's row for cloud push
 
     const s = reclearSession;
     if(!s) return;
@@ -7700,7 +7725,9 @@ function drillOverrideCorrect() {
     const item = s.items[s.idx];
     if(!item || item._objCorrect === true) return;
     const h = DRILL_HISTORY[drillKey(item)];
-    if(h) { h.wrong = Math.max(0, h.wrong - 1); h.right++; h.streak = 1; drillSaveHistory(); }
+    // v122: bump `last` so the override is the newest statement about this
+    // question and wins the cross-device merge; then re-queue the cloud push.
+    if(h) { h.wrong = Math.max(0, h.wrong - 1); h.right++; h.streak = 1; h.last = Date.now(); drillSaveHistory(); drillSyncMarkDirty(drillKey(item)); }
     item._objCorrect = true;
     s.wrong = Math.max(0, s.wrong - 1); s.correct++;
     const i = s.flagged.indexOf(item.question_text);
@@ -8005,6 +8032,10 @@ async function reclearLoadFromBank(scope) {
             }
             _reclearBankCache[scope] = pool;
         }
+        // v122: fold in the latest cross-device history before ordering, so a
+        // session finished on the MacBook re-orders this device's queue. Offline
+        // or slow (>2.5s) it silently orders from local history, as before.
+        try { await drillHistoryPull(2500); } catch(e) {}
         const arr = drillOrderQueue(pool);   // v119: weakest-first, not blind shuffle
         RECLEAR_QUEUE = arr;          // in-memory only — do NOT setReclearQueue()
         _reclearBankMode = true;
@@ -16207,18 +16238,31 @@ async function supabaseResyncSweep(reason) {
             b => b.updatedAt, r => r.updated_at).map(_bankItemToRow).filter(Boolean);
         const nCards = cardRows.length ? await _resyncUpsert('mrcs_cards', cardRows) : 0;
 
+        // v122: drill history — own try/catch so a hiccup here can never block
+        // the session/tracker/card resync above.
+        let nDh = 0;
+        try {
+            const dhCloud = await getIndex('mrcs_drill_history?select=qkey,updated_at&limit=5000');
+            const dhLocal = Object.keys(DRILL_HISTORY).map(k => ({ k: k, h: DRILL_HISTORY[k] }));
+            const dhRows = _resyncDiff(dhLocal, dhCloud,
+                x => x.k, r => r.qkey,
+                x => (x.h && x.h.last) || 0, r => r.updated_at).map(x => drillHistToRow(x.k, x.h)).filter(Boolean);
+            nDh = dhRows.length ? await _resyncUpsert('mrcs_drill_history', dhRows) : 0;
+        } catch(e) { console.warn('[v122] drill-history resync skipped:', e.message || e); }
+
         let nSet = 0;
         if(localStorage.getItem('mrcs-settings-dirty') === '1') {
             await _doSupabasePushSettings();
             if(localStorage.getItem('mrcs-settings-dirty') !== '1') nSet = 1;
         }
 
-        const total = nSes + nTrk + nCards + nSet;
+        const total = nSes + nTrk + nCards + nDh + nSet;
         if(total > 0) {
             const parts = [];
             if(nSes) parts.push(nSes + ' session' + (nSes > 1 ? 's' : ''));
             if(nTrk) parts.push(nTrk + ' tracker day' + (nTrk > 1 ? 's' : ''));
             if(nCards) parts.push(nCards + ' card' + (nCards > 1 ? 's' : ''));
+            if(nDh) parts.push(nDh + ' drill Q' + (nDh > 1 ? 's' : ''));
             if(nSet) parts.push('settings');
             const msg = '✓ Re-synced ' + parts.join(' + ') + ' from this device';
             setSupabaseStatus(msg, '#4ade80');
@@ -16243,6 +16287,118 @@ function scheduleResyncSweep(reason) {
 
 window.addEventListener('online', () => scheduleResyncSweep('reconnect'));
 setTimeout(() => scheduleResyncSweep('boot'), RESYNC_BOOT_DELAY_MS);
+
+// =================== v122: DRILL HISTORY SYNC ===================
+// DRILL_HISTORY was localStorage-only by design (v119) — fine for one device,
+// wrong once drilling happens on iPad flights, the MacBook and the iPhone.
+// One cloud row per drilled question (mrcs_drill_history, keyed by the same
+// qhash/djb2 drillKey the local store uses). Sync shape:
+//   * push — answering marks the question's key dirty; dirty keys flush in one
+//     batched upsert 5s later (a misclick override re-flushes the same key).
+//     Offline flushes fail soft: keys stay dirty, and the resync sweep diffs
+//     against the cloud on reconnect anyway, so nothing is ever stranded.
+//   * pull — at boot and right before a drill queue is ordered, cloud rows are
+//     merged into the local store, so "what to show next" honours the latest
+//     session from ANY device.
+//   * merge (order-insensitive, converges) — lifetime counters take
+//     element-wise max, so they never regress; streak/conf/last — the fields
+//     drillPriority() actually orders by — come from whichever side holds the
+//     LATER attempt. Two devices drilling the same question while both offline
+//     lose a little lifetime-count precision, never the latest verdict.
+// Cloud columns are n_right/n_wrong (RIGHT is a SQL reserved word).
+
+const DRILL_SYNC_TABLE = 'mrcs_drill_history';
+const DRILL_SYNC_DEBOUNCE_MS = 5000;
+const _drillSyncDirty = new Set();
+let _drillSyncTimer = null;
+let _drillSyncFlushing = false;
+
+function drillHistToRow(k, h) {
+    if(!k || !h) return null;
+    return { qkey: String(k), seen: h.seen || 0, n_right: h.right || 0, n_wrong: h.wrong || 0,
+             streak: h.streak || 0, last: h.last || 0, conf: h.conf || '', topic: h.topic || '',
+             updated_at: h.last || Date.now() };
+}
+
+function drillRowToHist(r) {
+    return { seen: r.seen || 0, right: r.n_right || 0, wrong: r.n_wrong || 0,
+             streak: r.streak || 0, last: Number(r.last) || 0, conf: r.conf || '', topic: r.topic || '' };
+}
+
+function drillHistMerge(a, b) {
+    if(!a) return b;
+    if(!b) return a;
+    const newer = (b.last || 0) > (a.last || 0) ? b : a;
+    return { seen: Math.max(a.seen || 0, b.seen || 0),
+             right: Math.max(a.right || 0, b.right || 0),
+             wrong: Math.max(a.wrong || 0, b.wrong || 0),
+             streak: newer.streak || 0,
+             last: newer.last || 0,
+             conf: newer.conf || '',
+             topic: newer.topic || a.topic || b.topic || '' };
+}
+
+function drillSyncMarkDirty(k) {
+    if(!k) return;
+    _drillSyncDirty.add(String(k));
+    if(!isSupabaseConfigured()) return;
+    clearTimeout(_drillSyncTimer);
+    _drillSyncTimer = setTimeout(drillSyncFlush, DRILL_SYNC_DEBOUNCE_MS);
+}
+
+async function drillSyncFlush() {
+    if(!isSupabaseConfigured() || _drillSyncFlushing || _drillSyncDirty.size === 0) return;
+    _drillSyncFlushing = true;
+    const keys = Array.from(_drillSyncDirty);
+    try {
+        const rows = keys.map(k => drillHistToRow(k, DRILL_HISTORY[k])).filter(Boolean);
+        if(rows.length) await _resyncUpsert(DRILL_SYNC_TABLE, rows);
+        keys.forEach(k => _drillSyncDirty.delete(k));
+    } catch(e) {
+        // Keys stay dirty; the next flush or the resync sweep picks them up.
+        console.warn('[v122] drill-history flush failed (kept for resync):', e.message || e);
+    } finally {
+        _drillSyncFlushing = false;
+    }
+}
+
+async function drillHistoryPull(timeoutMs) {
+    if(!isSupabaseConfigured()) return 0;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs || 4000);
+    try {
+        const res = await fetch(SUPABASE_URL + '/rest/v1/' + DRILL_SYNC_TABLE + '?select=*&limit=5000', {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+            signal: ctrl.signal
+        });
+        if(!res.ok) return 0;
+        const rows = await res.json();
+        if(!Array.isArray(rows)) return 0;
+        let changed = 0;
+        rows.forEach(r => {
+            if(!r || !r.qkey) return;
+            const merged = drillHistMerge(DRILL_HISTORY[r.qkey], drillRowToHist(r));
+            const before = DRILL_HISTORY[r.qkey];
+            if(!before || JSON.stringify(before) !== JSON.stringify(merged)) {
+                DRILL_HISTORY[r.qkey] = merged;
+                changed++;
+            }
+        });
+        if(changed) drillSaveHistory();
+        return changed;
+    } catch(e) {
+        return 0;   // offline / slow — order from local history, exactly as before v122
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+// Boot: fold in other devices' drilling before the first session starts.
+setTimeout(() => {
+    drillHistoryPull(8000).then(n => {
+        if(n) logDebug('v122 drill-history pull: ' + n + ' question(s) updated from cloud');
+    });
+}, 6000);
 
 </script>
 </body>
