@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max — v123 (post-op review)</title>
+<title>MRCS QBank Tracker Pro Max — v123 (post-op review)</title><!-- v123.1 contrast -->
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16468,16 +16468,16 @@ function _postOpBuildSnapshot(s, rate, answered, usedMin) {
 function _postOpItemHtml(r, borderColor) {
     const you = r.pk
         ? '<span style="color:var(--err-red);font-weight:700;">' + _postOpEsc(r.pk) + '</span> — ' + _postOpEsc(r.pkText)
-        : '<span style="opacity:0.6;">no pick (timed out / skipped)</span>';
-    return '<details style="border:1px solid var(--stroke);border-left:3px solid ' + borderColor + ';border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(255,255,255,0.02);">' +
+        : '<span style="opacity:0.85;">no pick (timed out / skipped)</span>';
+    return '<details style="border:1px solid var(--stroke);border-left:3px solid ' + borderColor + ';border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(255,255,255,0.045);">' +
         '<summary style="cursor:pointer;font-size:0.72rem;line-height:1.35;">' +
-            '<span style="display:inline-block;background:rgba(255,255,255,0.07);border-radius:6px;padding:1px 6px;font-size:0.6rem;letter-spacing:0.5px;margin-right:6px;">' + _postOpEsc(r.topic) + '</span>' +
+            '<span style="display:inline-block;background:rgba(255,255,255,0.13);border-radius:6px;padding:1px 6px;font-size:0.62rem;letter-spacing:0.5px;margin-right:6px;">' + _postOpEsc(r.topic) + '</span>' +
             _postOpEsc(r.stem.length > 140 ? r.stem.slice(0, 140) + '…' : r.stem) +
         '</summary>' +
         '<div style="font-size:0.7rem;margin-top:8px;line-height:1.45;">' +
             '<div>You: ' + you + '</div>' +
             '<div>Correct: <span style="color:var(--ok);font-weight:700;">' + _postOpEsc(r.ck) + '</span> — ' + _postOpEsc(r.ckText) + '</div>' +
-            (r.expl ? '<div style="opacity:0.75;margin-top:6px;">' + _postOpEsc(r.expl) + '</div>' : '') +
+            (r.expl ? '<div style="opacity:0.92;margin-top:6px;">' + _postOpEsc(r.expl) + '</div>' : '') +
         '</div>' +
     '</details>';
 }
@@ -16486,7 +16486,7 @@ function _postOpSection(title, note, color, items) {
     if(!items || !items.length) return '';
     return '<div style="margin-top:14px;">' +
         '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.05rem;letter-spacing:1px;color:' + color + ';">' + title + ' (' + items.length + ')</div>' +
-        (note ? '<div style="font-size:0.62rem;opacity:0.65;margin:2px 0 8px;">' + note + '</div>' : '<div style="height:8px;"></div>') +
+        (note ? '<div style="font-size:0.68rem;opacity:0.88;margin:3px 0 9px;">' + note + '</div>' : '<div style="height:8px;"></div>') +
         items.map(r => _postOpItemHtml(r, color)).join('') +
     '</div>';
 }
@@ -16502,11 +16502,11 @@ function showPostOpReview(snap, isReplay) {
     const vital = (label, value, color) =>
         '<div style="background:rgba(255,255,255,0.04);border:1px solid var(--stroke);border-radius:10px;padding:8px 6px;text-align:center;">' +
             '<div style="font-family:JetBrains Mono,monospace;font-size:1.05rem;font-weight:700;color:' + (color || 'inherit') + ';">' + value + '</div>' +
-            '<div style="font-size:0.55rem;letter-spacing:1px;opacity:0.6;margin-top:2px;">' + label + '</div>' +
+            '<div style="font-size:0.58rem;letter-spacing:1px;opacity:0.82;margin-top:2px;">' + label + '</div>' +
         '</div>';
     const luckyRows = (snap.lucky || []).map(r =>
         '<div style="font-size:0.68rem;padding:5px 8px;border-left:3px solid #ffab00;margin-bottom:5px;background:rgba(255,171,0,0.05);border-radius:6px;">' +
-            '<span style="opacity:0.65;">[' + _postOpEsc(r.topic) + ']</span> ' + _postOpEsc(r.stem.length > 110 ? r.stem.slice(0, 110) + '…' : r.stem) +
+            '<span style="opacity:0.85;">[' + _postOpEsc(r.topic) + ']</span> ' + _postOpEsc(r.stem.length > 110 ? r.stem.slice(0, 110) + '…' : r.stem) +
         '</div>').join('');
     const topicChips = (snap.topicWrongs || []).map(tw =>
         '<span style="display:inline-block;border:1px solid var(--err-red);color:var(--err-red);border-radius:999px;padding:3px 10px;font-size:0.62rem;margin:0 6px 6px 0;">' +
@@ -16524,7 +16524,7 @@ function showPostOpReview(snap, isReplay) {
             '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.5rem;letter-spacing:2px;color:var(--accent2);">🧾 POST-OP REVIEW</div>' +
             '<button onclick="closePostOpReview()" style="background:none;border:1px solid var(--stroke);color:inherit;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:0.8rem;">✕</button>' +
         '</div>' +
-        '<div style="font-size:0.62rem;opacity:0.6;margin:2px 0 12px;">' +
+        '<div style="font-size:0.68rem;opacity:0.85;margin:3px 0 12px;">' +
             (snap.scope ? _postOpEsc(snap.scope) + ' · ' : '') + when.toLocaleDateString() + ' ' + when.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) +
         '</div>' +
         '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">' +
@@ -16540,7 +16540,7 @@ function showPostOpReview(snap, isReplay) {
         ((snap.lucky || []).length ?
             '<div style="margin-top:14px;">' +
                 '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.05rem;letter-spacing:1px;color:#ffab00;">🍀 LUCKY GUESSES (' + snap.lucky.length + ')</div>' +
-                '<div style="font-size:0.62rem;opacity:0.65;margin:2px 0 8px;">Right but hesitant — held at streak 1, they resurface soon. No card made.</div>' +
+                '<div style="font-size:0.68rem;opacity:0.88;margin:3px 0 9px;">Right but hesitant — held at streak 1, they resurface soon. No card made.</div>' +
                 luckyRows +
             '</div>' : '') +
         ((snap.topicWrongs || []).length ?
@@ -16549,7 +16549,7 @@ function showPostOpReview(snap, isReplay) {
                 '<div style="margin-top:8px;">' + topicChips + '</div>' +
             '</div>' : '') +
         '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--stroke);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">' +
-            '<div style="font-size:0.62rem;opacity:0.7;">' + (snap.wrong > 0 ? 'Your ' + snap.wrong + ' fail' + (snap.wrong > 1 ? 's' : '') + ' now lead the next session’s queue.' : 'Clean list — nothing re-queued.') + '</div>' +
+            '<div style="font-size:0.68rem;opacity:0.88;">' + (snap.wrong > 0 ? 'Your ' + snap.wrong + ' fail' + (snap.wrong > 1 ? 's' : '') + ' now lead the next session’s queue.' : 'Clean list — nothing re-queued.') + '</div>' +
             '<button class="btn btn-sm" style="background:var(--accent2);color:#111;" onclick="closePostOpReview()">Done</button>' +
         '</div>';
     overlay.appendChild(box);
