@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max — v123 (post-op review)</title><!-- v123.1 contrast -->
+<title>MRCS QBank Tracker Pro Max — v124 (drill report)</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2364,6 +2364,10 @@
             <div class="dash-lbl" style="text-align:center; margin-bottom:8px; color:var(--accent);">Post-Op Review Queue <span style="font-size:0.5rem;opacity:0.4;">(tap to open full review)</span></div>
             <div class="row" style="flex-wrap:wrap; justify-content:flex-start; align-content:flex-start; gap:6px;" id="ss-postop-grid"></div>
         </div>
+
+        <!-- v124: drill sessions get their wrongs/rights analysis IN the Surgeon's
+             Report, like every other session type. Populated by _renderDrillDebriefCard. -->
+        <div class="dash-card ss-full" id="ss-drill-debrief" style="display:none;"></div>
     </div>
 
     <div class="row" style="justify-content:center; gap:8px; margin-top:16px;">
@@ -12955,6 +12959,7 @@ function openSessionSummary(idx) {
     }
     
     $('ss-affirmation').textContent = affirmation;
+    _renderDrillDebriefCard(s);   // v124: drill sessions carry their post-op analysis in this report
     show('v-session-summary'); applyTheme();
 }
 
@@ -16466,9 +16471,12 @@ function _postOpBuildSnapshot(s, rate, answered, usedMin) {
 }
 
 function _postOpItemHtml(r, borderColor) {
-    const you = r.pk
-        ? '<span style="color:var(--err-red);font-weight:700;">' + _postOpEsc(r.pk) + '</span> — ' + _postOpEsc(r.pkText)
-        : '<span style="opacity:0.85;">no pick (timed out / skipped)</span>';
+    // v124: youLabel overrides the pick line for reconstructed pre-v123 sessions
+    const you = r.youLabel
+        ? '<span style="opacity:0.85;">' + _postOpEsc(r.youLabel) + '</span>'
+        : (r.pk
+            ? '<span style="color:var(--err-red);font-weight:700;">' + _postOpEsc(r.pk) + '</span> — ' + _postOpEsc(r.pkText)
+            : '<span style="opacity:0.85;">no pick (timed out / skipped)</span>');
     return '<details style="border:1px solid var(--stroke);border-left:3px solid ' + borderColor + ';border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(255,255,255,0.045);">' +
         '<summary style="cursor:pointer;font-size:0.72rem;line-height:1.35;">' +
             '<span style="display:inline-block;background:rgba(255,255,255,0.13);border-radius:6px;padding:1px 6px;font-size:0.62rem;letter-spacing:0.5px;margin-right:6px;">' + _postOpEsc(r.topic) + '</span>' +
@@ -16574,6 +16582,165 @@ function openLastPostOpReview() {
 if(localStorage.getItem(POSTOP_LS)) {
     const _pb = $('btn-postop-last');
     if(_pb) _pb.style.display = '';
+}
+
+// =================== v124: DRILL ANALYSIS IN THE SURGEON'S REPORT ===================
+// Suketu: drill sessions should carry their wrongs/rights analysis IN the
+// Surgeon's Report, like every other session type — not only in the transient
+// end-of-drill overlay. The report's flashword "Post-Op Review Queue" card is
+// scratchpad-based and always empty for drills (they have no flashwords), so
+// drills hide it and render #ss-drill-debrief instead:
+//   * v123+ sessions carry `reclearResults` (topic/stem90/pick/correct/ok/conf
+//     per question) — rebuilt in full, enriched against the bank for full
+//     stems, option texts and explanations (stems were stored truncated at 90).
+//   * pre-v123 sessions (e.g. the 19 Aug flight drill) recorded only the wrong
+//     stems + aggregate counts — rebuilt as an honestly-labelled PARTIAL
+//     review: every wrong with topic/correct answer/explanation via exact
+//     stem match, but picks and per-question confidence were never captured.
+// Bank lookup rides the drill's own ladder (memory cache → IndexedDB → cloud →
+// SW-cached JSON fallback), so this works offline too.
+
+let _debriefBankCache = null;
+let _debriefRenderToken = 0;
+
+async function _debriefGetBank() {
+    if(_debriefBankCache) return _debriefBankCache;
+    try { if(_reclearBankCache && _reclearBankCache.all && _reclearBankCache.all.length) return (_debriefBankCache = _reclearBankCache.all); } catch(e) {}
+    try {
+        const db = await _reclearIdbOpen();
+        const rows = await _reclearIdbGetAll(db);
+        if(rows && rows.length) return (_debriefBankCache = rows.map(_reclearRowToLegacy));
+    } catch(e) {}
+    try {
+        const rows = await _reclearFetchFromCloud('all');
+        if(rows && rows.length) return (_debriefBankCache = rows.map(_reclearRowToLegacy));
+    } catch(e) {}
+    try {
+        const res = await fetch('data/questions_full.json', { cache: 'force-cache' });
+        if(res.ok) { const p = await res.json(); if(Array.isArray(p)) return (_debriefBankCache = p); }
+    } catch(e) {}
+    return (_debriefBankCache = []);
+}
+
+function _debriefNorm(x) { return String(x == null ? '' : x).replace(/\s+/g, ' ').trim(); }
+
+function _debriefMatcher(bank) {
+    const map = new Map();
+    (bank || []).forEach(q => { const n = _debriefNorm(q.question_text); if(n && !map.has(n)) map.set(n, q); });
+    return {
+        exact: (stem) => map.get(_debriefNorm(stem)) || null,
+        prefix: (p) => {
+            const n = _debriefNorm(p);
+            if(!n) return null;
+            if(map.has(n)) return map.get(n);
+            for(const entry of map) { if(entry[0].indexOf(n) === 0) return entry[1]; }
+            return null;
+        }
+    };
+}
+
+function _debriefChip(label, value, color) {
+    return '<div style="background:rgba(255,255,255,0.045);border:1px solid var(--stroke);border-radius:10px;padding:6px 10px;text-align:center;min-width:70px;">' +
+        '<div style="font-family:JetBrains Mono,monospace;font-size:0.95rem;font-weight:700;color:' + (color || 'inherit') + ';">' + value + '</div>' +
+        '<div style="font-size:0.55rem;letter-spacing:1px;opacity:0.82;margin-top:1px;">' + label + '</div>' +
+    '</div>';
+}
+
+function _debriefTopicChips(counts) {
+    const arr = Object.keys(counts).map(t => [t, counts[t]]).sort((a, b) => b[1] - a[1]);
+    if(!arr.length) return '';
+    return '<div style="margin-top:12px;"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1rem;letter-spacing:1px;">📊 WRONGS BY TOPIC</div><div style="margin-top:7px;">' +
+        arr.map(tw => '<span style="display:inline-block;border:1px solid var(--err-red);color:var(--err-red);border-radius:999px;padding:3px 10px;font-size:0.62rem;margin:0 6px 6px 0;">' + _postOpEsc(tw[0]) + ' ×' + tw[1] + '</span>').join('') +
+    '</div></div>';
+}
+
+function _debriefBodyHtml(s, bank) {
+    const m = _debriefMatcher(bank);
+    if(Array.isArray(s.reclearResults) && s.reclearResults.length) {
+        // ---- v123+ session: full rebuild, bank-enriched ----
+        const confWrong = [], hesWrong = [], lucky = [], topicCounts = {};
+        s.reclearResults.forEach(r => {
+            const full = m.prefix(r.q);
+            const opt = (k) => (full && full.options && full.options[k]) ? String(full.options[k]) : '';
+            const item = {
+                topic: (full && full.topic) || r.t || '—',
+                stem: full ? String(full.question_text) : String(r.q || ''),
+                pk: r.p || '', pkText: opt(r.p), ck: r.c || (full ? String(full.correct_answer || '').toUpperCase() : ''),
+                ckText: opt(r.c || (full ? String(full.correct_answer || '').toUpperCase() : '')),
+                conf: r.cf === 'c' ? 'confident' : (r.cf === 'h' ? 'hesitant' : ''),
+                expl: full ? String(full.explanation || '') : ''
+            };
+            if(r.ok) { if(r.cf === 'h') lucky.push(item); }
+            else {
+                (r.cf === 'c' ? confWrong : hesWrong).push(item);
+                topicCounts[item.topic] = (topicCounts[item.topic] || 0) + 1;
+            }
+        });
+        const luckyRows = lucky.map(r =>
+            '<div style="font-size:0.68rem;padding:5px 8px;border-left:3px solid #ffab00;margin-bottom:5px;background:rgba(255,171,0,0.05);border-radius:6px;">' +
+                '<span style="opacity:0.85;">[' + _postOpEsc(r.topic) + ']</span> ' + _postOpEsc(r.stem.length > 110 ? r.stem.slice(0, 110) + '…' : r.stem) +
+            '</div>').join('');
+        return '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">' +
+                _debriefChip('CONF-WRONG', confWrong.length, confWrong.length ? 'var(--err-red)' : null) +
+                _debriefChip('HESITANT-WRONG', hesWrong.length, hesWrong.length ? 'var(--err-soft)' : null) +
+                _debriefChip('LUCKY', lucky.length, lucky.length ? '#ffab00' : null) +
+                _debriefChip('CARDS MADE', s.reclearCardsMade || 0, (s.reclearCardsMade || 0) ? 'var(--accent3)' : null) +
+            '</div>' +
+            _postOpSection('⚠ CONFIDENT & WRONG', 'Knowledge gaps — you were sure, and wrong.', 'var(--err-red)', confWrong) +
+            _postOpSection('✗ WRONG, HESITANT', 'Retrieval slips.', 'var(--err-soft)', hesWrong) +
+            (lucky.length ? '<div style="margin-top:12px;"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1rem;letter-spacing:1px;color:#ffab00;">🍀 LUCKY GUESSES (' + lucky.length + ')</div><div style="height:7px;"></div>' + luckyRows + '</div>' : '') +
+            _debriefTopicChips(topicCounts);
+    }
+    if(Array.isArray(s.reclearFlagged) && s.reclearFlagged.length) {
+        // ---- pre-v123 session: partial rebuild from wrong stems ----
+        const wrongs = [], topicCounts = {};
+        let matched = 0;
+        s.reclearFlagged.forEach(stem => {
+            const full = m.exact(stem);
+            if(full) matched++;
+            const ck = full ? String(full.correct_answer || '').trim().toUpperCase() : '';
+            const item = {
+                topic: (full && full.topic) || '—',
+                stem: full ? String(full.question_text) : String(stem || ''),
+                youLabel: 'not recorded — session predates the post-op review (v123, 21 Aug 2026)',
+                ck: ck, ckText: (full && full.options && full.options[ck]) ? String(full.options[ck]) : '',
+                expl: full ? String(full.explanation || '') : ''
+            };
+            wrongs.push(item);
+            topicCounts[item.topic] = (topicCounts[item.topic] || 0) + 1;
+        });
+        const capNote = s.reclearFlagged.length >= 50 ? ' Wrong-answer list was capped at 50 in that era.' : '';
+        return '<div style="font-size:0.68rem;color:#ffab00;background:rgba(255,171,0,0.08);border:1px solid rgba(255,171,0,0.4);border-radius:8px;padding:7px 10px;margin-bottom:10px;">' +
+                'Partial reconstruction — this drill ran before per-question recording existed, so your picks and per-question confidence are not available. Wrongs recovered from the session’s flagged stems (' + matched + '/' + s.reclearFlagged.length + ' matched to the bank).' + capNote +
+            '</div>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">' +
+                _debriefChip('WRONG', s.reclearFlagged.length, 'var(--err-red)') +
+                _debriefChip('CONF-WRONG', s.reclearConfidentWrong || 0, (s.reclearConfidentWrong || 0) ? 'var(--err-red)' : null) +
+                _debriefChip('LUCKY', s.reclearLuckyGuess || 0, (s.reclearLuckyGuess || 0) ? '#ffab00' : null) +
+                _debriefChip('CARDS MADE', s.reclearCardsMade || 0, (s.reclearCardsMade || 0) ? 'var(--accent3)' : null) +
+            '</div>' +
+            _postOpSection('✗ WRONG ANSWERS', 'Every wrong from this session, matched back to the bank for the correct answer + explanation.', 'var(--err-red)', wrongs) +
+            _debriefTopicChips(topicCounts);
+    }
+    return '<div style="font-size:0.7rem;opacity:0.85;">No per-question data was saved with this session.</div>';
+}
+
+function _renderDrillDebriefCard(s) {
+    const card = $('ss-drill-debrief');
+    if(!card) return;
+    const isDrill = !!(s && (s.sessionType === 'reclear' || (Array.isArray(s.reclearResults) && s.reclearResults.length) || (Array.isArray(s.reclearFlagged) && s.reclearFlagged.length) || typeof s.reclearRate === 'number'));
+    if(!isDrill) { card.style.display = 'none'; card.innerHTML = ''; return; }
+    const po = $('ss-postop-card');
+    if(po) po.style.display = 'none';   // flashword queue is scratchpad-based — always empty for drills
+    card.style.display = 'block';
+    card.innerHTML = '<div class="dash-lbl" style="text-align:center; margin-bottom:10px; color:var(--accent);">🧾 Post-Op Analysis — In-App Drill</div>' +
+        '<div id="ss-drill-debrief-body" style="font-size:0.7rem;opacity:0.85;">Matching questions against the bank…</div>';
+    const token = ++_debriefRenderToken;
+    _debriefGetBank().then(bank => {
+        if(token !== _debriefRenderToken) return;   // user opened a different session meanwhile
+        const body = $('ss-drill-debrief-body');
+        if(body) body.innerHTML = _debriefBodyHtml(s, bank);
+    });
 }
 
 </script>
