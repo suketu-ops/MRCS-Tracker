@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max — v122 (drill sync)</title>
+<title>MRCS QBank Tracker Pro Max — v123 (post-op review)</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1622,6 +1622,7 @@
         <div class="row" style="justify-content:center; gap:12px; margin-top:14px;">
             <button class="btn btn-sm btn-ghost" onclick="closeReclearWizard()">Cancel</button>
             <button class="btn btn-sm" id="btn-reclear-start" style="background:var(--accent2); color:#111;" onclick="startReclearSession()" disabled>Start Re-Clear</button>
+            <button class="btn btn-sm btn-ghost" id="btn-postop-last" style="display:none; border-color:var(--accent3); color:var(--accent3);" onclick="openLastPostOpReview()">🧾 Last post-op</button>
         </div>
     </div>
 </div>
@@ -7973,6 +7974,7 @@ async function _reclearFetchFromCloud(scope) {
 }
 
 async function reclearLoadFromBank(scope) {
+    _reclearLastScope = scope;   // v123: the post-op review labels the session with its scope
     const file = scope === 'csc' ? 'data/questions_csc.json' : 'data/questions_full.json';
     const statusEl = $('reclear-parse-status');
     if($('btn-reclear-start')) $('btn-reclear-start').disabled = true;
@@ -8365,18 +8367,21 @@ function _reclearFinish() {
         reclearCardsMade: s.cardsMade || 0,
         reclearConfidentWrong: s.confidentWrong || 0,
         reclearLuckyGuess: s.luckyGuess || 0,
-        reclearObjective: true
+        reclearObjective: true,
+        // v123: compact per-question results ride mrcs_sessions.extra via the
+        // known-set spill — any synced session's post-op review can be rebuilt.
+        reclearResults: _postOpCompactResults(s)
     };
     sessions.push(newSession);
     if(typeof markSession === 'function') markSession(newSession);
     persistData(); pushToCloud();
+    // v123: snapshot BEFORE the session is nulled; save-first means closing the
+    // tab from the review screen loses nothing.
+    const snap = _postOpBuildSnapshot(s, rate, answered, usedMin);
     reclearSession = null;
-    let msg = '🔁 ' + rate + '% (' + s.correct + '/' + answered + ')';
-    if(s.cardsMade) msg += ' · ' + s.cardsMade + ' card' + (s.cardsMade === 1 ? '' : 's') + ' added';
-    if(s.confidentWrong) msg += ' · ' + s.confidentWrong + ' confident-wrong';
-    _reclearToast(msg);
     show('v-setup'); applyTheme();
     if(typeof renderHome === 'function') renderHome();
+    showPostOpReview(snap);   // the 2.6s toast is now a full debrief overlay
 }
 
 // Toast — follows the showFlipLockToast() exemplar (fixed, bottom, brief, auto-dismiss)
@@ -16399,6 +16404,177 @@ setTimeout(() => {
         if(n) logDebug('v122 drill-history pull: ' + n + ' question(s) updated from cloud');
     });
 }, 6000);
+
+// =================== v123: POST-OP REVIEW ===================
+// Ending a drill used to flash a 2.6s toast and throw the debrief away. Now the
+// finish path builds a full post-op review: vitals, every wrong with your pick
+// vs the correct answer + explanation, confident-wrongs separated from
+// hesitant ones (knowledge gaps vs retrieval slips), lucky guesses, and a
+// wrongs-by-topic breakdown. The last review persists in localStorage
+// ('mrcs-last-postop') behind the 🧾 button on the drill panel, and compact
+// per-question results ride the saved session row into mrcs_sessions.extra.
+
+let _reclearLastScope = '';
+const POSTOP_LS = 'mrcs-last-postop';
+
+function _postOpEsc(x) {
+    return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function _postOpCompactResults(s) {
+    return (s.items || []).filter(it => it && it._recorded).slice(0, 200).map(it => ({
+        t: String(it.topic || '').slice(0, 40),
+        q: String(it.question_text || '').replace(/\s+/g, ' ').slice(0, 90),
+        p: String(it._picked || '').toUpperCase(),
+        c: String(it.correct_answer || '').trim().toUpperCase(),
+        ok: it._objCorrect === true,
+        cf: it._confidence === 'confident' ? 'c' : (it._confidence === 'hesitant' ? 'h' : '')
+    }));
+}
+
+function _postOpBuildSnapshot(s, rate, answered, usedMin) {
+    const done = (s.items || []).filter(it => it && it._recorded);
+    const rowOf = (it) => {
+        const ck = String(it.correct_answer || '').trim().toUpperCase();
+        const pk = String(it._picked || '').trim().toUpperCase();
+        const opt = (k) => (it.options && it.options[k]) ? String(it.options[k]) : '';
+        return { topic: String(it.topic || '').trim() || '—', stem: String(it.question_text || ''),
+                 pk: pk, pkText: opt(pk), ck: ck, ckText: opt(ck),
+                 conf: it._confidence || '', expl: String(it.explanation || '') };
+    };
+    const confWrong = [], hesWrong = [], lucky = [], topicMap = {};
+    done.forEach(it => {
+        if(it._objCorrect === true) {
+            if(it._confidence === 'hesitant') lucky.push(rowOf(it));
+        } else {
+            const r = rowOf(it);
+            (it._confidence === 'confident' ? confWrong : hesWrong).push(r);
+            topicMap[r.topic] = (topicMap[r.topic] || 0) + 1;
+        }
+    });
+    const elapsedSec = s.elapsedMs ? Math.round(s.elapsedMs / 1000) : Math.round((Date.now() - s.startIso) / 1000);
+    return {
+        when: Date.now(),
+        scope: DRILL_SCOPE_LABEL[_reclearLastScope] || _reclearLastScope || '',
+        rate: rate, correct: s.correct, wrong: s.wrong, answered: answered,
+        total: (s.items || []).length, usedMin: usedMin,
+        pace: answered > 0 ? Math.round(elapsedSec / answered) : 0,
+        cardsMade: s.cardsMade || 0,
+        confWrong: confWrong, hesWrong: hesWrong, lucky: lucky,
+        topicWrongs: Object.keys(topicMap).map(t => [t, topicMap[t]]).sort((a, b) => b[1] - a[1])
+    };
+}
+
+function _postOpItemHtml(r, borderColor) {
+    const you = r.pk
+        ? '<span style="color:var(--err-red);font-weight:700;">' + _postOpEsc(r.pk) + '</span> — ' + _postOpEsc(r.pkText)
+        : '<span style="opacity:0.6;">no pick (timed out / skipped)</span>';
+    return '<details style="border:1px solid var(--stroke);border-left:3px solid ' + borderColor + ';border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(255,255,255,0.02);">' +
+        '<summary style="cursor:pointer;font-size:0.72rem;line-height:1.35;">' +
+            '<span style="display:inline-block;background:rgba(255,255,255,0.07);border-radius:6px;padding:1px 6px;font-size:0.6rem;letter-spacing:0.5px;margin-right:6px;">' + _postOpEsc(r.topic) + '</span>' +
+            _postOpEsc(r.stem.length > 140 ? r.stem.slice(0, 140) + '…' : r.stem) +
+        '</summary>' +
+        '<div style="font-size:0.7rem;margin-top:8px;line-height:1.45;">' +
+            '<div>You: ' + you + '</div>' +
+            '<div>Correct: <span style="color:var(--ok);font-weight:700;">' + _postOpEsc(r.ck) + '</span> — ' + _postOpEsc(r.ckText) + '</div>' +
+            (r.expl ? '<div style="opacity:0.75;margin-top:6px;">' + _postOpEsc(r.expl) + '</div>' : '') +
+        '</div>' +
+    '</details>';
+}
+
+function _postOpSection(title, note, color, items) {
+    if(!items || !items.length) return '';
+    return '<div style="margin-top:14px;">' +
+        '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.05rem;letter-spacing:1px;color:' + color + ';">' + title + ' (' + items.length + ')</div>' +
+        (note ? '<div style="font-size:0.62rem;opacity:0.65;margin:2px 0 8px;">' + note + '</div>' : '<div style="height:8px;"></div>') +
+        items.map(r => _postOpItemHtml(r, color)).join('') +
+    '</div>';
+}
+
+function showPostOpReview(snap, isReplay) {
+    if(!snap) return;
+    if(!isReplay) {
+        try { localStorage.setItem(POSTOP_LS, JSON.stringify(snap)); } catch(e) {}
+        const b = $('btn-postop-last'); if(b) b.style.display = '';
+    }
+    const old = document.getElementById('postop-modal'); if(old) old.remove();
+    const scoreColor = snap.rate >= 80 ? 'var(--ok)' : (snap.rate >= 60 ? '#ffab00' : 'var(--err-red)');
+    const vital = (label, value, color) =>
+        '<div style="background:rgba(255,255,255,0.04);border:1px solid var(--stroke);border-radius:10px;padding:8px 6px;text-align:center;">' +
+            '<div style="font-family:JetBrains Mono,monospace;font-size:1.05rem;font-weight:700;color:' + (color || 'inherit') + ';">' + value + '</div>' +
+            '<div style="font-size:0.55rem;letter-spacing:1px;opacity:0.6;margin-top:2px;">' + label + '</div>' +
+        '</div>';
+    const luckyRows = (snap.lucky || []).map(r =>
+        '<div style="font-size:0.68rem;padding:5px 8px;border-left:3px solid #ffab00;margin-bottom:5px;background:rgba(255,171,0,0.05);border-radius:6px;">' +
+            '<span style="opacity:0.65;">[' + _postOpEsc(r.topic) + ']</span> ' + _postOpEsc(r.stem.length > 110 ? r.stem.slice(0, 110) + '…' : r.stem) +
+        '</div>').join('');
+    const topicChips = (snap.topicWrongs || []).map(tw =>
+        '<span style="display:inline-block;border:1px solid var(--err-red);color:var(--err-red);border-radius:999px;padding:3px 10px;font-size:0.62rem;margin:0 6px 6px 0;">' +
+            _postOpEsc(tw[0]) + ' ×' + tw[1] +
+        '</span>').join('');
+    const when = new Date(snap.when);
+    const overlay = document.createElement('div');
+    overlay.id = 'postop-modal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:99998;display:flex;align-items:center;justify-content:center;padding:14px;';
+    overlay.onclick = (e) => { if(e.target === overlay) closePostOpReview(); };
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#1c0028;border:2px solid var(--accent2);border-radius:16px;padding:16px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;';
+    box.innerHTML =
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">' +
+            '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.5rem;letter-spacing:2px;color:var(--accent2);">🧾 POST-OP REVIEW</div>' +
+            '<button onclick="closePostOpReview()" style="background:none;border:1px solid var(--stroke);color:inherit;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:0.8rem;">✕</button>' +
+        '</div>' +
+        '<div style="font-size:0.62rem;opacity:0.6;margin:2px 0 12px;">' +
+            (snap.scope ? _postOpEsc(snap.scope) + ' · ' : '') + when.toLocaleDateString() + ' ' + when.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">' +
+            vital('SCORE', snap.rate + '%', scoreColor) +
+            vital('ANSWERED', snap.correct + '/' + snap.answered) +
+            vital('PACE', snap.pace + 's/Q') +
+            vital('TIME', snap.usedMin + 'm') +
+            vital('CARDS MADE', snap.cardsMade, snap.cardsMade ? 'var(--accent3)' : null) +
+            vital('LUCKY', (snap.lucky || []).length, (snap.lucky || []).length ? '#ffab00' : null) +
+        '</div>' +
+        _postOpSection('⚠ CONFIDENT & WRONG', 'Knowledge gaps — you were sure, and wrong. These made SRS cards tagged “know”.', 'var(--err-red)', snap.confWrong) +
+        _postOpSection('✗ WRONG, HESITANT', 'Retrieval slips — cards tagged “retrieval”.', 'var(--err-soft)', snap.hesWrong) +
+        ((snap.lucky || []).length ?
+            '<div style="margin-top:14px;">' +
+                '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.05rem;letter-spacing:1px;color:#ffab00;">🍀 LUCKY GUESSES (' + snap.lucky.length + ')</div>' +
+                '<div style="font-size:0.62rem;opacity:0.65;margin:2px 0 8px;">Right but hesitant — held at streak 1, they resurface soon. No card made.</div>' +
+                luckyRows +
+            '</div>' : '') +
+        ((snap.topicWrongs || []).length ?
+            '<div style="margin-top:14px;">' +
+                '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.05rem;letter-spacing:1px;">📊 WRONGS BY TOPIC</div>' +
+                '<div style="margin-top:8px;">' + topicChips + '</div>' +
+            '</div>' : '') +
+        '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--stroke);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">' +
+            '<div style="font-size:0.62rem;opacity:0.7;">' + (snap.wrong > 0 ? 'Your ' + snap.wrong + ' fail' + (snap.wrong > 1 ? 's' : '') + ' now lead the next session’s queue.' : 'Clean list — nothing re-queued.') + '</div>' +
+            '<button class="btn btn-sm" style="background:var(--accent2);color:#111;" onclick="closePostOpReview()">Done</button>' +
+        '</div>';
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    if(typeof haptic === 'function') haptic(20);
+}
+
+function closePostOpReview() {
+    const el = document.getElementById('postop-modal');
+    if(el) el.remove();
+}
+
+function openLastPostOpReview() {
+    try {
+        const raw = localStorage.getItem(POSTOP_LS);
+        if(!raw) { _reclearToast('No drill finished on this device yet'); return; }
+        showPostOpReview(JSON.parse(raw), true);
+    } catch(e) { _reclearToast('Could not load last review'); }
+}
+
+// Boot: surface the 🧾 button if a review is stored on this device.
+if(localStorage.getItem(POSTOP_LS)) {
+    const _pb = $('btn-postop-last');
+    if(_pb) _pb.style.display = '';
+}
 
 </script>
 </body>
