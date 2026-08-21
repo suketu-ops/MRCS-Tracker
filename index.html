@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max — v124 (drill report)</title>
+<title>MRCS QBank Tracker Pro Max — v125 (drill flow + consultant)</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -7631,15 +7631,37 @@ function drillPriority(item) {
     return 2 + Math.min(h.streak, 6);            // increasingly settled
 }
 
-// Shuffle within priority bands: order is deterministic by weakness but never
-// identical question-to-question between sessions.
+// v125: fails are INTERSPERSED with new questions instead of walling the start
+// of every session (Suketu: "don't test me on all wrongs at the beginning —
+// will get frustrating"). Proportional merge: with F fails and N unseen, fails
+// land evenly through the fail+new stretch rather than as an opening gauntlet.
+// Cleared-once questions follow, settled ones still sink to the back. Shuffled
+// within groups so no two sessions read identically.
 function drillOrderQueue(pool) {
     const arr = pool.slice();
     for(let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
     }
-    return arr.sort((a, b) => drillPriority(a) - drillPriority(b));
+    const fails = [], fresh = [], once = [], settled = [];
+    arr.forEach(it => {
+        const p = drillPriority(it);
+        if(p === 0) fails.push(it);
+        else if(p === 1) fresh.push(it);
+        else if(p === 2) once.push(it);
+        else settled.push(it);
+    });
+    const head = [];
+    let fi = 0, ni = 0;
+    const F = fails.length, N = fresh.length;
+    while(fi < F || ni < N) {
+        if(ni >= N) { head.push(fails[fi++]); continue; }
+        if(fi >= F) { head.push(fresh[ni++]); continue; }
+        // take from whichever stream is proportionally further behind
+        if((fi + 1) / F <= (ni + 1) / N) head.push(fails[fi++]);
+        else head.push(fresh[ni++]);
+    }
+    return head.concat(once, settled);
 }
 
 // A drill failure becomes a real SRS card, due now, already in the rotation.
@@ -7682,7 +7704,7 @@ function _drillRecordAttempt(item) {
         // A correct answer you flagged 'hesitant' is a guess, not knowledge — it is
         // held at streak 1 so it resurfaces soon instead of climbing out of rotation.
         h.streak = (item._confidence === 'hesitant') ? 1 : (h.streak > 0 ? h.streak : 0) + 1;
-    } else { h.wrong++; h.streak = 0; }
+    } else { h.wrong++; h.streak = 0; item._nthWrong = h.wrong; }   // v125: nth time wrong — surfaced in post-op
     h.last = Date.now();
     h.conf = item._confidence || '';
     h.topic = String(item.topic || '');
@@ -8050,9 +8072,15 @@ async function reclearLoadFromBank(scope) {
                 statusEl.textContent = '\u26a0\ufe0f No questions in scope: ' + (DRILL_SCOPE_LABEL[scope] || scope);
             } else {
                 const st = drillScopeStats(arr);
-                statusEl.textContent = '\u2713 ' + arr.length + ' ' + (DRILL_SCOPE_LABEL[scope] || scope) +
-                    ' questions \u2014 ' + st.unseen + ' new, ' + st.weak + ' previously failed, ' + st.solid +
-                    ' cleared. Weakest served first.';
+                // v125: lead with CLEARED \u2014 the number that grows. The old line led
+                // with "new", which read as a frozen "questions left" (the fail wall
+                // meant sessions rarely reached unseen questions, so it never moved).
+                const pct = arr.length ? Math.round((st.solid / arr.length) * 100) : 0;
+                statusEl.innerHTML = '\u2713 <b>' + arr.length + '</b> ' + (DRILL_SCOPE_LABEL[scope] || scope) +
+                    ' in scope \u2014 <b style="color:var(--ok);">' + st.solid + ' cleared (' + pct + '%)</b> \u00b7 ' +
+                    st.weak + ' to re-clear \u00b7 ' + st.unseen + ' untouched.' +
+                    '<div style="height:6px;border:1px solid var(--stroke);border-radius:4px;margin-top:6px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:var(--ok);"></div></div>' +
+                    '<div style="font-size:0.62rem;opacity:0.85;margin-top:4px;">Fails are interspersed with new questions; clear a question twice and it sinks to the back.</div>';
             }
         }
         if($('btn-reclear-start')) $('btn-reclear-start').disabled = false;
@@ -16433,7 +16461,8 @@ function _postOpCompactResults(s) {
         p: String(it._picked || '').toUpperCase(),
         c: String(it.correct_answer || '').trim().toUpperCase(),
         ok: it._objCorrect === true,
-        cf: it._confidence === 'confident' ? 'c' : (it._confidence === 'hesitant' ? 'h' : '')
+        cf: it._confidence === 'confident' ? 'c' : (it._confidence === 'hesitant' ? 'h' : ''),
+        nw: it._nthWrong || 0   // v125: how many times this question has now been wrong
     }));
 }
 
@@ -16445,7 +16474,8 @@ function _postOpBuildSnapshot(s, rate, answered, usedMin) {
         const opt = (k) => (it.options && it.options[k]) ? String(it.options[k]) : '';
         return { topic: String(it.topic || '').trim() || '—', stem: String(it.question_text || ''),
                  pk: pk, pkText: opt(pk), ck: ck, ckText: opt(ck),
-                 conf: it._confidence || '', expl: String(it.explanation || '') };
+                 conf: it._confidence || '', expl: String(it.explanation || ''),
+                 nth: it._nthWrong || 0 };
     };
     const confWrong = [], hesWrong = [], lucky = [], topicMap = {};
     done.forEach(it => {
@@ -16466,6 +16496,7 @@ function _postOpBuildSnapshot(s, rate, answered, usedMin) {
         pace: answered > 0 ? Math.round(elapsedSec / answered) : 0,
         cardsMade: s.cardsMade || 0,
         confWrong: confWrong, hesWrong: hesWrong, lucky: lucky,
+        repeats: confWrong.concat(hesWrong).filter(r => (r.nth || 0) >= 2).length,   // v125
         topicWrongs: Object.keys(topicMap).map(t => [t, topicMap[t]]).sort((a, b) => b[1] - a[1])
     };
 }
@@ -16477,15 +16508,27 @@ function _postOpItemHtml(r, borderColor) {
         : (r.pk
             ? '<span style="color:var(--err-red);font-weight:700;">' + _postOpEsc(r.pk) + '</span> — ' + _postOpEsc(r.pkText)
             : '<span style="opacity:0.85;">no pick (timed out / skipped)</span>');
+    // v125: repeat-offender badge — how many times this question has been wrong
+    const repeatBadge = (r.nth >= 2)
+        ? '<span style="display:inline-block;border:1px solid var(--err-red);color:var(--err-red);border-radius:999px;padding:0 6px;font-size:0.58rem;font-weight:700;margin-right:6px;" title="wrong ' + r.nth + ' times">✗×' + r.nth + '</span>'
+        : '';
+    // v125: Consultant memory hook — generated on demand, cached, saveable to the SRS card
+    const hookId = 'pohook-' + (++_postOpHookUid);
+    const hookUi = '<div style="margin-top:8px;">' +
+        '<button class="btn btn-sm btn-ghost" style="font-size:0.62rem;border-color:var(--accent3);color:var(--accent3);padding:4px 10px;" onclick="consultantMemoryHook(this, \'' + hookId + '\')">🧠 Consultant: help me remember this</button>' +
+        '<div id="' + hookId + '" data-stem="' + _postOpEsc(r.stem) + '" data-answer="' + _postOpEsc((r.ck ? r.ck + ' — ' : '') + (r.ckText || '')) + '" data-expl="' + _postOpEsc(String(r.expl || '').slice(0, 600)) + '" style="display:none;margin-top:7px;font-size:0.68rem;line-height:1.5;border:1px solid var(--accent3);border-radius:8px;padding:8px 10px;background:rgba(167,139,250,0.07);"></div>' +
+    '</div>';
     return '<details style="border:1px solid var(--stroke);border-left:3px solid ' + borderColor + ';border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(255,255,255,0.045);">' +
         '<summary style="cursor:pointer;font-size:0.72rem;line-height:1.35;">' +
             '<span style="display:inline-block;background:rgba(255,255,255,0.13);border-radius:6px;padding:1px 6px;font-size:0.62rem;letter-spacing:0.5px;margin-right:6px;">' + _postOpEsc(r.topic) + '</span>' +
+            repeatBadge +
             _postOpEsc(r.stem.length > 140 ? r.stem.slice(0, 140) + '…' : r.stem) +
         '</summary>' +
         '<div style="font-size:0.7rem;margin-top:8px;line-height:1.45;">' +
             '<div>You: ' + you + '</div>' +
             '<div>Correct: <span style="color:var(--ok);font-weight:700;">' + _postOpEsc(r.ck) + '</span> — ' + _postOpEsc(r.ckText) + '</div>' +
             (r.expl ? '<div style="opacity:0.92;margin-top:6px;">' + _postOpEsc(r.expl) + '</div>' : '') +
+            hookUi +
         '</div>' +
     '</details>';
 }
@@ -16542,6 +16585,7 @@ function showPostOpReview(snap, isReplay) {
             vital('TIME', snap.usedMin + 'm') +
             vital('CARDS MADE', snap.cardsMade, snap.cardsMade ? 'var(--accent3)' : null) +
             vital('LUCKY', (snap.lucky || []).length, (snap.lucky || []).length ? '#ffab00' : null) +
+            (snap.repeats ? vital('REPEAT WRONGS', snap.repeats, 'var(--err-red)') : '') +
         '</div>' +
         _postOpSection('⚠ CONFIDENT & WRONG', 'Knowledge gaps — you were sure, and wrong. These made SRS cards tagged “know”.', 'var(--err-red)', snap.confWrong) +
         _postOpSection('✗ WRONG, HESITANT', 'Retrieval slips — cards tagged “retrieval”.', 'var(--err-soft)', snap.hesWrong) +
@@ -16668,7 +16712,10 @@ function _debriefBodyHtml(s, bank) {
                 pk: r.p || '', pkText: opt(r.p), ck: r.c || (full ? String(full.correct_answer || '').toUpperCase() : ''),
                 ckText: opt(r.c || (full ? String(full.correct_answer || '').toUpperCase() : '')),
                 conf: r.cf === 'c' ? 'confident' : (r.cf === 'h' ? 'hesitant' : ''),
-                expl: full ? String(full.explanation || '') : ''
+                expl: full ? String(full.explanation || '') : '',
+                // v125: repeat count — stored with the session (nw) or, for older
+                // rows, the question's current lifetime wrong-count from history
+                nth: r.nw || ((full && DRILL_HISTORY[drillKey(full)] && (DRILL_HISTORY[drillKey(full)].wrong || 0) >= 2) ? DRILL_HISTORY[drillKey(full)].wrong : 0)
             };
             if(r.ok) { if(r.cf === 'h') lucky.push(item); }
             else {
@@ -16704,7 +16751,8 @@ function _debriefBodyHtml(s, bank) {
                 stem: full ? String(full.question_text) : String(stem || ''),
                 youLabel: 'not recorded — session predates the post-op review (v123, 21 Aug 2026)',
                 ck: ck, ckText: (full && full.options && full.options[ck]) ? String(full.options[ck]) : '',
-                expl: full ? String(full.explanation || '') : ''
+                expl: full ? String(full.explanation || '') : '',
+                nth: (full && DRILL_HISTORY[drillKey(full)] && (DRILL_HISTORY[drillKey(full)].wrong || 0) >= 2) ? DRILL_HISTORY[drillKey(full)].wrong : 0   // v125: lifetime wrong-count
             };
             wrongs.push(item);
             topicCounts[item.topic] = (topicCounts[item.topic] || 0) + 1;
@@ -16741,6 +16789,85 @@ function _renderDrillDebriefCard(s) {
         const body = $('ss-drill-debrief-body');
         if(body) body.innerHTML = _debriefBodyHtml(s, bank);
     });
+}
+
+// =================== v125: CONSULTANT MEMORY HOOKS ===================
+// "For post-op, maybe suggest a way to remember via consultant AI." Every wrong
+// in a post-op (overlay or Surgeon's Report) carries a 🧠 button: one tap asks
+// the Consultant (the app's existing Gemini pipeline, key in Settings) for a
+// single compact memory aid — mnemonic / vivid image / contrast rule. Hooks are
+// cached per question in localStorage ('mrcs-memory-hooks'), so a hook is paid
+// for once and re-taps just toggle it. If the question already has a drill-fail
+// SRS card, a second button saves the hook into the card's notes — from there
+// it syncs to Supabase and flows to Anki on the next bridge run.
+
+let _postOpHookUid = 0;
+const MEMHOOK_LS = 'mrcs-memory-hooks';
+
+function _memoryHooksLoad() {
+    try { return JSON.parse(localStorage.getItem(MEMHOOK_LS) || '{}') || {}; } catch(e) { return {}; }
+}
+function _memoryHooksSave(m) {
+    try { localStorage.setItem(MEMHOOK_LS, JSON.stringify(m)); } catch(e) {}
+}
+
+function _memhookFindCard(stem) {
+    if(typeof REVIEW_BANK === 'undefined' || !Array.isArray(REVIEW_BANK)) return null;
+    const frag = String(stem || '').replace(/\s+/g, ' ').trim().slice(0, 30);
+    if(!frag) return null;
+    return REVIEW_BANK.find(b => b && b.notesSource === 'drill' && String(b.word || '').indexOf(frag) !== -1) ||
+           REVIEW_BANK.find(b => b && String(b.word || '').indexOf(frag) !== -1) || null;
+}
+
+async function consultantMemoryHook(btn, id) {
+    const box = document.getElementById(id);
+    if(!box) return;
+    if(box.dataset.done === '1') {   // already generated — the button just toggles it
+        box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+        return;
+    }
+    const stem = box.dataset.stem || '';
+    const answer = box.dataset.answer || '';
+    const expl = box.dataset.expl || '';
+    const key = drillKey({ question_text: stem });
+    const hooks = _memoryHooksLoad();
+    let hook = hooks[key];
+    if(!hook) {
+        const orig = btn.textContent;
+        btn.disabled = true; btn.textContent = '🧠 Consulting…';
+        let out = null;
+        try {
+            out = await _incardCallGemini(
+                'You are a surgical consultant helping an MRCS Part A candidate remember a fact they keep answering wrongly.\n\n' +
+                'Question: ' + stem + '\nCorrect answer: ' + answer + '\nExplanation: ' + expl + '\n\n' +
+                'Give ONE compact memory aid — a mnemonic, vivid image, contrast rule or rule-of-thumb. Max 60 words. No preamble, just the aid.'
+            );
+        } catch(e) { out = null; }
+        btn.disabled = false; btn.textContent = orig;
+        if(!out) return;   // no key (helper already alerted) or API failure
+        hook = String(out).trim();
+        hooks[key] = hook;
+        _memoryHooksSave(hooks);
+    }
+    box.textContent = '🧠 ' + hook;
+    const card = _memhookFindCard(stem);
+    if(card && String(card.notes || '').indexOf(hook.slice(0, 40)) === -1) {
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'btn btn-sm btn-ghost';
+        saveBtn.style.cssText = 'font-size:0.6rem;margin-top:6px;border-color:var(--ok);color:var(--ok);padding:3px 8px;display:block;';
+        saveBtn.textContent = '💾 Save hook into its SRS card';
+        saveBtn.onclick = () => {
+            card.notes = String(card.notes || '') + '\n\n🧠 Memory hook: ' + hook;
+            card.updatedAt = Date.now();
+            if(typeof markBankItem === 'function') markBankItem(card);
+            if(typeof persistData === 'function') persistData();
+            saveBtn.textContent = '✓ Saved — syncs to Anki on the next bridge run';
+            saveBtn.disabled = true;
+        };
+        box.appendChild(saveBtn);
+    }
+    box.style.display = 'block';
+    box.dataset.done = '1';
 }
 
 </script>
