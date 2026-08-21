@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max — v120 (offline)</title>
+<title>MRCS QBank Tracker Pro Max — v121 (offline resync)</title>
 <!-- V79: PWA Meta Tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -5472,6 +5472,8 @@ async function supabasePullSessions() {
 // ---------- SETTINGS SYNC (single row) ----------
 function markSettings() {
     if(!isSupabaseConfigured()) return;
+    // v121: dirty flag survives an offline push failure — the resync sweep re-pushes on reconnect
+    try { localStorage.setItem('mrcs-settings-dirty', '1'); } catch(e) {}
     if(_supabaseSettingsTimer) clearTimeout(_supabaseSettingsTimer);
     _supabaseSettingsTimer = setTimeout(() => {
         _supabaseSettingsTimer = null;
@@ -5517,6 +5519,9 @@ async function _doSupabasePushSettings() {
         if(!res.ok) {
             const errText = await res.text().catch(() => '');
             console.warn('[V111] Settings push failed:', res.status, errText.substring(0, 200));
+        } else {
+            // v121: settings confirmed in cloud — clear the resync dirty flag
+            try { localStorage.removeItem('mrcs-settings-dirty'); } catch(e) {}
         }
     } catch(e) {
         console.warn('[V111] Settings push error:', e);
@@ -16098,6 +16103,146 @@ initApp();
     if(document.readyState === 'complete') regSW();
     else window.addEventListener('load', regSW);
 })();
+
+// =================== v121: OFFLINE RESYNC SWEEP ===================
+// Why: every push to Supabase fires exactly once, at save time. A session saved
+// mid-flight dies with the cabin wifi and nothing ever retried — the 19 Aug
+// iPad drill sat in localStorage, invisible to every other device. The boot
+// pull merges cloud→local but never pushed local-only rows back up.
+// This sweep closes the loop: after boot and on every reconnect it fetches the
+// cloud's key+updated_at index for sessions/tracker/cards and re-pushes
+// anything local-only or strictly local-newer. That mirrors the pull merges
+// (newer updatedAt wins), so the two directions converge; upserts are
+// merge-duplicates so the sweep is idempotent and safe to run any time.
+// Settings (singleton row, no per-field timestamps) ride a localStorage dirty
+// flag instead: set in markSettings, cleared on confirmed push.
+// Deliberately NOT a persisted outbox queue — the diff against the cloud IS
+// the queue, and it self-heals even where a stored queue would go stale.
+// Known edge (shared with the pull merges): a row deleted on another device
+// while this one was offline can be resurrected by the re-push. Real fix is
+// tombstones; out of scope this close to the exam.
+
+const RESYNC_CHUNK = 50;
+const RESYNC_BOOT_DELAY_MS = 8000;   // boot pull is normally long done by then
+const RESYNC_DEBOUNCE_MS = 4000;     // 'online' can fire in bursts on flaky signal
+let _resyncTimer = null;
+let _resyncInFlight = false;
+
+// Pure diff: local items missing from cloud, or with strictly newer updatedAt.
+function _resyncDiff(localArr, cloudRows, localKey, cloudKey, localUpd, cloudUpd) {
+    const cloudMap = new Map();
+    (cloudRows || []).forEach(r => {
+        const k = cloudKey(r);
+        if(k !== undefined && k !== null) cloudMap.set(k, cloudUpd(r) || 0);
+    });
+    const out = [];
+    (localArr || []).forEach(item => {
+        const k = localKey(item);
+        if(k === undefined || k === null || k === '') return;
+        if(!cloudMap.has(k)) { out.push(item); return; }
+        if((localUpd(item) || 0) > cloudMap.get(k)) out.push(item);
+    });
+    return out;
+}
+
+async function _resyncUpsert(table, rows) {
+    let pushed = 0;
+    for(let i = 0; i < rows.length; i += RESYNC_CHUNK) {
+        const batch = rows.slice(i, i + RESYNC_CHUNK);
+        const res = await fetch(SUPABASE_URL + '/rest/v1/' + table, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': 'Bearer ' + SUPABASE_KEY,
+                'Content-Type': 'application/json',
+                'Prefer': 'resolution=merge-duplicates,return=minimal'
+            },
+            body: JSON.stringify(batch)
+        });
+        if(!res.ok) throw new Error(table + ' upsert HTTP ' + res.status);
+        pushed += batch.length;
+    }
+    return pushed;
+}
+
+async function supabaseResyncSweep(reason) {
+    if(!isSupabaseConfigured() || _resyncInFlight) return;
+    if(navigator.onLine === false) return;   // undefined on old browsers → just try
+    _resyncInFlight = true;
+    try {
+        const H = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
+        const getIndex = async (path) => {
+            const r = await fetch(SUPABASE_URL + '/rest/v1/' + path, { headers: H });
+            if(!r.ok) throw new Error(path.split('?')[0] + ' index HTTP ' + r.status);
+            const j = await r.json();
+            return Array.isArray(j) ? j : [];
+        };
+
+        const sesCloud = await getIndex('mrcs_sessions?select=start_iso,updated_at&limit=5000');
+        const sesRows = _resyncDiff(sessions, sesCloud,
+            s => (typeof s.startIso === 'number' ? s.startIso : null), r => r.start_iso,
+            s => s.updatedAt, r => r.updated_at).map(_sessionToDb).filter(Boolean);
+        const nSes = sesRows.length ? await _resyncUpsert('mrcs_sessions', sesRows) : 0;
+
+        const trkCloud = await getIndex('mrcs_tracker?select=d,updated_at&limit=5000');
+        // GUARD: only tracker rows carrying real study evidence (some nonzero actual)
+        // AND a genuine write stamp may travel up. The app auto-seeds a default
+        // calendar on any fresh profile — including a baked-in demo row and a
+        // day-lock touch that stamps today's row with updatedAt=now — so without
+        // this filter a brand-new device would push default zeros over real
+        // cloud rows. Cost: a row edited offline to all-zeros won't resync
+        // (re-toggle it online); sessions, the actual study evidence, are
+        // unaffected.
+        const trkEligible = (TRACKER_DATA || []).filter(r => r &&
+            typeof r.updatedAt === 'number' &&
+            ((r.pa > 0) || (r.ea > 0) || (r.rpa > 0) || (r.rea > 0)));
+        const trkRows = _resyncDiff(trkEligible, trkCloud,
+            r => r.d, r => r.d,
+            r => r.updatedAt, r => r.updated_at).map(_trackerRowToDb).filter(Boolean);
+        const nTrk = trkRows.length ? await _resyncUpsert('mrcs_tracker', trkRows) : 0;
+
+        const cardCloud = await getIndex('mrcs_cards?select=word,updated_at&limit=5000');
+        const cardRows = _resyncDiff(REVIEW_BANK, cardCloud,
+            b => b.word, r => r.word,
+            b => b.updatedAt, r => r.updated_at).map(_bankItemToRow).filter(Boolean);
+        const nCards = cardRows.length ? await _resyncUpsert('mrcs_cards', cardRows) : 0;
+
+        let nSet = 0;
+        if(localStorage.getItem('mrcs-settings-dirty') === '1') {
+            await _doSupabasePushSettings();
+            if(localStorage.getItem('mrcs-settings-dirty') !== '1') nSet = 1;
+        }
+
+        const total = nSes + nTrk + nCards + nSet;
+        if(total > 0) {
+            const parts = [];
+            if(nSes) parts.push(nSes + ' session' + (nSes > 1 ? 's' : ''));
+            if(nTrk) parts.push(nTrk + ' tracker day' + (nTrk > 1 ? 's' : ''));
+            if(nCards) parts.push(nCards + ' card' + (nCards > 1 ? 's' : ''));
+            if(nSet) parts.push('settings');
+            const msg = '✓ Re-synced ' + parts.join(' + ') + ' from this device';
+            setSupabaseStatus(msg, '#4ade80');
+            if(typeof _reclearToast === 'function') _reclearToast(msg);
+            logDebug('v121 resync (' + reason + '): ' + msg);
+        } else {
+            logDebug('v121 resync (' + reason + '): cloud already has everything local');
+        }
+    } catch(e) {
+        // Fail soft — the next boot or the next 'online' event tries again.
+        console.warn('[v121] resync sweep (' + reason + ') aborted:', e.message || e);
+    } finally {
+        _resyncInFlight = false;
+    }
+}
+
+function scheduleResyncSweep(reason) {
+    if(!isSupabaseConfigured()) return;
+    clearTimeout(_resyncTimer);
+    _resyncTimer = setTimeout(() => supabaseResyncSweep(reason), RESYNC_DEBOUNCE_MS);
+}
+
+window.addEventListener('online', () => scheduleResyncSweep('reconnect'));
+setTimeout(() => scheduleResyncSweep('boot'), RESYNC_BOOT_DELAY_MS);
 
 </script>
 </body>
