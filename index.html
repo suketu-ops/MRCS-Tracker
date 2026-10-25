@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MRCS QBank Tracker Pro Max — v126 (apple design pass)</title>
+<title>MRCS QBank Tracker Pro Max — v126.1 (exam 13 Jan 2027)</title>
 <!-- v126 apple design pass -->
 
 <!-- V79: PWA Meta Tags -->
@@ -2940,7 +2940,7 @@ document.addEventListener("selectionchange", () => { const sel = window.getSelec
 
 const _optionalIds = new Set(['btn-export-pdf','btn-fc-back','rev-goal-pt','rev-goal-em','fc-date-from','fc-date-to','fc-back-img-bar','fc-back-img-url-inline','expand-img-url-inline','expand-img-bar','incard-expand-wrapper','incard-expand-word','incard-expand-notes','incard-expand-exam-note','incard-expand-img-url','incard-expand-format-toolbar','incard-expand-save-row','btn-incard-expand-edit','btn-incard-expand-action','postop-errtype-filter','postop-topic-filter','postop-select-bar','postop-select-count','btn-sync-now','gallery-filters-collapsible','btn-toggle-gallery-filters','incard-ai-answer-row','incard-ai-exam-row','btn-incard-gen-answer','btn-incard-refine-answer','incard-refine-answer-input','btn-incard-gen-exam','btn-incard-refine-exam','incard-refine-exam-input','supabase-url','supabase-key','btn-sb-save','btn-sb-pull','btn-sb-seed','supabase-status','sb-import-file','btn-sb-show-sql','btn-sb-push-local','fc-mobile-action-bar','btn-fc-mobile-action','postop-mobile-filter-toggle','postop-filters-collapsible','topbar-sync-indicator','topbar-sync-text','topbar-sync-btn','fc-img-picker','fc-img-picker-grid','fc-img-picker-label','btn-fc-img-skip','btn-fc-img-skip-perm','btn-fc-find-img','btn-expand-find-img','google-cse-key','btn-fc-img-prev','btn-fc-img-next','fc-img-picker-counter','brave-api-key','brave-proxy-url','img-source-toggles','fc-img-picker-query','btn-fc-img-picker-search','priority-domains-input','blocked-domains-input','fc-img-picker-modes']);
 const $ = id => { const el = document.getElementById(id); if (!el) { if(!_optionalIds.has(id)) logDebug(`WARNING: Element '${id}' not found.`); return document.createElement('div'); } return el; };
-let EXAM_DATE = new Date(2026, 8, 9); // v116.1: real next sitting = 9 Sep 2026. Mutable so New Attempt wizard can reassign; daysToExam() & srsMaxIntervalDays() read this live
+let EXAM_DATE = new Date(2027, 0, 13); // v126: next sitting = 13 Jan 2027 (booked window; prior 9 Sep 2026 sat). Mutable so New Attempt wizard can reassign; daysToExam() & srsMaxIntervalDays() read this live
 
 const PT_TOTAL = 3137;
 const EM_TOTAL = 2281;
